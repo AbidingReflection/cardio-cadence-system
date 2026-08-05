@@ -1,0 +1,208 @@
+:root {
+    --color-phase-background: #fff1f1;
+    --color-phase-header: #ffe2e2;
+    --color-phase-border: #efb8b8;
+
+    --color-block-background: #eef6ff;
+    --color-block-hover: #e2f0ff;
+    --color-block-border: #b8d4ee;
+}
+
+.protocol-content {
+    padding: 14px;
+}
+
+.protocol-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* --------------------------------------------------------------------------
+ * Phase cards
+ * -------------------------------------------------------------------------- */
+
+.phase-card {
+    overflow: hidden;
+
+    border: 1px solid var(--color-phase-border);
+    border-radius: 8px;
+
+    background: var(--color-phase-background);
+
+    transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.phase-card:hover {
+    border-color: var(--color-accent);
+}
+
+
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    min-height: 58px;
+    padding: 10px 14px;
+
+    border-bottom: 1px solid var(--color-phase-border);
+
+    background: var(--color-phase-header);
+}
+
+.phase-heading {
+    min-width: 0;
+}
+
+.phase-index {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.phase-name {
+    margin: 0;
+
+    overflow: hidden;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phase-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-shrink: 0;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+ * Block list
+ * -------------------------------------------------------------------------- */
+
+.phase-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 10px;
+}
+
+.block-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    min-height: 54px;
+    padding: 9px 12px;
+
+    border: 1px solid var(--color-block-border);
+    border-radius: 6px;
+
+    background: var(--color-block-background);
+
+    cursor: pointer;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+.block-card:hover {
+    border-color: var(--color-accent);
+    background: var(--color-block-hover);
+    transform: translateY(-1px);
+}
+
+.block-primary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    min-width: 0;
+}
+
+.block-type {
+    color: var(--color-accent);
+
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.block-name {
+    overflow: hidden;
+
+    font-size: 0.86rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.block-details {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    flex-shrink: 0;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.phase-card--selected,
+.block-card--selected {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgb(41 121 255 / 16%);
+}
+
+/* --------------------------------------------------------------------------
+ * Responsive protocol tree
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+    .phase-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .block-card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .block-details {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}

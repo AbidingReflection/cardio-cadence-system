@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/pane.css">
     <link rel="stylesheet" href="css/top-ribbon.css">
     <link rel="stylesheet" href="css/protocol-pane.css">
+    <link rel="stylesheet" href="css/protocol-tree.css">
     <link rel="stylesheet" href="css/totals-ribbon.css">
 </head>
 
@@ -64,8 +65,147 @@
                     </div>
                 </header>
 
-                <div class="pane__content" id="protocol-content">
-                    <p>Protocol editor content will go here.</p>
+                <div class="pane__content protocol-content" id="protocol-content">
+                    <div class="protocol-tree">
+                        <article class="phase-card phase-card--selected" data-phase-id="phase-1">
+                            <header class="phase-header">
+                                <div class="phase-heading">
+                                    <span class="phase-index">Phase 1</span>
+                                    <h2 class="phase-name">Warmup</h2>
+                                </div>
+
+                                <div class="phase-summary">
+                                    <span>10:00</span>
+                                    <span>2 blocks</span>
+                                </div>
+                            </header>
+
+                            <div class="phase-blocks">
+                                <article class="block-card" data-block-id="block-1">
+                                    <div class="block-primary">
+                                        <span class="block-type">Steady</span>
+                                        <span class="block-name">Easy Spin</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>5:00</span>
+                                        <span>75 rpm</span>
+                                        <span>Light</span>
+                                    </div>
+                                </article>
+
+                                <article class="block-card block-card--selected" data-block-id="block-2">
+                                    <div class="block-primary">
+                                        <span class="block-type">Ramp</span>
+                                        <span class="block-name">Cadence Build</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>5:00</span>
+                                        <span>75–90 rpm</span>
+                                        <span>Moderate</span>
+                                    </div>
+                                </article>
+                            </div>
+                        </article>
+
+                        <article class="phase-card" data-phase-id="phase-2">
+                            <header class="phase-header">
+                                <div class="phase-heading">
+                                    <span class="phase-index">Phase 2</span>
+                                    <h2 class="phase-name">Working Set</h2>
+                                </div>
+
+                                <div class="phase-summary">
+                                    <span>18:00</span>
+                                    <span>3 blocks</span>
+                                </div>
+                            </header>
+
+                            <div class="phase-blocks">
+                                <article class="block-card">
+                                    <div class="block-primary">
+                                        <span class="block-type">Steady</span>
+                                        <span class="block-name">Tempo</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>6:00</span>
+                                        <span>92 rpm</span>
+                                        <span>Hard</span>
+                                    </div>
+                                </article>
+
+                                <article class="block-card">
+                                    <div class="block-primary">
+                                        <span class="block-type">Recovery</span>
+                                        <span class="block-name">Easy Recovery</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>4:00</span>
+                                        <span>72 rpm</span>
+                                        <span>Easy</span>
+                                    </div>
+                                </article>
+
+                                <article class="block-card">
+                                    <div class="block-primary">
+                                        <span class="block-type">Steady</span>
+                                        <span class="block-name">Tempo Repeat</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>8:00</span>
+                                        <span>94 rpm</span>
+                                        <span>Hard</span>
+                                    </div>
+                                </article>
+                            </div>
+                        </article>
+
+                        <article class="phase-card phase-card--selected" data-phase-id="cool-down">
+                            <header class="phase-header">
+                                <div class="phase-heading">
+                                    <span class="phase-index">Phase 3</span>
+                                    <h2 class="phase-name">cool-down</h2>
+                                </div>
+
+                                <div class="phase-summary">
+                                    <span>10:00</span>
+                                    <span>2 blocks</span>
+                                </div>
+                            </header>
+
+                            <div class="phase-blocks">
+                                <article class="block-card" data-block-id="block-1">
+                                    <div class="block-primary">
+                                        <span class="block-type">Steady</span>
+                                        <span class="block-name">Easy Spin</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>5:00</span>
+                                        <span>75 rpm</span>
+                                        <span>Light</span>
+                                    </div>
+                                </article>
+
+                                <article class="block-card block-card--selected" data-block-id="block-2">
+                                    <div class="block-primary">
+                                        <span class="block-type">Ramp</span>
+                                        <span class="block-name">Cadence Build</span>
+                                    </div>
+
+                                    <div class="block-details">
+                                        <span>5:00</span>
+                                        <span>75–90 rpm</span>
+                                        <span>Moderate</span>
+                                    </div>
+                                </article>
+                            </div>
+                        </article>
+                    </div>
                 </div>
             </section>
 
