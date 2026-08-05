@@ -1,0 +1,28 @@
+Cardio Workout Protocol Designer Components
+    - HTML
+        - Pane
+            = Main display container
+        - Protocol Designer
+            - Phase
+                = Rounded rectangle taking 90% of containing pane width
+                = Collapsable hiding child blocks
+                    = On collapse shows phase name & duration
+                =
+            - Blocks
+                = Child within Phase rectangle
+                = Rounded rectangle taking 95% of containing activity width
+
+        - SVG Graphs
+
+
+Suggested first-version behavior
+    ProtocolModel owns phases and blocks.
+    Every phase and block has a stable ID.
+    All mutations happen through model methods.
+    The model emits a generic change event.
+    The UI rerenders the entire protocol pane after each change.
+    The editor has normal, insert-phase, and insert-block modes.
+    Insertion mode renders explicit insertion zones.
+    Clicking a zone inserts the new item and exits insertion mode.
+    Escape cancels insertion mode.
+    Final JSON comes directly from the protocol model.
