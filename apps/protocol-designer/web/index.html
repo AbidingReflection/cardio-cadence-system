@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Cardio Cadence Protocol Designer</title>
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/pane.css">
+    <link rel="stylesheet" href="css/top-ribbon.css">
+    <link rel="stylesheet" href="css/protocol-pane.css">
+    <link rel="stylesheet" href="css/totals-ribbon.css">
+</head>
+
+<body>
+    <header class="top-ribbon">
+        <div class="app-brand">
+            <span class="app-brand__title">
+                Cardio Cadence
+            </span>
+
+            <span class="app-brand__section">
+                Protocol Designer
+            </span>
+        </div>
+
+        <nav class="top-ribbon__menu" aria-label="Application menu">
+            <button type="button" class="menu-button">
+                New
+            </button>
+
+            <button type="button" class="menu-button">
+                Import
+            </button>
+        </nav>
+    </header>
+
+    <main class="workspace">
+        <section class="pane-layout" aria-label="Protocol designer workspace">
+            <section class="pane pane--left protocol-pane">
+                <header class="pane__header protocol-pane__header">
+                    <span class="protocol-pane__title">Protocol</span>
+
+                    <div class="protocol-pane__actions">
+                        <button type="button"
+                                class="protocol-pane__action-button"
+                                id="add-phase-button"
+                                aria-label="Add phase">
+                            <span class="protocol-pane__action-icon" aria-hidden="true">+</span>
+                            <span>Phase</span>
+                        </button>
+
+                        <button type="button"
+                                class="protocol-pane__action-button"
+                                id="add-block-button"
+                                aria-label="Add block">
+                            <span class="protocol-pane__action-icon" aria-hidden="true">+</span>
+                            <span>Block</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="pane__content" id="protocol-content">
+                    <p>Protocol editor content will go here.</p>
+                </div>
+            </section>
+
+            <div class="pane-stack">
+                <section class="pane pane--top-right">
+                    <header class="pane__header">
+                        Cumulative Calorie Graph
+                    </header>
+
+                    <div class="pane__content" id="cumulative-graph">
+                        <p>Cumulative SVG Graph will go here.</p>
+                    </div>
+                </section>
+
+                <section class="pane pane--bottom-right">
+                    <header class="pane__header">
+                        Instantaneous Calorie Graph
+                    </header>
+
+                    <div class="pane__content" id="instantaneous-graph">
+                        <p>Instantaneous SVG Graph will go here.</p>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <aside class="totals-ribbon" aria-label="Protocol totals">
+        <div class="total">
+            <span class="total__label">Duration</span>
+            <span class="total__value">00:00</span>
+        </div>
+
+        <div class="total">
+            <span class="total__label">Machine Calorie Estimate</span>
+            <span class="total__value">0 kCal</span>
+        </div>
+    </aside>
+</body>
+</html>
