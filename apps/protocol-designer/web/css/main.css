@@ -17,12 +17,13 @@
     --shadow-pane: 0 4px 14px rgb(16 24 40 / 8%);
     --shadow-ribbon: 0 10px 30px rgb(16 24 40 / 18%);
 
-    --header-height: 64px;
+    --header-height: 48px;
     --pane-header-height: 46px;
-    --totals-height: 76px;
+    --totals-height: 32px;
 
     --layout-gap: 16px;
     --border-radius: 10px;
+
 }
 
 /*
@@ -35,13 +36,15 @@
     box-sizing: border-box;
 }
 
-html {
+html,
+body {
     height: 100%;
 }
 
+
 body {
-    min-height: 100%;
     margin: 0;
+    overflow: hidden;
 
     background: var(--color-page);
     color: var(--color-text);
@@ -60,12 +63,16 @@ body {
  * -------------------------------------------------------------------------- */
 
 .workspace {
-    min-height: 100vh;
+    height: calc(
+        100vh
+        - var(--header-height)
+        - var(--totals-height)
+    );
 
-    padding:
-    calc(var(--header-height) + var(--layout-gap))
-    var(--layout-gap)
-    calc(var(--totals-height) + 32px);
+    margin-top: var(--header-height);
+    padding: var(--layout-gap);
+
+    overflow: hidden;
 }
 
 .pane-layout {
@@ -76,12 +83,8 @@ body {
     gap: var(--layout-gap);
 
     width: min(1600px, 100%);
-    min-height: calc(
-        100vh
-        - var(--header-height)
-        - var(--totals-height)
-        - 64px
-    );
+    height: 100%;
+    min-height: 0;
 
     margin: 0 auto;
 }
