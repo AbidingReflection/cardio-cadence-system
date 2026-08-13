@@ -96,6 +96,171 @@
     font-variant-numeric: tabular-nums;
     font-weight: 600;
 }
+/* --------------------------------------------------------------------------
+ * Expanded phase body
+ * -------------------------------------------------------------------------- */
+
+.phase-body {
+    padding: 10px;
+
+    overflow-x: auto;
+
+    background: var(--color-phase-background);
+}
+
+.phase-block-table {
+    min-width: 620px;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Shared block grid
+ *
+ * Columns:
+ *   1. Block label
+ *   2-4. Cadence
+ *   5-7. Non-cadence / load
+ * -------------------------------------------------------------------------- */
+
+.phase-block-header,
+.block-summary {
+    display: grid;
+    min-width: 620px;
+    width: 100%;
+
+    grid-template-columns:
+    minmax(100px, 1.2fr)
+    minmax(72px, 1fr)
+    minmax(54px, 0.7fr)
+    minmax(54px, 0.7fr)
+    8px
+    minmax(72px, 1fr)
+    minmax(54px, 0.7fr)
+    minmax(54px, 0.7fr);
+
+    column-gap: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Block column header
+ *
+ * Grid layout:
+ *   1       Block label
+ *   2 - 4   Cadence: Ramp / Start / End
+ *   5       Spacer between variable groups
+ *   6 - 8   Resistance: Ramp / Start / End
+ * -------------------------------------------------------------------------- */
+
+.phase-block-header {
+    align-items: stretch;
+
+    margin-bottom: 8px;
+    padding: 0 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+
+/* Block label occupies the first column across both header rows. */
+
+.phase-block-header__label {
+    grid-column: 1;
+    grid-row: 1 / 3;
+
+    display: flex;
+    align-items: flex-end;
+
+    padding: 0 0 7px;
+}
+
+
+/* Variable group titles occupy row 1 and span three columns each. */
+
+.phase-block-header__group {
+    grid-row: 1;
+
+    padding: 4px 0 5px;
+
+    border-bottom: 1px solid var(--color-phase-border);
+
+    color: var(--color-text-muted);
+
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.phase-block-header__group--cadence {
+    grid-column: 2 / 5;
+}
+
+.phase-block-header__group--load {
+    grid-column: 6 / 9;
+}
+
+
+/* Ramp / Start / End labels occupy row 2. */
+
+.phase-block-header__sub {
+    grid-row: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 30px;
+    padding: 6px 0 7px;
+
+    background: rgb(255 255 255 / 58%);
+    border-top: 1px solid rgb(255 255 255 / 45%);
+    border-bottom: 1px solid var(--color-phase-border);
+
+    text-align: center;
+}
+
+
+/*
+ * Cadence subheaders auto-place into columns 2, 3, and 4.
+ * Resistance must be explicitly placed after the spacer column.
+ */
+
+.phase-block-header__sub--load-ramp {
+    grid-column: 6;
+}
+
+.phase-block-header__sub--load-ramp + .phase-block-header__sub {
+    grid-column: 7;
+}
+
+.phase-block-header__sub--load-ramp
++ .phase-block-header__sub
++ .phase-block-header__sub {
+    grid-column: 8;
+}
+
+
+/*
+ * Block values follow the same layout.
+ * Children 1-4 auto-place into Block + Cadence.
+ * Children 5-7 are placed after the spacer column.
+ */
+
+.block-summary > :nth-child(5) {
+    grid-column: 6;
+}
+
+.block-summary > :nth-child(6) {
+    grid-column: 7;
+}
+
+.block-summary > :nth-child(7) {
+    grid-column: 8;
+}
 
 /* --------------------------------------------------------------------------
  * Block list
@@ -105,19 +270,15 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-
-    padding: 10px;
 }
 
+
+/* --------------------------------------------------------------------------
+ * Collapsed block cards
+ * -------------------------------------------------------------------------- */
+
 .block-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-
-    min-height: 54px;
-    padding: 9px 12px;
-
+    width: 100%;
     border: 1px solid var(--color-block-border);
     border-radius: 6px;
 
@@ -137,72 +298,42 @@
     transform: translateY(-1px);
 }
 
-.block-primary {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.block-summary {
+    align-items: center;
 
-    min-width: 0;
+    min-height: 48px;
+    padding: 8px 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
 }
 
-.block-type {
-    color: var(--color-accent);
-
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+.block-summary > span:not(.block-name) {
+    text-align: center;
 }
 
 .block-name {
     overflow: hidden;
 
-    font-size: 0.86rem;
-    font-weight: 650;
+    color: var(--color-text);
+
+    font-size: 0.82rem;
+    font-weight: 700;
+
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.block-details {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
 
-    flex-shrink: 0;
-
-    color: var(--color-text-muted);
-
-    font-size: 0.74rem;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-}
+/* --------------------------------------------------------------------------
+ * Selection
+ * -------------------------------------------------------------------------- */
 
 .phase-card--selected,
 .block-card--selected {
     border-color: var(--color-accent);
     box-shadow: 0 0 0 2px rgb(41 121 255 / 16%);
-}
-
-/* --------------------------------------------------------------------------
- * Responsive protocol tree
- * -------------------------------------------------------------------------- */
-
-@media (max-width: 600px) {
-    .phase-header {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .block-card {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .block-details {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-    }
 }

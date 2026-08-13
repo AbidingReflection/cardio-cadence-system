@@ -55,17 +55,3 @@
     font-variant-numeric: tabular-nums;
     font-weight: 700;
 }
-
-@media (max-width: 900px) {
-    .totals-ribbon {
-        right: 12px;
-        bottom: 12px;
-        left: 12px;
-
-        transform: none;
-    }
-
-    .total {
-        min-width: 120px;
-    }
-}

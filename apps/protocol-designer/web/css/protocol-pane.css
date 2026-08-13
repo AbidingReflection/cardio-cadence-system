@@ -1,4 +1,4 @@
-.pane--left .pane__header {
+.protocol-pane .pane__header {
     display: flex;
     align-items: center;
 }
