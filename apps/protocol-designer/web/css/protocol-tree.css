@@ -136,7 +136,7 @@
 
 .phase-body {
     padding: 10px;
-
+    user-select: none;
     overflow-x: auto;
 
     background: var(--color-phase-background);
@@ -442,4 +442,261 @@
 .block-card--selected {
     border-color: var(--color-accent);
     box-shadow: 0 0 0 2px rgb(41 121 255 / 16%);
+}
+
+
+
+/* ============================================================
+ *  Expanded Block
+ *  ============================================================ */
+
+.block-card--expanded .block-row {
+    border-bottom: 1px solid var(--color-border);
+}
+
+
+/*
+ * Preserve the existing summary grid while hiding the
+ * cadence/load values during editing.
+ *
+ * Children 1-2 are:
+ *   1. Block label
+ *   2. Duration
+ *
+ * Children 3+ are cadence/load summary values.
+ */
+.block-card--expanded .block-summary > span:nth-child(n + 3) {
+    visibility: hidden;
+}
+
+
+/* ============================================================
+ *  Block Editor
+ *  ============================================================ */
+
+.block-editor {
+    padding: 16px;
+    font-size: 0.82rem;
+    display: flex;
+    flex-direction: column;
+/*     gap: 16px; */
+}
+
+
+/* ============================================================
+ *  Variable Editors
+ *  ============================================================ */
+
+.block-editor__variables {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+
+.variable-editor {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+}
+
+
+.variable-editor + .variable-editor {
+    padding-left: 24px;
+    border-left: 1px solid var(--color-border);
+}
+
+
+.variable-editor__legend {
+    margin-bottom: 12px;
+    padding: 0;
+
+    font-weight: 600;
+}
+
+
+/* ============================================================
+ *  Editor Fields
+ *  ============================================================ */
+
+.variable-editor__fields {
+    display: grid;
+    gap: 10px;
+}
+
+
+.block-editor__field {
+    display: grid;
+    grid-template-columns: max-content minmax(120px, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+
+.block-editor__field label {
+    white-space: nowrap;
+}
+
+
+.block-editor__field input,
+.block-editor__field select {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* ============================================================
+ *  Validation
+ *  ============================================================ */
+
+.block-editor__feedback:empty {
+    display: none;
+}
+
+/* ============================================================
+ *  Expanded Block
+ *  ============================================================ */
+
+.block-card--expanded .block-editor {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* ============================================================
+ *  Expanded Block Top Row
+ *  ============================================================ */
+
+.block-row--editing {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.block-name-editor {
+    display: grid;
+    grid-template-columns: 80px minmax(180px, 1fr);
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+}
+
+.block-name-editor__label {
+    white-space: nowrap;
+}
+
+.block-name-editor__input {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* ============================================================
+ *  Block Editor Body
+ *  ============================================================ */
+
+.block-editor__body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    padding: 16px;
+}
+
+
+/* ============================================================
+ *  Block Properties
+ *  ============================================================ */
+
+.block-editor__properties {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px);
+
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+
+/* ============================================================
+ *  Variable Editors
+ *  ============================================================ */
+
+.block-editor__variables {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.variable-editor {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+}
+
+.variable-editor + .variable-editor {
+    padding-left: 24px;
+    border-left: 1px solid var(--color-border);
+}
+
+.variable-editor__legend {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 0 0 8px;
+
+    border-bottom: 1px solid var(--color-border);
+
+    font-weight: 600;
+    text-align: center;
+}
+
+.variable-editor__fields {
+    display: grid;
+    gap: 10px;
+}
+
+
+/* ============================================================
+ *  Block Editor Fields
+ *  ============================================================ */
+
+.block-editor__field {
+    display: grid;
+    grid-template-columns: 80px minmax(120px, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.block-editor__field label {
+    white-space: nowrap;
+}
+
+.block-editor__field input,
+.block-editor__field select {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* ============================================================
+ *  Block Editor Feedback
+ *  ============================================================ */
+
+.block-editor__feedback:empty {
+    display: none;
+}
+
+
+/* ============================================================
+ *  Block Editor Actions
+ *  ============================================================ */
+
+.block-editor__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }

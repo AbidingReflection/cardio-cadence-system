@@ -154,6 +154,9 @@
 
                                     <div class="phase-blocks">
 
+                        <!-- ============================================================
+                            Block 1 - Collapsed
+                            ============================================================ -->
                                         <article class="block-card"
                                                 data-block-id="block-1">
 
@@ -182,34 +185,182 @@
                                             </div>
                                         </article>
 
-                                        <article class="block-card block-card--selected"
-                                                data-block-id="block-2">
+                        <!-- ============================================================
+                            Block 2 - Expanded
+                            ============================================================ -->
+                        <article class="block-card block-card--expanded"
+                                data-block-id="block-2">
 
-                                            <div class="block-row">
+                            <form class="block-editor"
+                                id="block-2-editor">
 
-                                                <div class="block-summary">
-                                                    <span class="block-name">Climb</span>
-                                                    <span>3:00</span>
+                                <div class="block-row block-row--editing">
 
-                                                    <span>Steady</span>
-                                                    <span>80</span>
-                                                    <span>—</span>
+                                    <div class="block-name-editor">
 
-                                                    <span>Smooth</span>
-                                                    <span>4</span>
-                                                    <span>8</span>
+                                        <label for="block-2-name"
+                                            class="block-name-editor__label">
+                                            Block Name
+                                        </label>
+
+                                        <input type="text"
+                                            id="block-2-name"
+                                            name="block-name"
+                                            class="block-name-editor__input"
+                                            value="Climb">
+
+                                    </div>
+
+                                    <button type="button"
+                                            class="block-toggle"
+                                            aria-expanded="true"
+                                            aria-label="Collapse Climb block">
+                                        <span aria-hidden="true">▲</span>
+                                    </button>
+
+                                </div>
+
+
+                                <div class="block-editor__body">
+
+                                    <div class="block-editor__properties">
+
+                                        <div class="block-editor__field">
+                                            <label for="block-2-duration">
+                                                Duration
+                                            </label>
+
+                                            <input type="text"
+                                                id="block-2-duration"
+                                                name="block-duration"
+                                                value="3:00"
+                                                inputmode="numeric">
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="block-editor__variables">
+
+                                        <fieldset class="variable-editor">
+
+                                            <legend class="variable-editor__legend">
+                                                <span class="variable-editor__legend-text">
+                                                    Cadence (RPM)
+                                                </span>
+                                            </legend>
+
+                                            <div class="variable-editor__fields">
+
+                                                <div class="block-editor__field">
+                                                    <label for="block-2-cadence-ramp">
+                                                        Ramp Type
+                                                    </label>
+
+                                                    <select id="block-2-cadence-ramp"
+                                                            name="cadence-ramp">
+                                                        <option selected>Steady</option>
+                                                        <option>Smooth</option>
+                                                        <option>Stepped</option>
+                                                    </select>
                                                 </div>
 
-                                                <button type="button"
-                                                        class="block-toggle"
-                                                        aria-expanded="false"
-                                                        aria-label="Expand Climb block">
-                                                    <span aria-hidden="true">▼</span>
-                                                </button>
+                                                <div class="block-editor__field">
+                                                    <label for="block-2-cadence-start">
+                                                        Start
+                                                    </label>
+
+                                                    <input type="number"
+                                                        id="block-2-cadence-start"
+                                                        name="cadence-start"
+                                                        value="80">
+                                                </div>
 
                                             </div>
-                                        </article>
 
+                                        </fieldset>
+
+
+                                        <fieldset class="variable-editor">
+
+                                            <legend class="variable-editor__legend">
+                                                <span class="variable-editor__legend-text">
+                                                    Resistance
+                                                </span>
+                                            </legend>
+
+                                            <div class="variable-editor__fields">
+
+                                                <div class="block-editor__field">
+                                                    <label for="block-2-load-ramp">
+                                                        Ramp Type
+                                                    </label>
+
+                                                    <select id="block-2-load-ramp"
+                                                            name="load-ramp">
+                                                        <option>Steady</option>
+                                                        <option selected>Smooth</option>
+                                                        <option>Stepped</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="block-editor__field">
+                                                    <label for="block-2-load-start">
+                                                        Start
+                                                    </label>
+
+                                                    <input type="number"
+                                                        id="block-2-load-start"
+                                                        name="load-start"
+                                                        value="4">
+                                                </div>
+
+                                                <div class="block-editor__field">
+                                                    <label for="block-2-load-end">
+                                                        End
+                                                    </label>
+
+                                                    <input type="number"
+                                                        id="block-2-load-end"
+                                                        name="load-end"
+                                                        value="8">
+                                                </div>
+
+                                            </div>
+
+                                        </fieldset>
+
+                                    </div>
+
+
+                                    <div class="block-editor__feedback"
+                                        aria-live="polite">
+                                    </div>
+
+
+                                    <div class="block-editor__actions">
+
+                                        <button type="button"
+                                                class="block-editor__cancel">
+                                            Cancel
+                                        </button>
+
+                                        <button type="submit"
+                                                class="block-editor__apply">
+                                            Apply
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </form>
+
+                        </article>
+
+                        <!-- ============================================================
+                            Block 3 - Collapsed
+                            ============================================================ -->
                                         <article class="block-card"
                                                 data-block-id="block-3">
 
