@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "machineProfiles": [
+    {
+      "id": "true-treadmill-aquatic-center",
+      "name": "True Treadmill - Aquatic Center",
+      "activityTypeId": "treadmill",
+      "variables": {
+        "speed": {
+          "controlMode": "machine-set",
+          "min": 0.5,
+          "max": 10,
+          "increment": 0.1
+        },
+        "incline": {
+          "controlMode": "machine-set",
+          "min": 0,
+          "max": 10,
+          "increment": 0.5
+        }
+      },
+      "calibrationProfileIds": []
+    },
+    {
+      "id": "true-elliptical-aquatic-center",
+      "name": "True Elliptical - Aquatic Center",
+      "activityTypeId": "elliptical",
+      "variables": {
+        "cadence": {
+          "controlMode": "user-produced"
+        },
+        "resistance": {
+          "controlMode": "machine-set",
+          "min": 1,
+          "max": 20,
+          "increment": 1
+        }
+      },
+      "calibrationProfileIds": []
+    },
+    {
+      "id": "true-recumbent-bike-aquatic-center",
+      "name": "True Recumbent Stationary Bike - Aquatic Center",
+      "activityTypeId": "stationary-bike",
+      "variables": {
+        "cadence": {
+          "controlMode": "user-produced"
+        },
+        "resistance": {
+          "controlMode": "machine-set",
+          "min": 1,
+          "max": 20,
+          "increment": 1
+        }
+      },
+      "calibrationProfileIds": []
+    },
+    {
+      "id": "freemotion-recumbent-bike-aquatic-center",
+      "name": "Freemotion Recumbent Stationary Bike - Aquatic Center",
+      "activityTypeId": "stationary-bike",
+      "variables": {
+        "cadence": {
+          "controlMode": "user-produced"
+        },
+        "resistance": {
+          "controlMode": "machine-set",
+          "min": 1,
+          "max": 20,
+          "increment": 1
+        }
+      },
+      "calibrationProfileIds": []
+    }
+  ]
+}
