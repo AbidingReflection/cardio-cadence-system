@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "activityTypes": [
+    {
+      "id": "stationary-bike",
+      "name": "Stationary Bike",
+      "variables": [
+        {
+          "id": "cadence",
+          "name": "Cadence",
+          "unit": "RPM",
+          "role": "cadence"
+        },
+        {
+          "id": "resistance",
+          "name": "Resistance",
+          "unit": null,
+          "role": "load"
+        }
+      ]
+    },
+    {
+      "id": "elliptical",
+      "name": "Elliptical",
+      "variables": [
+        {
+          "id": "cadence",
+          "name": "Cadence",
+          "unit": "RPM",
+          "role": "cadence"
+        },
+        {
+          "id": "resistance",
+          "name": "Resistance",
+          "unit": null,
+          "role": "load"
+        }
+      ]
+    },
+    {
+      "id": "treadmill",
+      "name": "Treadmill",
+      "variables": [
+        {
+          "id": "speed",
+          "name": "Speed",
+          "unit": "MPH",
+          "role": "pace"
+        },
+        {
+          "id": "incline",
+          "name": "Incline",
+          "unit": "%",
+          "role": "load"
+        }
+      ]
+    },
+    {
+      "id": "rowing",
+      "name": "Rowing Ergometer",
+      "variables": [
+        {
+          "id": "strokeRate",
+          "name": "Stroke Rate",
+          "unit": "SPM",
+          "role": "cadence"
+        },
+        {
+          "id": "dragFactor",
+          "name": "Drag Factor",
+          "unit": null,
+          "role": "load"
+        }
+      ]
+    }
+  ]
+}
