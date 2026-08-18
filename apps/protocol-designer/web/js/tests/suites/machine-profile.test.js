@@ -3,7 +3,7 @@ import {
     assertEqual,
     assertDeepEqual,
     assertThrows,
-} from "../framework/test-framework.js";
+} from "/packages/js-testing/test-framework.js";
 
 import { ActivityType } from "../../models/activity-type.js";
 import { MachineProfile } from "../../models/machine-profile.js";
