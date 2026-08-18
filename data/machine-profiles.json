@@ -18,8 +18,7 @@
           "max": 10,
           "increment": 0.5
         }
-      },
-      "calibrationProfileIds": []
+      }
     },
     {
       "id": "true-elliptical-aquatic-center",
@@ -35,8 +34,7 @@
           "max": 20,
           "increment": 1
         }
-      },
-      "calibrationProfileIds": []
+      }
     },
     {
       "id": "true-recumbent-bike-aquatic-center",
@@ -52,8 +50,7 @@
           "max": 20,
           "increment": 1
         }
-      },
-      "calibrationProfileIds": []
+      }
     },
     {
       "id": "freemotion-recumbent-bike-aquatic-center",
@@ -69,8 +66,7 @@
           "max": 20,
           "increment": 1
         }
-      },
-      "calibrationProfileIds": []
+      }
     }
   ]
 }

@@ -1,0 +1,87 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #f7f7f7;
+    color: #222;
+}
+
+.test-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+h1 {
+    margin: 0 0 24px;
+}
+
+.test-suite {
+    margin-top: 32px;
+}
+
+.test-suite h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+th,
+td {
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #ededed;
+    font-weight: 600;
+}
+
+.test-summary {
+    width: auto;
+    min-width: 420px;
+}
+
+.test-summary th,
+.test-summary td {
+    text-align: center;
+}
+
+.test-summary td {
+    font-weight: 600;
+}
+
+.test-result__status {
+    width: 110px;
+    text-align: center;
+}
+
+.test-result__message {
+    width: 45%;
+}
+
+.test-status {
+    text-align: center;
+    font-weight: 700;
+}
+
+.test-status--passed {
+    background: #dff3e4;
+    color: #165c2c;
+}
+
+.test-status--failed {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.test-status--pending {
+    background: #eeeeee;
+    color: #555;
+}
