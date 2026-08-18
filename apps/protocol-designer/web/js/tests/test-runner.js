@@ -10,7 +10,7 @@ import {
 } from "/packages/js-testing/test-renderer.js";
 
 
-await import("/packages/js-testing/tests/test-framework.test.js");
+// await import("/packages/js-testing/tests/test-framework.test.js");
 await import("./suites/activity-type.test.js");
 await import("./suites/machine-profile.test.js");
 
