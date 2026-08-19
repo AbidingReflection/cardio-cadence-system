@@ -97,6 +97,48 @@ test("test-framework", "assertThrows rejects a non-matching error", () => {
     );
 });
 
-test("test-framework", "intentional failure demo", () => {
-    assert(false, "Intentional failure to verify FAILED rendering.");
+// test("test-framework", "intentional failure demo", () => {
+//     assert(false, "Intentional failure to verify FAILED rendering.");
+// });
+
+
+test("test-framework", "deep equality ignores object key order", () => {
+    assertDeepEqual(
+        {
+            id: 1,
+            name: "Example",
+        },
+        {
+            name: "Example",
+            id: 1,
+        }
+    );
+});
+
+
+test("test-framework", "deep equality compares nested objects", () => {
+    assertDeepEqual(
+        {
+            outer: {
+                a: 1,
+                b: 2,
+            },
+        },
+        {
+            outer: {
+                b: 2,
+                a: 1,
+            },
+        }
+    );
+});
+
+
+test("test-framework", "deep equality preserves array order", () => {
+    assertThrows(() => {
+        assertDeepEqual(
+            [1, 2],
+            [2, 1]
+        );
+    });
 });
