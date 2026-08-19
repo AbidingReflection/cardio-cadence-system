@@ -9,7 +9,7 @@ import {
     renderSummary,
 } from "/packages/js-testing/test-renderer.js";
 
-
+await import("./suites/editor-state.test.js");
 await import("/packages/js-testing/tests/test-framework.test.js");
 await import("./suites/protocol-model.test.js");
 await import("/packages/protocol-core/tests/protocol-normalization.test.js");
