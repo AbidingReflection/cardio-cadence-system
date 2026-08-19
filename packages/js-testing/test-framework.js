@@ -1,3 +1,7 @@
+import {
+    deepEqual,
+} from "/packages/utils/deep-equal.js";
+
 const tests = [];
 
 
@@ -72,20 +76,32 @@ export function assertDeepEqual(actual, expected, message) {
 }
 
 
-/** Asserts that a function throws an error matching the expected message pattern. */
-export function assertThrows(callback, expectedPattern) {
+/** Asserts that a function throws an error matching the expected message. */
+export function assertThrows(callback, expectedMessage) {
     try {
         callback();
     } catch (error) {
+        if (expectedMessage === undefined) {
+            return;
+        }
+
         if (
-            expectedPattern === undefined ||
-            expectedPattern.test(error.message)
+            typeof expectedMessage === "string" &&
+            error.message.includes(expectedMessage)
+        ) {
+            return;
+        }
+
+        if (
+            expectedMessage instanceof RegExp &&
+            expectedMessage.test(error.message)
         ) {
             return;
         }
 
         throw new Error(
-            `Expected error matching ${expectedPattern}, received "${error.message}".`
+            `Expected error matching ${formatValue(expectedMessage)}, ` +
+            `received ${formatValue(error.message)}.`
         );
     }
 
@@ -93,51 +109,27 @@ export function assertThrows(callback, expectedPattern) {
 }
 
 
-/** Returns whether two JSON-like values are structurally equal. */
-function deepEqual(actual, expected) {
-    if (Object.is(actual, expected)) {
-        return true;
+/** Formats a value for assertion failure messages. */
+function formatValue(value) {
+    if (value === undefined) {
+        return "undefined";
+    }
+
+    if (Array.isArray(value)) {
+        return `[${value.map(formatValue).join(",")}]`;
     }
 
     if (
-        actual === null ||
-        expected === null ||
-        typeof actual !== "object" ||
-        typeof expected !== "object"
+        value !== null &&
+        typeof value === "object"
     ) {
-        return false;
-    }
-
-    if (Array.isArray(actual) || Array.isArray(expected)) {
-        if (
-            !Array.isArray(actual) ||
-            !Array.isArray(expected) ||
-            actual.length !== expected.length
-        ) {
-            return false;
-        }
-
-        return actual.every(
-            (value, index) => deepEqual(value, expected[index])
+        const entries = Object.entries(value).map(
+            ([key, entryValue]) =>
+            `${JSON.stringify(key)}:${formatValue(entryValue)}`
         );
+
+        return `{${entries.join(",")}}`;
     }
 
-    const actualKeys = Object.keys(actual);
-    const expectedKeys = Object.keys(expected);
-
-    if (actualKeys.length !== expectedKeys.length) {
-        return false;
-    }
-
-    return actualKeys.every(
-        key =>
-        Object.hasOwn(expected, key) &&
-        deepEqual(actual[key], expected[key])
-    );
-}
-
-
-/** Formats a value for assertion failure messages. */
-function formatValue(value) {
     return JSON.stringify(value);
 }

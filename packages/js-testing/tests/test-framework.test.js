@@ -142,3 +142,87 @@ test("test-framework", "deep equality preserves array order", () => {
         );
     });
 });
+
+
+test("test-framework", "deep equality failure messages preserve undefined fields", () => {
+    assertThrows(
+        () => {
+            assertDeepEqual(
+                {
+                    value: undefined,
+                    extra: undefined,
+                },
+                {
+                    value: undefined,
+                }
+            );
+        },
+        '"extra":undefined'
+    );
+});
+
+test("test-framework", "assertThrows accepts any thrown error without a matcher", () => {
+    assertThrows(() => {
+        throw new Error("Anything");
+    });
+});
+
+
+test("test-framework", "assertThrows accepts a matching string", () => {
+    assertThrows(
+        () => {
+            throw new Error("Duration must be greater than zero.");
+        },
+        "greater than zero"
+    );
+});
+
+
+test("test-framework", "assertThrows accepts a matching regular expression", () => {
+    assertThrows(
+        () => {
+            throw new Error("Duration must be greater than zero.");
+        },
+        /greater than zero/
+    );
+});
+
+
+test("test-framework", "assertThrows rejects a non-matching string", () => {
+    assertThrows(
+        () => {
+            assertThrows(
+                () => {
+                    throw new Error("Actual message");
+                },
+                "Expected message"
+            );
+        },
+        "Expected error matching"
+    );
+});
+
+
+test("test-framework", "assertThrows rejects a non-matching regular expression", () => {
+    assertThrows(
+        () => {
+            assertThrows(
+                () => {
+                    throw new Error("Actual message");
+                },
+                /Expected message/
+            );
+        },
+        "Expected error matching"
+    );
+});
+
+
+test("test-framework", "assertThrows rejects functions that do not throw", () => {
+    assertThrows(
+        () => {
+            assertThrows(() => {});
+        },
+        "Expected function to throw."
+    );
+});
