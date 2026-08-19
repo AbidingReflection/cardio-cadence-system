@@ -11,6 +11,8 @@ import {
 
 
 // await import("/packages/js-testing/tests/test-framework.test.js");
+await import("/packages/protocol-core/tests/protocol-normalization.test.js");
+await import("/packages/protocol-core/tests/protocol-validation.test.js");
 await import("./suites/activity-type.test.js");
 await import("./suites/machine-profile.test.js");
 await import("./suites/app-loading.test.js");
