@@ -10,7 +10,8 @@ import {
 } from "/packages/js-testing/test-renderer.js";
 
 
-// await import("/packages/js-testing/tests/test-framework.test.js");
+await import("/packages/js-testing/tests/test-framework.test.js");
+await import("./suites/protocol-model.test.js");
 await import("/packages/protocol-core/tests/protocol-normalization.test.js");
 await import("/packages/protocol-core/tests/protocol-validation.test.js");
 await import("./suites/activity-type.test.js");
