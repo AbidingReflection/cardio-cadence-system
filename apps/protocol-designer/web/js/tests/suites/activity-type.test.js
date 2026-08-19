@@ -215,3 +215,17 @@ test("activity-type", "accepts all supported variable roles", () => {
         );
     }
 });
+
+
+test("activity-type", "allows a null variable unit", () => {
+    const data = structuredClone(VALID_ACTIVITY_TYPE);
+
+    data.variables[0].unit = null;
+
+    const activityType = new ActivityType(data);
+
+    assertEqual(
+        activityType.getVariable("cadence").unit,
+        null
+    );
+});

@@ -88,7 +88,7 @@ function validateVariable(variable) {
 
     requireNonEmptyString(variable.id, "ActivityType variable id");
     requireNonEmptyString(variable.name, "ActivityType variable name");
-    requireNonEmptyString(variable.unit, "ActivityType variable unit");
+    validateOptionalUnit(variable.unit);
     requireNonEmptyString(variable.role, "ActivityType variable role");
 
     if (!VALID_VARIABLE_ROLES.has(variable.role)) {
@@ -96,6 +96,16 @@ function validateVariable(variable) {
             `Unknown ActivityType variable role: "${variable.role}".`
         );
     }
+}
+
+
+/** Validates an optional activity variable unit. */
+function validateOptionalUnit(unit) {
+    if (unit === null) {
+        return;
+    }
+
+    requireNonEmptyString(unit, "ActivityType variable unit");
 }
 
 
