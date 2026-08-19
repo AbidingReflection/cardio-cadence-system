@@ -11,6 +11,7 @@ export class ProtocolModel {
     #protocol;
     #activityType;
     #machineProfile;
+    #listeners = new Set();
 
 
     /** Constructs a ProtocolModel from committed protocol data. */
@@ -55,6 +56,7 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
 
         return phase.id;
     }
@@ -84,6 +86,7 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
     }
 
     /** Updates editable fields on a phase by ID. */
@@ -113,6 +116,7 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
     }
 
     /** Adds a block to a phase and returns its generated ID. */
@@ -145,6 +149,7 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
 
         return block.id;
     }
@@ -184,6 +189,7 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
     }
 
     /** Updates editable fields on a block by ID. */
@@ -229,5 +235,24 @@ export class ProtocolModel {
         );
 
         this.#protocol = structuredClone(normalizedProtocol);
+        this.#emit();
+    }
+
+    /** Subscribes to protocol changes and returns an unsubscribe function. */
+    subscribe(listener) {
+        this.#listeners.add(listener);
+
+        return () => {
+            this.#listeners.delete(listener);
+        };
+    }
+
+    /** Notifies all subscribers with the current protocol snapshot. */
+    #emit() {
+        const snapshot = this.getSnapshot();
+
+        for (const listener of this.#listeners) {
+            listener(snapshot);
+        }
     }
 }
