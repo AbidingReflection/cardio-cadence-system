@@ -27,6 +27,12 @@ APP_ALIASES = {
     "/analyzer": "/workout-analyzer",
 }
 
+TEST_PAGE_RELATIVE_PATH = Path(
+    "js-testing",
+    "page",
+    "tests.html",
+)
+
 
 def find_project_root() -> Path:
     """Resolve the repository root based on this script's location."""
@@ -64,6 +70,11 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.project_root = project_root.resolve()
         self.data_root = (project_root / "data").resolve()
         self.packages_root = (project_root / "packages").resolve()
+
+        self.test_page_path = (
+            self.packages_root
+            / TEST_PAGE_RELATIVE_PATH
+        ).resolve()
 
         self.app_roots = {
             route: (
@@ -152,6 +163,12 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
             )
 
         for route, app_root in self.app_roots.items():
+            if url_path == f"{route}/tests":
+                return (
+                    self.test_page_path.parent,
+                    self.test_page_path.name,
+                )
+
             if url_path == route:
                 return app_root, ""
 
@@ -175,6 +192,10 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         for route in APP_ROUTES:
             if url_path == route:
                 target = f"{route}/"
+                return self._with_query(target, parsed_url.query)
+
+            if url_path == f"{route}/tests/":
+                target = f"{route}/tests"
                 return self._with_query(target, parsed_url.query)
 
         for alias, canonical_route in APP_ALIASES.items():
@@ -211,25 +232,40 @@ def main() -> int:
     data_root = project_root / "data"
     packages_root = project_root / "packages"
 
-    protocol_designer_root = (
-        project_root
-        / "apps"
-        / "protocol-designer"
-        / "web"
+    test_page_path = (
+        packages_root
+        / TEST_PAGE_RELATIVE_PATH
     )
 
-    if not protocol_designer_root.is_dir():
-        print(
-            f"Error: protocol designer web directory not found:\n"
-            f"{protocol_designer_root}",
-            file=sys.stderr,
+    for route, app_name in APP_ROUTES.items():
+        app_root = (
+            project_root
+            / "apps"
+            / app_name
+            / "web"
         )
-        return 1
 
-    if not (protocol_designer_root / "index.html").is_file():
+        if not app_root.is_dir():
+            print(
+                f"Warning: application web directory not found for {route}:\n"
+                f"{app_root}",
+                file=sys.stderr,
+            )
+            continue
+
+        entry_point = app_root / "index.html"
+
+        if not entry_point.is_file():
+            print(
+                f"Warning: application entry point not found for {route}:\n"
+                f"{entry_point}",
+                file=sys.stderr,
+            )
+
+    if not test_page_path.is_file():
         print(
-            f"Error: protocol designer entry point not found:\n"
-            f"{protocol_designer_root / 'index.html'}",
+            f"Error: shared test page not found:\n"
+            f"{test_page_path}",
             file=sys.stderr,
         )
         return 1
@@ -262,6 +298,7 @@ def main() -> int:
 
             print(f"Serving Cardio Cadence System from: {project_root}")
             print(f"Protocol Designer: {base_url}/protocol-designer/")
+            print(f"Designer Tests:    {base_url}/protocol-designer/tests")
             print(f"Designer alias:    {base_url}/designer/")
             print(f"Shared data:       {base_url}/data/")
             print(f"Shared packages:   {base_url}/packages/")
@@ -283,7 +320,6 @@ def main() -> int:
         return 1
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
