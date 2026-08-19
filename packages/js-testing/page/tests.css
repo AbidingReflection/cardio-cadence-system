@@ -85,3 +85,31 @@ th {
     background: #eeeeee;
     color: #555;
 }
+
+.test-suite-summary {
+    margin-top: 12px;
+}
+
+.test-suite-summary th:not(:first-child),
+.test-suite-summary td:not(:first-child) {
+    width: 110px;
+    text-align: center;
+}
+
+.test-suite-summary td:not(:first-child) {
+    font-weight: 600;
+}
+
+.test-suite-summary a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.test-suite-summary a:hover {
+    text-decoration: underline;
+}
+
+.test-suite {
+    margin-top: 32px;
+    scroll-margin-top: 24px;
+}

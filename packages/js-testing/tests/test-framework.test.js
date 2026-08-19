@@ -4,7 +4,7 @@ import {
     assertEqual,
     assertDeepEqual,
     assertThrows,
-} from "../test-framework.js";
+} from "../framework/test-framework.js";
 
 
 test("test-framework", "assert accepts a truthy condition", () => {

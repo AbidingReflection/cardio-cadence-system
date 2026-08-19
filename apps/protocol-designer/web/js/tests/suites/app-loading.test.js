@@ -2,7 +2,7 @@ import {
     test,
     assert,
     assertEqual,
-} from "/packages/js-testing/test-framework.js";
+} from "/packages/js-testing/framework/test-framework.js";
 
 import { loadDomainData } from "../../domain-data.js";
 

@@ -1,7 +1,7 @@
 import {
     test,
     assertDeepEqual,
-} from "/packages/js-testing/test-framework.js";
+} from "/packages/js-testing/framework/test-framework.js";
 
 import {
     normalizeProtocol,

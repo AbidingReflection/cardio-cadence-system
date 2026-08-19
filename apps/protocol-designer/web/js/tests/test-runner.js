@@ -1,13 +1,14 @@
 import {
     getTests,
     runTests,
-} from "/packages/js-testing/test-framework.js";
+} from "/packages/js-testing/framework/test-framework.js";
 
 import {
     renderTestSuites,
     renderTestResults,
     renderSummary,
-} from "/packages/js-testing/test-renderer.js";
+    renderSuiteSummary,
+} from "/packages/js-testing/page/test-renderer.js";
 
 await import("./suites/editor-state.test.js");
 await import("/packages/js-testing/tests/test-framework.test.js");
@@ -25,3 +26,4 @@ const results = await runTests();
 
 renderTestResults(results);
 renderSummary(results);
+renderSuiteSummary(results);

@@ -4,7 +4,7 @@ import {
     assertEqual,
     assertDeepEqual,
     assertThrows,
-} from "/packages/js-testing/test-framework.js";
+} from "/packages/js-testing/framework/test-framework.js";
 
 import {
     ProtocolModel,

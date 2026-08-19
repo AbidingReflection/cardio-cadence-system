@@ -62,10 +62,32 @@ export function renderSummary(results) {
 }
 
 
+/** Renders a summary row for each completed test suite. */
+export function renderSuiteSummary(results) {
+    const tableBody = getRequiredElement(
+        "#test-suite-summary"
+    );
+
+    tableBody.replaceChildren();
+
+    const suites = groupResultsBySuite(results);
+
+    for (const [suite, suiteResults] of suites) {
+        tableBody.append(
+            createSuiteSummaryItem(
+                suite,
+                suiteResults
+            )
+        );
+    }
+}
+
+
 /** Creates the result table for a single test suite. */
 function createTestSuite(suite) {
     const section = document.createElement("section");
     section.className = "test-suite";
+    section.id = getSuiteSectionId(suite);
 
     const heading = document.createElement("h2");
     heading.textContent = `${suite}.test.js`;
@@ -89,6 +111,81 @@ function createTestSuite(suite) {
     section.append(heading, table);
 
     return section;
+}
+
+
+/** Creates a summary row linking to a test suite section. */
+function createSuiteSummaryItem(suite, results) {
+    const passed = results.filter(
+        result => result.status === "PASSED"
+    ).length;
+
+    const failed = results.filter(
+        result => result.status === "FAILED"
+    ).length;
+
+    const total = results.length;
+    const status = failed === 0
+    ? "PASSED"
+    : "FAILED";
+
+    const row = document.createElement("tr");
+
+    const suiteCell = document.createElement("td");
+
+    const suiteLink = document.createElement("a");
+    suiteLink.href = `#${getSuiteSectionId(suite)}`;
+    suiteLink.textContent = `${suite}.test.js`;
+
+    suiteCell.append(suiteLink);
+
+    const statusCell = document.createElement("td");
+    statusCell.className = [
+        "test-status",
+        getStatusClass(status),
+    ].join(" ");
+    statusCell.textContent = status;
+
+    const totalCell = document.createElement("td");
+    totalCell.textContent = total;
+
+    const passedCell = document.createElement("td");
+    passedCell.textContent = passed;
+
+    const failedCell = document.createElement("td");
+    failedCell.textContent = failed;
+
+    row.append(
+        suiteCell,
+        statusCell,
+        totalCell,
+        passedCell,
+        failedCell
+    );
+
+    return row;
+}
+
+
+/** Groups completed test results by suite. */
+function groupResultsBySuite(results) {
+    const suites = new Map();
+
+    for (const result of results) {
+        if (!suites.has(result.suite)) {
+            suites.set(result.suite, []);
+        }
+
+        suites.get(result.suite).push(result);
+    }
+
+    return suites;
+}
+
+
+/** Returns the DOM ID used for a test suite section. */
+function getSuiteSectionId(suite) {
+    return `test-suite-${suite}`;
 }
 
 
