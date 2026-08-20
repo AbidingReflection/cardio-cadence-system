@@ -6,10 +6,7 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import {
-    ProtocolModel,
-} from "../../models/protocol-model.js";
-
+import { ProtocolModel } from "../../models/protocol-model.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",
@@ -29,7 +26,6 @@ const ACTIVITY_TYPE = {
     ],
 };
 
-
 const MACHINE_VARIABLES = {
     speed: {
         controlMode: "machine-set",
@@ -45,7 +41,6 @@ const MACHINE_VARIABLES = {
     },
 };
 
-
 const MACHINE_PROFILE = {
     id: "test-treadmill",
     activityTypeId: "treadmill",
@@ -54,7 +49,6 @@ const MACHINE_PROFILE = {
         return MACHINE_VARIABLES[variableId];
     },
 };
-
 
 /** Creates a valid protocol for use as a test fixture. */
 function createProtocol() {
@@ -90,29 +84,16 @@ function createProtocol() {
 
 /** Creates a ProtocolModel using the standard test fixture. */
 function createProtocolModel() {
-    return new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    return new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 }
-
 
 test("protocol-model", "constructs from valid protocol data", () => {
     const protocol = createProtocol();
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    protocol
-    );
+    assertDeepEqual(model.getSnapshot(), protocol);
 });
-
 
 test("protocol-model", "stores normalized protocol data", () => {
     const protocol = createProtocol();
@@ -124,68 +105,38 @@ test("protocol-model", "stores normalized protocol data", () => {
         stepIntervalSeconds: 60,
     };
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    assertDeepEqual(
-        model.getSnapshot()
-        .phases[0]
-        .blocks[0]
-        .variables.incline,
-        {
-            type: "steady",
-            start: 0,
-        }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables.incline, {
+        type: "steady",
+        start: 0,
+    });
 });
-
 
 test("protocol-model", "rejects invalid protocol data", () => {
     const protocol = createProtocol();
 
-    delete protocol.phases[0]
-    .blocks[0]
-    .variables.incline;
+    delete protocol.phases[0].blocks[0].variables.incline;
 
     assertThrows(() => {
-        new ProtocolModel(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-model", "isolates state from constructor input", () => {
     const protocol = createProtocol();
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     protocol.phases[0].name = "Changed";
     protocol.phases[0].blocks[0].durationSeconds = 999;
     protocol.phases[0].blocks[0].variables.speed.start = 9;
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    createProtocol()
-    );
+    assertDeepEqual(model.getSnapshot(), createProtocol());
 });
 
-
 test("protocol-model", "returns independent snapshots", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const snapshot = model.getSnapshot();
 
@@ -193,145 +144,89 @@ test("protocol-model", "returns independent snapshots", () => {
     snapshot.phases[0].blocks[0].durationSeconds = 999;
     snapshot.phases[0].blocks[0].variables.speed.start = 9;
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    createProtocol()
-    );
+    assertDeepEqual(model.getSnapshot(), createProtocol());
 });
 
-
 test("protocol-model", "returns independent snapshots on every call", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const firstSnapshot = model.getSnapshot();
     const secondSnapshot = model.getSnapshot();
 
     firstSnapshot.phases[0].name = "Changed";
 
-    assertDeepEqual(
-        secondSnapshot,
-        createProtocol()
-    );
+    assertDeepEqual(secondSnapshot, createProtocol());
 });
-
 
 test("protocol-model", "supports protocols without a MachineProfile", () => {
     const protocol = createProtocol();
 
     delete protocol.machineProfileId;
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE);
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    protocol
-    );
+    assertDeepEqual(model.getSnapshot(), protocol);
 });
 
 test("protocol-model", "adds a new empty phase", () => {
     const protocol = createProtocol();
     protocol.phases = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const phaseId = model.addPhase();
 
     const snapshot = model.getSnapshot();
 
-    assertEqual(
-        snapshot.phases.length,
-        1
-    );
+    assertEqual(snapshot.phases.length, 1);
 
-    assertDeepEqual(
-        snapshot.phases[0],
-        {
-            id: phaseId,
-            name: "New Phase",
-            blocks: [],
-        }
-    );
+    assertDeepEqual(snapshot.phases[0], {
+        id: phaseId,
+        name: "New Phase",
+        blocks: [],
+    });
 });
-
 
 test("protocol-model", "adds a phase with a supplied name", () => {
     const protocol = createProtocol();
     protocol.phases = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const phaseId = model.addPhase("Warmup");
 
-    assertDeepEqual(
-        model.getSnapshot().phases[0],
-                    {
-                        id: phaseId,
-                        name: "Warmup",
-                        blocks: [],
-                    }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0], {
+        id: phaseId,
+        name: "Warmup",
+        blocks: [],
+    });
 });
-
 
 test("protocol-model", "generates unique phase IDs", () => {
     const protocol = createProtocol();
     protocol.phases = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const firstId = model.addPhase();
     const secondId = model.addPhase();
 
-    assert(
-        firstId !== secondId
-    );
+    assert(firstId !== secondId);
 });
-
 
 test("protocol-model", "returns the generated phase ID", () => {
     const protocol = createProtocol();
     protocol.phases = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const phaseId = model.addPhase();
 
-    assertEqual(
-        model.getSnapshot().phases[0].id,
-                phaseId
-    );
+    assertEqual(model.getSnapshot().phases[0].id, phaseId);
 });
 
-
 test("protocol-model", "does not commit an invalid phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
@@ -339,12 +234,8 @@ test("protocol-model", "does not commit an invalid phase", () => {
         model.addPhase("");
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
-
 
 test("protocol-model", "removes a phase by ID", () => {
     const protocol = createProtocol();
@@ -355,62 +246,37 @@ test("protocol-model", "removes a phase by ID", () => {
         blocks: [],
     });
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.removePhase("phase-1");
 
-    assertDeepEqual(
-        model.getSnapshot().phases,
-                    [
-                        {
-                            id: "phase-2",
-                            name: "Second Phase",
-                            blocks: [],
-                        },
-                    ]
-    );
+    assertDeepEqual(model.getSnapshot().phases, [
+        {
+            id: "phase-2",
+            name: "Second Phase",
+            blocks: [],
+        },
+    ]);
 });
-
 
 test("protocol-model", "allows removing the last phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.removePhase("phase-1");
 
-    assertDeepEqual(
-        model.getSnapshot().phases,
-                    []
-    );
+    assertDeepEqual(model.getSnapshot().phases, []);
 });
 
-
 test("protocol-model", "rejects removing an unknown phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
         model.removePhase("missing-phase");
     });
 });
 
-
 test("protocol-model", "does not change state after failed phase removal", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
@@ -418,32 +284,18 @@ test("protocol-model", "does not change state after failed phase removal", () =>
         model.removePhase("missing-phase");
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
 
 test("protocol-model", "updates a phase name by ID", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updatePhase(
-        "phase-1",
-        {
-            name: "Updated Warmup",
-        }
-    );
+    model.updatePhase("phase-1", {
+        name: "Updated Warmup",
+    });
 
-    assertEqual(
-        model.getSnapshot().phases[0].name,
-                "Updated Warmup"
-    );
+    assertEqual(model.getSnapshot().phases[0].name, "Updated Warmup");
 });
-
 
 test("protocol-model", "updates only the targeted phase", () => {
     const protocol = createProtocol();
@@ -454,142 +306,93 @@ test("protocol-model", "updates only the targeted phase", () => {
         blocks: [],
     });
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updatePhase(
-        "phase-2",
+    model.updatePhase("phase-2", {
+        name: "Updated Second Phase",
+    });
+
+    assertDeepEqual(model.getSnapshot().phases, [
+        protocol.phases[0],
         {
+            id: "phase-2",
             name: "Updated Second Phase",
-        }
-    );
-
-    assertDeepEqual(
-        model.getSnapshot().phases,
-                    [
-                        protocol.phases[0],
-                    {
-                        id: "phase-2",
-                        name: "Updated Second Phase",
-                        blocks: [],
-                    },
-                    ]
-    );
+            blocks: [],
+        },
+    ]);
 });
-
 
 test("protocol-model", "rejects updating an unknown phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
-        model.updatePhase(
-            "missing-phase",
-            {
-                name: "Updated",
-            }
-        );
+        model.updatePhase("missing-phase", {
+            name: "Updated",
+        });
     });
 });
-
 
 test("protocol-model", "rejects an invalid phase name", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
-        model.updatePhase(
-            "phase-1",
-            {
-                name: "",
-            }
-        );
+        model.updatePhase("phase-1", {
+            name: "",
+        });
     });
 });
 
-
 test("protocol-model", "does not change state after failed phase update", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
     assertThrows(() => {
-        model.updatePhase(
-            "phase-1",
-            {
-                name: "",
-            }
-        );
+        model.updatePhase("phase-1", {
+            name: "",
+        });
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
-
 
 test("protocol-model", "adds a block to a phase", () => {
     const protocol = createProtocol();
     protocol.phases[0].blocks = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    const blockId = model.addBlock(
-        "phase-1",
-        {
-            name: "New Block",
-            durationSeconds: 120,
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                },
-                incline: {
-                    type: "steady",
-                    start: 1,
-                },
+    const blockId = model.addBlock("phase-1", {
+        name: "New Block",
+        durationSeconds: 120,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
             },
-        }
-    );
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
 
-    assertDeepEqual(
-        model.getSnapshot().phases[0].blocks[0],
-                    {
-                        id: blockId,
-                        name: "New Block",
-                        durationSeconds: 120,
-                        variables: {
-                            speed: {
-                                type: "steady",
-                                start: 4,
-                            },
-                            incline: {
-                                type: "steady",
-                                start: 1,
-                            },
-                        },
-                    }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0], {
+        id: blockId,
+        name: "New Block",
+        durationSeconds: 120,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
+            },
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
 });
-
 
 test("protocol-model", "adds a block only to the targeted phase", () => {
     const protocol = createProtocol();
@@ -600,115 +403,103 @@ test("protocol-model", "adds a block only to the targeted phase", () => {
         blocks: [],
     });
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.addBlock(
-        "phase-2",
-        {
-            name: "Second Phase Block",
-            durationSeconds: 120,
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                },
-                incline: {
-                    type: "steady",
-                    start: 1,
-                },
+    model.addBlock("phase-2", {
+        name: "Second Phase Block",
+        durationSeconds: 120,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
             },
-        }
-    );
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
 
     const snapshot = model.getSnapshot();
 
-    assertEqual(
-        snapshot.phases[0].blocks.length,
-        1
-    );
+    assertEqual(snapshot.phases[0].blocks.length, 1);
 
-    assertEqual(
-        snapshot.phases[1].blocks.length,
-        1
-    );
+    assertEqual(snapshot.phases[1].blocks.length, 1);
 
-    assertEqual(
-        snapshot.phases[1].blocks[0].name,
-        "Second Phase Block"
-    );
+    assertEqual(snapshot.phases[1].blocks[0].name, "Second Phase Block");
 });
-
 
 test("protocol-model", "generates unique block IDs", () => {
     const protocol = createProtocol();
     protocol.phases[0].blocks = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    const firstId = model.addBlock(
-        "phase-1",
-        {
-            name: "First Block",
-            durationSeconds: 60,
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                },
-                incline: {
-                    type: "steady",
-                    start: 1,
-                },
+    const firstId = model.addBlock("phase-1", {
+        name: "First Block",
+        durationSeconds: 60,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
             },
-        }
-    );
-
-    const secondId = model.addBlock(
-        "phase-1",
-        {
-            name: "Second Block",
-            durationSeconds: 60,
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                },
-                incline: {
-                    type: "steady",
-                    start: 1,
-                },
+            incline: {
+                type: "steady",
+                start: 1,
             },
-        }
-    );
+        },
+    });
 
-    assert(
-        firstId !== secondId
-    );
+    const secondId = model.addBlock("phase-1", {
+        name: "Second Block",
+        durationSeconds: 60,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
+            },
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
+
+    assert(firstId !== secondId);
 });
-
 
 test("protocol-model", "ignores a supplied block ID", () => {
     const protocol = createProtocol();
     protocol.phases[0].blocks = [];
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    const blockId = model.addBlock(
-        "phase-1",
-        {
-            id: "caller-supplied-id",
+    const blockId = model.addBlock("phase-1", {
+        id: "caller-supplied-id",
+        name: "New Block",
+        durationSeconds: 60,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
+            },
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
+
+    assertEqual(model.getSnapshot().phases[0].blocks[0].id, blockId);
+
+    assert(blockId !== "caller-supplied-id");
+});
+
+test("protocol-model", "rejects adding a block to an unknown phase", () => {
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
+
+    assertThrows(() => {
+        model.addBlock("missing-phase", {
             name: "New Block",
             durationSeconds: 60,
             variables: {
@@ -721,125 +512,59 @@ test("protocol-model", "ignores a supplied block ID", () => {
                     start: 1,
                 },
             },
-        }
-    );
-
-    assertEqual(
-        model.getSnapshot().phases[0].blocks[0].id,
-                blockId
-    );
-
-    assert(
-        blockId !== "caller-supplied-id"
-    );
-});
-
-
-test("protocol-model", "rejects adding a block to an unknown phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
-
-    assertThrows(() => {
-        model.addBlock(
-            "missing-phase",
-            {
-                name: "New Block",
-                durationSeconds: 60,
-                variables: {
-                    speed: {
-                        type: "steady",
-                        start: 4,
-                    },
-                    incline: {
-                        type: "steady",
-                        start: 1,
-                    },
-                },
-            }
-        );
+        });
     });
 });
-
 
 test("protocol-model", "rejects adding an invalid block", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
-        model.addBlock(
-            "phase-1",
-            {
-                name: "Invalid Block",
-                durationSeconds: 0,
-                variables: {
-                    speed: {
-                        type: "steady",
-                        start: 4,
-                    },
-                    incline: {
-                        type: "steady",
-                        start: 1,
-                    },
+        model.addBlock("phase-1", {
+            name: "Invalid Block",
+            durationSeconds: 0,
+            variables: {
+                speed: {
+                    type: "steady",
+                    start: 4,
                 },
-            }
-        );
+                incline: {
+                    type: "steady",
+                    start: 1,
+                },
+            },
+        });
     });
 });
 
-
 test("protocol-model", "does not change state after failed block addition", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
     assertThrows(() => {
-        model.addBlock(
-            "phase-1",
-            {
-                name: "Invalid Block",
-                durationSeconds: 60,
-                variables: {
-                    speed: {
-                        type: "steady",
-                        start: 4,
-                    },
+        model.addBlock("phase-1", {
+            name: "Invalid Block",
+            durationSeconds: 60,
+            variables: {
+                speed: {
+                    type: "steady",
+                    start: 4,
                 },
-            }
-        );
+            },
+        });
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-        before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
 
-
 test("protocol-model", "removes a block by ID", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.removeBlock("block-1");
 
-    assertDeepEqual(
-        model.getSnapshot().phases[0].blocks,
-                    []
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks, []);
 });
-
 
 test("protocol-model", "removes a block from the correct phase", () => {
     const protocol = createProtocol();
@@ -866,63 +591,35 @@ test("protocol-model", "removes a block from the correct phase", () => {
         ],
     });
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.removeBlock("block-2");
 
     const snapshot = model.getSnapshot();
 
-    assertEqual(
-        snapshot.phases[0].blocks.length,
-        1
-    );
+    assertEqual(snapshot.phases[0].blocks.length, 1);
 
-    assertDeepEqual(
-        snapshot.phases[1].blocks,
-        []
-    );
+    assertDeepEqual(snapshot.phases[1].blocks, []);
 });
 
-
 test("protocol-model", "allows removing the last block from a phase", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.removeBlock("block-1");
 
-    assertEqual(
-        model.getSnapshot().phases[0].blocks.length,
-                0
-    );
+    assertEqual(model.getSnapshot().phases[0].blocks.length, 0);
 });
 
-
 test("protocol-model", "rejects removing an unknown block", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
         model.removeBlock("missing-block");
     });
 });
 
-
 test("protocol-model", "does not change state after failed block removal", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
@@ -930,61 +627,31 @@ test("protocol-model", "does not change state after failed block removal", () =>
         model.removeBlock("missing-block");
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
-
 
 test("protocol-model", "updates a block name by ID", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updateBlock(
-        "block-1",
-        {
-            name: "Updated Block",
-        }
-    );
+    model.updateBlock("block-1", {
+        name: "Updated Block",
+    });
 
-    assertEqual(
-        model.getSnapshot().phases[0].blocks[0].name,
-                "Updated Block"
-    );
+    assertEqual(model.getSnapshot().phases[0].blocks[0].name, "Updated Block");
 });
-
 
 test("protocol-model", "updates a block duration by ID", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updateBlock(
-        "block-1",
-        {
-            durationSeconds: 600,
-        }
-    );
+    model.updateBlock("block-1", {
+        durationSeconds: 600,
+    });
 
-    assertEqual(
-        model.getSnapshot().phases[0].blocks[0].durationSeconds,
-                600
-    );
+    assertEqual(model.getSnapshot().phases[0].blocks[0].durationSeconds, 600);
 });
 
-
 test("protocol-model", "replaces block variables", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const variables = {
         speed: {
@@ -998,63 +665,45 @@ test("protocol-model", "replaces block variables", () => {
         },
     };
 
-    model.updateBlock(
-        "block-1",
-        {
-            variables,
-        }
-    );
+    model.updateBlock("block-1", {
+        variables,
+    });
 
-    assertDeepEqual(
-        model.getSnapshot().phases[0].blocks[0].variables,
-                    variables
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables, variables);
 });
-
 
 test("protocol-model", "normalizes updated block variables", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updateBlock(
-        "block-1",
-        {
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                    end: 8,
-                    stepIntervalSeconds: 60,
-                },
-                incline: {
-                    type: "linear",
-                    start: 0,
-                    end: 3,
-                    stepIntervalSeconds: 30,
-                },
+    model.updateBlock("block-1", {
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
+                end: 8,
+                stepIntervalSeconds: 60,
             },
-        }
-    );
+            incline: {
+                type: "linear",
+                start: 0,
+                end: 3,
+                stepIntervalSeconds: 30,
+            },
+        },
+    });
 
-    assertDeepEqual(
-        model.getSnapshot().phases[0].blocks[0].variables,
-                    {
-                        speed: {
-                            type: "steady",
-                            start: 4,
-                        },
-                        incline: {
-                            type: "linear",
-                            start: 0,
-                            end: 3,
-                        },
-                    }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables, {
+        speed: {
+            type: "steady",
+            start: 4,
+        },
+        incline: {
+            type: "linear",
+            start: 0,
+            end: 3,
+        },
+    });
 });
-
 
 test("protocol-model", "updates only the targeted block", () => {
     const protocol = createProtocol();
@@ -1081,130 +730,78 @@ test("protocol-model", "updates only the targeted block", () => {
         ],
     });
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.updateBlock(
-        "block-2",
-        {
-            name: "Updated Second Block",
-        }
-    );
+    model.updateBlock("block-2", {
+        name: "Updated Second Block",
+    });
 
     const snapshot = model.getSnapshot();
 
-    assertEqual(
-        snapshot.phases[0].blocks[0].name,
-        "Warmup Block"
-    );
+    assertEqual(snapshot.phases[0].blocks[0].name, "Warmup Block");
 
-    assertEqual(
-        snapshot.phases[1].blocks[0].name,
-        "Updated Second Block"
-    );
+    assertEqual(snapshot.phases[1].blocks[0].name, "Updated Second Block");
 });
-
 
 test("protocol-model", "rejects updating an unknown block", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
-        model.updateBlock(
-            "missing-block",
-            {
-                name: "Updated",
-            }
-        );
+        model.updateBlock("missing-block", {
+            name: "Updated",
+        });
     });
 });
-
 
 test("protocol-model", "rejects invalid block updates", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertThrows(() => {
-        model.updateBlock(
-            "block-1",
-            {
-                durationSeconds: 0,
-            }
-        );
+        model.updateBlock("block-1", {
+            durationSeconds: 0,
+        });
     });
 });
 
-
 test("protocol-model", "does not change state after failed block update", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     const before = model.getSnapshot();
 
     assertThrows(() => {
-        model.updateBlock(
-            "block-1",
-            {
-                variables: {
-                    speed: {
-                        type: "steady",
-                        start: 4,
-                    },
+        model.updateBlock("block-1", {
+            variables: {
+                speed: {
+                    type: "steady",
+                    start: 4,
                 },
-            }
-        );
+            },
+        });
     });
 
-    assertDeepEqual(
-        model.getSnapshot(),
-                    before
-    );
+    assertDeepEqual(model.getSnapshot(), before);
 });
 
 test("protocol-model", "notifies subscribers after successful changes", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let receivedSnapshot;
 
-    model.subscribe(snapshot => {
+    model.subscribe((snapshot) => {
         receivedSnapshot = snapshot;
     });
 
     const phaseId = model.addPhase("Second Phase");
 
-    assertDeepEqual(
-        receivedSnapshot.phases.at(-1),
-                    {
-                        id: phaseId,
-                        name: "Second Phase",
-                        blocks: [],
-                    }
-    );
+    assertDeepEqual(receivedSnapshot.phases.at(-1), {
+        id: phaseId,
+        name: "Second Phase",
+        blocks: [],
+    });
 });
 
-
 test("protocol-model", "notifies subscribers once per successful mutation", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let notificationCount = 0;
 
@@ -1212,26 +809,15 @@ test("protocol-model", "notifies subscribers once per successful mutation", () =
         notificationCount += 1;
     });
 
-    model.updatePhase(
-        "phase-1",
-        {
-            name: "Updated Warmup",
-        }
-    );
+    model.updatePhase("phase-1", {
+        name: "Updated Warmup",
+    });
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
 
-
 test("protocol-model", "does not notify subscribers after failed changes", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let notificationCount = 0;
 
@@ -1240,27 +826,16 @@ test("protocol-model", "does not notify subscribers after failed changes", () =>
     });
 
     assertThrows(() => {
-        model.updatePhase(
-            "phase-1",
-            {
-                name: "",
-            }
-        );
+        model.updatePhase("phase-1", {
+            name: "",
+        });
     });
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
 
-
 test("protocol-model", "supports multiple subscribers", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let firstCount = 0;
     let secondCount = 0;
@@ -1279,13 +854,8 @@ test("protocol-model", "supports multiple subscribers", () => {
     assertEqual(secondCount, 1);
 });
 
-
 test("protocol-model", "unsubscribe stops future notifications", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let notificationCount = 0;
 
@@ -1293,59 +863,35 @@ test("protocol-model", "unsubscribe stops future notifications", () => {
         notificationCount += 1;
     });
 
-    model.updatePhase(
-        "phase-1",
-        {
-            name: "First Update",
-        }
-    );
+    model.updatePhase("phase-1", {
+        name: "First Update",
+    });
 
     unsubscribe();
 
-    model.updatePhase(
-        "phase-1",
-        {
-            name: "Second Update",
-        }
-    );
+    model.updatePhase("phase-1", {
+        name: "Second Update",
+    });
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
 
-
 test("protocol-model", "subscriber snapshots are defensive copies", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    model.subscribe(snapshot => {
+    model.subscribe((snapshot) => {
         snapshot.phases[0].name = "Subscriber Mutation";
     });
 
-    model.updatePhase(
-        "phase-1",
-        {
-            name: "Committed Name",
-        }
-    );
+    model.updatePhase("phase-1", {
+        name: "Committed Name",
+    });
 
-    assertEqual(
-        model.getSnapshot().phases[0].name,
-                "Committed Name"
-    );
+    assertEqual(model.getSnapshot().phases[0].name, "Committed Name");
 });
 
 test("protocol-model", "emits once for each successful mutation method", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     let notificationCount = 0;
 
@@ -1356,39 +902,30 @@ test("protocol-model", "emits once for each successful mutation method", () => {
     const phaseId = model.addPhase("Second Phase");
     assertEqual(notificationCount, 1);
 
-    model.updatePhase(
-        phaseId,
-        {
-            name: "Updated Second Phase",
-        }
-    );
+    model.updatePhase(phaseId, {
+        name: "Updated Second Phase",
+    });
     assertEqual(notificationCount, 2);
 
-    const blockId = model.addBlock(
-        phaseId,
-        {
-            name: "Second Block",
-            durationSeconds: 60,
-            variables: {
-                speed: {
-                    type: "steady",
-                    start: 4,
-                },
-                incline: {
-                    type: "steady",
-                    start: 1,
-                },
+    const blockId = model.addBlock(phaseId, {
+        name: "Second Block",
+        durationSeconds: 60,
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
             },
-        }
-    );
+            incline: {
+                type: "steady",
+                start: 1,
+            },
+        },
+    });
     assertEqual(notificationCount, 3);
 
-    model.updateBlock(
-        blockId,
-        {
-            name: "Updated Second Block",
-        }
-    );
+    model.updateBlock(blockId, {
+        name: "Updated Second Block",
+    });
     assertEqual(notificationCount, 4);
 
     model.removeBlock(blockId);
@@ -1398,263 +935,164 @@ test("protocol-model", "emits once for each successful mutation method", () => {
     assertEqual(notificationCount, 6);
 });
 
+test("protocol-model", "inserts a phase at the requested index", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "inserts a phase at the requested index",
-     () => {
-         const model = createProtocolModel();
+    const phaseId = model.addPhase("Inserted", 1);
 
-         const phaseId = model.addPhase(
-             "Inserted",
-             1
-         );
+    const snapshot = model.getSnapshot();
 
-         const snapshot = model.getSnapshot();
+    assertEqual(snapshot.phases[1].id, phaseId);
 
-         assertEqual(
-             snapshot.phases[1].id,
-             phaseId
-         );
+    assertEqual(snapshot.phases[1].name, "Inserted");
+});
 
-         assertEqual(
-             snapshot.phases[1].name,
-             "Inserted"
-         );
-     }
-);
+test("protocol-model", "inserts a phase at the beginning", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "inserts a phase at the beginning",
-     () => {
-         const model = createProtocolModel();
+    const phaseId = model.addPhase("First", 0);
 
-         const phaseId = model.addPhase(
-             "First",
-             0
-         );
+    assertEqual(model.getSnapshot().phases[0].id, phaseId);
+});
 
-         assertEqual(
-             model.getSnapshot().phases[0].id,
-                     phaseId
-         );
-     }
-);
+test("protocol-model", "appends a phase when insertion index is omitted", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "appends a phase when insertion index is omitted",
-     () => {
-         const model = createProtocolModel();
+    const originalLength = model.getSnapshot().phases.length;
 
-         const originalLength =
-         model.getSnapshot().phases.length;
+    const phaseId = model.addPhase("Last");
 
-         const phaseId =
-         model.addPhase("Last");
+    const snapshot = model.getSnapshot();
 
-         const snapshot = model.getSnapshot();
+    assertEqual(snapshot.phases.length, originalLength + 1);
 
-         assertEqual(
-             snapshot.phases.length,
-             originalLength + 1
-         );
+    assertEqual(snapshot.phases.at(-1).id, phaseId);
+});
 
-         assertEqual(
-             snapshot.phases.at(-1).id,
-                     phaseId
-         );
-     }
-);
+test("protocol-model", "inserts a block at the requested index", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "inserts a block at the requested index",
-     () => {
-         const model = createProtocolModel();
+    const blockId = model.addBlock(
+        "phase-1",
+        {
+            name: "Inserted Block",
+            durationSeconds: 180,
+            variables: {
+                speed: {
+                    type: "linear",
+                    start: 3,
+                    end: 4,
+                },
+                incline: {
+                    type: "steady",
+                    start: 0,
+                },
+            },
+        },
+        0,
+    );
 
-         const blockId = model.addBlock(
-             "phase-1",
-             {
-                 name: "Inserted Block",
-                 durationSeconds: 180,
-                 variables: {
-                     speed: {
-                         type: "linear",
-                         start: 3,
-                         end: 4,
-                     },
-                     incline: {
-                         type: "steady",
-                         start: 0,
-                     },
-                 },
-             },
-             0
-         );
+    const phase = model.getSnapshot().phases.find((candidate) => candidate.id === "phase-1");
 
-         const phase = model
-         .getSnapshot()
-         .phases
-         .find(
-             candidate =>
-             candidate.id === "phase-1"
-         );
+    assertEqual(phase.blocks[0].id, blockId);
+});
 
-         assertEqual(
-             phase.blocks[0].id,
-             blockId
-         );
-     }
-);
+test("protocol-model", "appends a block when insertion index is omitted", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "appends a block when insertion index is omitted",
-     () => {
-         const model = createProtocolModel();
+    const blockId = model.addBlock("phase-1", {
+        name: "Last Block",
+        durationSeconds: 180,
+        variables: {
+            speed: {
+                type: "linear",
+                start: 3,
+                end: 4,
+            },
+            incline: {
+                type: "steady",
+                start: 0,
+            },
+        },
+    });
 
-         const blockId = model.addBlock(
-             "phase-1",
-             {
-                 name: "Last Block",
-                 durationSeconds: 180,
-                 variables: {
-                     speed: {
-                         type: "linear",
-                         start: 3,
-                         end: 4,
-                     },
-                     incline: {
-                         type: "steady",
-                         start: 0,
-                     },
-                 },
-             }
-         );
+    const phase = model.getSnapshot().phases.find((candidate) => candidate.id === "phase-1");
 
-         const phase = model
-         .getSnapshot()
-         .phases
-         .find(
-             candidate =>
-             candidate.id === "phase-1"
-         );
+    assertEqual(phase.blocks.at(-1).id, blockId);
+});
 
-         assertEqual(
-             phase.blocks.at(-1).id,
-                     blockId
-         );
-     }
-);
+test("protocol-model", "rejects an invalid phase insertion index", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "rejects an invalid phase insertion index",
-     () => {
-         const model = createProtocolModel();
+    assertThrows(() => model.addPhase("Invalid", -1), "phase insertion index");
+});
 
-         assertThrows(
-             () => model.addPhase(
-                 "Invalid",
-                 -1
-             ),
-             "phase insertion index"
-         );
-     }
-);
+test("protocol-model", "rejects an invalid block insertion index", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "rejects an invalid block insertion index",
-     () => {
-         const model = createProtocolModel();
+    assertThrows(
+        () =>
+            model.addBlock(
+                "phase-1",
+                {
+                    name: "Invalid Block",
+                    durationSeconds: 180,
+                    variables: {
+                        speed: {
+                            type: "linear",
+                            start: 3,
+                            end: 4,
+                        },
+                        incline: {
+                            type: "steady",
+                            start: 0,
+                        },
+                    },
+                },
+                1.5,
+            ),
+        "block insertion index",
+    );
+});
 
-         assertThrows(
-             () => model.addBlock(
-                 "phase-1",
-                 {
-                     name: "Invalid Block",
-                     durationSeconds: 180,
-                     variables: {
-                         speed: {
-                             type: "linear",
-                             start: 3,
-                             end: 4,
-                         },
-                         incline: {
-                             type: "steady",
-                             start: 0,
-                         },
-                     },
-                 },
-                 1.5
-             ),
-             "block insertion index"
-         );
-     }
-);
+test("protocol-model", "failed phase insertion leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "failed phase insertion leaves protocol state unchanged",
-     () => {
-         const model = createProtocolModel();
+    const before = model.getSnapshot();
 
-         const before =
-         model.getSnapshot();
+    assertThrows(() => model.addPhase("Invalid", 999), "phase insertion index");
 
-         assertThrows(
-             () => model.addPhase(
-                 "Invalid",
-                 999
-             ),
-             "phase insertion index"
-         );
+    assertDeepEqual(model.getSnapshot(), before);
+});
 
-         assertDeepEqual(
-             model.getSnapshot(),
-                         before
-         );
-     }
-);
+test("protocol-model", "failed block insertion leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
 
-test(
-    "protocol-model",
-     "failed block insertion leaves protocol state unchanged",
-     () => {
-         const model = createProtocolModel();
+    const before = model.getSnapshot();
 
-         const before =
-         model.getSnapshot();
+    assertThrows(
+        () =>
+            model.addBlock(
+                "phase-1",
+                {
+                    name: "Invalid Block",
+                    durationSeconds: 180,
+                    variables: {
+                        speed: {
+                            type: "linear",
+                            start: 3,
+                            end: 4,
+                        },
+                        incline: {
+                            type: "steady",
+                            start: 0,
+                        },
+                    },
+                },
+                999,
+            ),
+        "block insertion index",
+    );
 
-         assertThrows(
-             () => model.addBlock(
-                 "phase-1",
-                 {
-                     name: "Invalid Block",
-                     durationSeconds: 180,
-                     variables: {
-                         speed: {
-                             type: "linear",
-                             start: 3,
-                             end: 4,
-                         },
-                         incline: {
-                             type: "steady",
-                             start: 0,
-                         },
-                     },
-                 },
-                 999
-             ),
-             "block insertion index"
-         );
-
-         assertDeepEqual(
-             model.getSnapshot(),
-                         before
-         );
-     }
-);
+    assertDeepEqual(model.getSnapshot(), before);
+});

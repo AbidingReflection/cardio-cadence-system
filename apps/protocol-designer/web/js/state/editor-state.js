@@ -2,9 +2,7 @@
  * Owns transient Protocol Designer UI state and notifies subscribers when it changes.
  */
 
-import {
-    deepEqual,
-} from "/packages/utils/deep-equal.js";
+import { deepEqual } from "/packages/utils/deep-equal.js";
 
 export class EditorState {
     #expandedPhaseIds = new Set();
@@ -14,7 +12,6 @@ export class EditorState {
     #blockDraftBaseline;
     #validationErrors = [];
     #pendingInsertion;
-
 
     /** Returns a defensive snapshot of the current editor state. */
     getSnapshot() {
@@ -33,8 +30,6 @@ export class EditorState {
         };
     }
 
-
-
     /** Subscribes to editor-state changes and returns an unsubscribe function. */
     subscribe(listener) {
         this.#listeners.add(listener);
@@ -43,7 +38,6 @@ export class EditorState {
             this.#listeners.delete(listener);
         };
     }
-
 
     /** Expands a phase by ID. */
     expandPhase(phaseId) {
@@ -55,7 +49,6 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Collapses a phase by ID. */
     collapsePhase(phaseId) {
         if (!this.#expandedPhaseIds.delete(phaseId)) {
@@ -64,7 +57,6 @@ export class EditorState {
 
         this.#emit();
     }
-
 
     /** Toggles a phase's expanded state. */
     togglePhase(phaseId) {
@@ -77,7 +69,6 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Expands a block by ID. */
     expandBlock(blockId) {
         if (this.#expandedBlockId === blockId) {
@@ -87,7 +78,6 @@ export class EditorState {
         this.#expandedBlockId = blockId;
         this.#emit();
     }
-
 
     /** Collapses the currently expanded block. */
     collapseBlock() {
@@ -107,13 +97,10 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Updates the active block draft. */
     updateBlockDraft(updates) {
         if (this.#activeBlockDraft === undefined) {
-            throw new Error(
-                "Cannot update block draft because no block draft is active."
-            );
+            throw new Error("Cannot update block draft because no block draft is active.");
         }
 
         this.#activeBlockDraft = {
@@ -126,17 +113,11 @@ export class EditorState {
 
     /** Returns whether the active block draft differs from its baseline. */
     isBlockDraftDirty() {
-        if (
-            this.#activeBlockDraft === undefined ||
-            this.#blockDraftBaseline === undefined
-        ) {
+        if (this.#activeBlockDraft === undefined || this.#blockDraftBaseline === undefined) {
             return false;
         }
 
-        return !deepEqual(
-            this.#activeBlockDraft,
-            this.#blockDraftBaseline
-        );
+        return !deepEqual(this.#activeBlockDraft, this.#blockDraftBaseline);
     }
 
     /** Discards the active block draft and its baseline. */
@@ -151,7 +132,6 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Replaces the current validation errors. */
     setValidationErrors(errors) {
         if (deepEqual(this.#validationErrors, errors)) {
@@ -161,7 +141,6 @@ export class EditorState {
         this.#validationErrors = structuredClone(errors);
         this.#emit();
     }
-
 
     /** Clears all validation errors. */
     clearValidationErrors() {
@@ -183,7 +162,6 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Clears the pending insertion target. */
     clearPendingInsertion() {
         if (this.#pendingInsertion === undefined) {
@@ -194,19 +172,13 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Opens a block editor with a new active draft. */
-    openBlockDraft(
-        blockId,
-        draft
-    ) {
+    openBlockDraft(blockId, draft) {
         this.#expandedBlockId = blockId;
 
-        this.#activeBlockDraft =
-        structuredClone(draft);
+        this.#activeBlockDraft = structuredClone(draft);
 
-        this.#blockDraftBaseline =
-        structuredClone(draft);
+        this.#blockDraftBaseline = structuredClone(draft);
 
         this.#validationErrors = [];
 
@@ -223,7 +195,6 @@ export class EditorState {
         this.#emit();
     }
 
-
     /** Notifies all subscribers with the current editor-state snapshot. */
     #emit() {
         const snapshot = this.getSnapshot();
@@ -232,6 +203,4 @@ export class EditorState {
             listener(snapshot);
         }
     }
-
-
 }

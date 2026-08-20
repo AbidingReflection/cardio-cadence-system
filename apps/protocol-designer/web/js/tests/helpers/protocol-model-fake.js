@@ -14,16 +14,11 @@ export function createProtocolModelFake() {
         phases: [
             {
                 id: "phase-1",
-                blocks: [
-                    { id: "block-1" },
-                    { id: "block-2" },
-                ],
+                blocks: [{ id: "block-1" }, { id: "block-2" }],
             },
             {
                 id: "phase-2",
-                blocks: [
-                    { id: "block-3" },
-                ],
+                blocks: [{ id: "block-3" }],
             },
         ],
     };

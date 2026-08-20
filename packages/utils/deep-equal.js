@@ -22,9 +22,7 @@ export function deepEqual(actual, expected) {
             return false;
         }
 
-        return actual.every(
-            (value, index) => deepEqual(value, expected[index])
-        );
+        return actual.every((value, index) => deepEqual(value, expected[index]));
     }
 
     const actualKeys = Object.keys(actual);
@@ -35,8 +33,6 @@ export function deepEqual(actual, expected) {
     }
 
     return actualKeys.every(
-        key =>
-        Object.hasOwn(expected, key) &&
-        deepEqual(actual[key], expected[key])
+        (key) => Object.hasOwn(expected, key) && deepEqual(actual[key], expected[key]),
     );
 }

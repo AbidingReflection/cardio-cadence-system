@@ -1,9 +1,6 @@
-import {
-    deepEqual,
-} from "/packages/utils/deep-equal.js";
+import { deepEqual } from "/packages/utils/deep-equal.js";
 
 const tests = [];
-
 
 /** Registers a test for execution by the test runner. */
 export function test(suite, name, callback) {
@@ -41,12 +38,10 @@ export async function runTests() {
     return results;
 }
 
-
 /** Returns the registered tests. */
 export function getTests() {
     return [...tests];
 }
-
 
 /** Asserts that a condition is truthy. */
 export function assert(condition, message = "Assertion failed.") {
@@ -55,26 +50,23 @@ export function assert(condition, message = "Assertion failed.") {
     }
 }
 
-
 /** Asserts that two values are strictly equal. */
 export function assertEqual(actual, expected, message) {
     if (actual !== expected) {
         throw new Error(
-            message ?? `Expected ${formatValue(expected)}, received ${formatValue(actual)}.`
+            message ?? `Expected ${formatValue(expected)}, received ${formatValue(actual)}.`,
         );
     }
 }
-
 
 /** Asserts that two values are structurally equal. */
 export function assertDeepEqual(actual, expected, message) {
     if (!deepEqual(actual, expected)) {
         throw new Error(
-            message ?? `Expected ${formatValue(expected)}, received ${formatValue(actual)}.`
+            message ?? `Expected ${formatValue(expected)}, received ${formatValue(actual)}.`,
         );
     }
 }
-
 
 /** Asserts that a function throws an error matching the expected message. */
 export function assertThrows(callback, expectedMessage) {
@@ -85,29 +77,22 @@ export function assertThrows(callback, expectedMessage) {
             return;
         }
 
-        if (
-            typeof expectedMessage === "string" &&
-            error.message.includes(expectedMessage)
-        ) {
+        if (typeof expectedMessage === "string" && error.message.includes(expectedMessage)) {
             return;
         }
 
-        if (
-            expectedMessage instanceof RegExp &&
-            expectedMessage.test(error.message)
-        ) {
+        if (expectedMessage instanceof RegExp && expectedMessage.test(error.message)) {
             return;
         }
 
         throw new Error(
             `Expected error matching ${formatValue(expectedMessage)}, ` +
-            `received ${formatValue(error.message)}.`
+                `received ${formatValue(error.message)}.`,
         );
     }
 
     throw new Error("Expected function to throw.");
 }
-
 
 /** Formats a value for assertion failure messages. */
 function formatValue(value) {
@@ -119,13 +104,9 @@ function formatValue(value) {
         return `[${value.map(formatValue).join(",")}]`;
     }
 
-    if (
-        value !== null &&
-        typeof value === "object"
-    ) {
+    if (value !== null && typeof value === "object") {
         const entries = Object.entries(value).map(
-            ([key, entryValue]) =>
-            `${JSON.stringify(key)}:${formatValue(entryValue)}`
+            ([key, entryValue]) => `${JSON.stringify(key)}:${formatValue(entryValue)}`,
         );
 
         return `{${entries.join(",")}}`;

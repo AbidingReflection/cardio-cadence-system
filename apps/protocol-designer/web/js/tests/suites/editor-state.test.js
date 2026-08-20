@@ -5,40 +5,27 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import {
-    EditorState,
-} from "../../state/editor-state.js";
-
+import { EditorState } from "../../state/editor-state.js";
 
 test("editor-state", "starts with no expanded phases or block", () => {
     const state = new EditorState();
 
-    assertDeepEqual(
-        state.getSnapshot(),
-                    {
-                        expandedPhaseIds: [],
-                        expandedBlockId: undefined,
-                        activeBlockDraft: undefined,
-                        validationErrors: [],
-                        pendingInsertion: undefined,
-                    }
-    );
+    assertDeepEqual(state.getSnapshot(), {
+        expandedPhaseIds: [],
+        expandedBlockId: undefined,
+        activeBlockDraft: undefined,
+        validationErrors: [],
+        pendingInsertion: undefined,
+    });
 });
-
 
 test("editor-state", "expands a phase", () => {
     const state = new EditorState();
 
     state.expandPhase("phase-1");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    [
-                        "phase-1",
-                    ]
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-1"]);
 });
-
 
 test("editor-state", "supports multiple expanded phases", () => {
     const state = new EditorState();
@@ -46,15 +33,8 @@ test("editor-state", "supports multiple expanded phases", () => {
     state.expandPhase("phase-1");
     state.expandPhase("phase-2");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    [
-                        "phase-1",
-                    "phase-2",
-                    ]
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-1", "phase-2"]);
 });
-
 
 test("editor-state", "collapses a phase", () => {
     const state = new EditorState();
@@ -63,35 +43,20 @@ test("editor-state", "collapses a phase", () => {
     state.expandPhase("phase-2");
     state.collapsePhase("phase-1");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    [
-                        "phase-2",
-                    ]
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-2"]);
 });
-
 
 test("editor-state", "toggles phase expansion", () => {
     const state = new EditorState();
 
     state.togglePhase("phase-1");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    [
-                        "phase-1",
-                    ]
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-1"]);
 
     state.togglePhase("phase-1");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    []
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, []);
 });
-
 
 test("editor-state", "expands one block at a time", () => {
     const state = new EditorState();
@@ -99,12 +64,8 @@ test("editor-state", "expands one block at a time", () => {
     state.expandBlock("block-1");
     state.expandBlock("block-2");
 
-    assertEqual(
-        state.getSnapshot().expandedBlockId,
-                "block-2"
-    );
+    assertEqual(state.getSnapshot().expandedBlockId, "block-2");
 });
-
 
 test("editor-state", "collapses the expanded block", () => {
     const state = new EditorState();
@@ -112,38 +73,28 @@ test("editor-state", "collapses the expanded block", () => {
     state.expandBlock("block-1");
     state.collapseBlock();
 
-    assertEqual(
-        state.getSnapshot().expandedBlockId,
-                undefined
-    );
+    assertEqual(state.getSnapshot().expandedBlockId, undefined);
 });
-
 
 test("editor-state", "notifies subscribers after state changes", () => {
     const state = new EditorState();
 
     let receivedSnapshot;
 
-    state.subscribe(snapshot => {
+    state.subscribe((snapshot) => {
         receivedSnapshot = snapshot;
     });
 
     state.expandPhase("phase-1");
 
-    assertDeepEqual(
-        receivedSnapshot,
-        {
-            expandedPhaseIds: [
-                "phase-1",
-            ],
-            expandedBlockId: undefined,
-            activeBlockDraft: undefined,
-            validationErrors: [],
-            pendingInsertion: undefined,
-        }
-    );
+    assertDeepEqual(receivedSnapshot, {
+        expandedPhaseIds: ["phase-1"],
+        expandedBlockId: undefined,
+        activeBlockDraft: undefined,
+        validationErrors: [],
+        pendingInsertion: undefined,
+    });
 });
-
 
 test("editor-state", "does not emit for repeated no-op expansion", () => {
     const state = new EditorState();
@@ -157,12 +108,8 @@ test("editor-state", "does not emit for repeated no-op expansion", () => {
     state.expandPhase("phase-1");
     state.expandPhase("phase-1");
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "does not emit when collapsing an already collapsed phase", () => {
     const state = new EditorState();
@@ -175,12 +122,8 @@ test("editor-state", "does not emit when collapsing an already collapsed phase",
 
     state.collapsePhase("phase-1");
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "does not emit when expanding the already expanded block", () => {
     const state = new EditorState();
@@ -194,12 +137,8 @@ test("editor-state", "does not emit when expanding the already expanded block", 
     state.expandBlock("block-1");
     state.expandBlock("block-1");
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "does not emit when no block is expanded", () => {
     const state = new EditorState();
@@ -212,12 +151,8 @@ test("editor-state", "does not emit when no block is expanded", () => {
 
     state.collapseBlock();
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "supports multiple subscribers", () => {
     const state = new EditorState();
@@ -239,7 +174,6 @@ test("editor-state", "supports multiple subscribers", () => {
     assertEqual(secondCount, 1);
 });
 
-
 test("editor-state", "unsubscribe stops future notifications", () => {
     const state = new EditorState();
 
@@ -255,12 +189,8 @@ test("editor-state", "unsubscribe stops future notifications", () => {
 
     state.expandPhase("phase-2");
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "returns independent snapshots", () => {
     const state = new EditorState();
@@ -271,12 +201,7 @@ test("editor-state", "returns independent snapshots", () => {
 
     snapshot.expandedPhaseIds.push("phase-2");
 
-    assertDeepEqual(
-        state.getSnapshot().expandedPhaseIds,
-                    [
-                        "phase-1",
-                    ]
-    );
+    assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-1"]);
 });
 
 test("editor-state", "starts a block draft", () => {
@@ -297,12 +222,8 @@ test("editor-state", "starts a block draft", () => {
 
     state.startBlockDraft(draft);
 
-    assertDeepEqual(
-        state.getSnapshot().activeBlockDraft,
-                    draft
-    );
+    assertDeepEqual(state.getSnapshot().activeBlockDraft, draft);
 });
-
 
 test("editor-state", "isolates block draft from source data", () => {
     const state = new EditorState();
@@ -324,22 +245,18 @@ test("editor-state", "isolates block draft from source data", () => {
     draft.name = "Changed";
     draft.variables.speed.start = 9;
 
-    assertDeepEqual(
-        state.getSnapshot().activeBlockDraft,
-                    {
-                        mode: "edit",
-                        blockId: "block-1",
-                        name: "Warmup Block",
-                        variables: {
-                            speed: {
-                                type: "steady",
-                                start: 4,
-                            },
-                        },
-                    }
-    );
+    assertDeepEqual(state.getSnapshot().activeBlockDraft, {
+        mode: "edit",
+        blockId: "block-1",
+        name: "Warmup Block",
+        variables: {
+            speed: {
+                type: "steady",
+                start: 4,
+            },
+        },
+    });
 });
-
 
 test("editor-state", "updates the active block draft", () => {
     const state = new EditorState();
@@ -356,17 +273,13 @@ test("editor-state", "updates the active block draft", () => {
         durationSeconds: 600,
     });
 
-    assertDeepEqual(
-        state.getSnapshot().activeBlockDraft,
-                    {
-                        mode: "edit",
-                        blockId: "block-1",
-                        name: "Updated Warmup",
-                        durationSeconds: 600,
-                    }
-    );
+    assertDeepEqual(state.getSnapshot().activeBlockDraft, {
+        mode: "edit",
+        blockId: "block-1",
+        name: "Updated Warmup",
+        durationSeconds: 600,
+    });
 });
-
 
 test("editor-state", "preserves unspecified draft fields during update", () => {
     const state = new EditorState();
@@ -382,12 +295,8 @@ test("editor-state", "preserves unspecified draft fields during update", () => {
         name: "Updated Warmup",
     });
 
-    assertEqual(
-        state.getSnapshot().activeBlockDraft.durationSeconds,
-                300
-    );
+    assertEqual(state.getSnapshot().activeBlockDraft.durationSeconds, 300);
 });
-
 
 test("editor-state", "isolates updated draft data from source updates", () => {
     const state = new EditorState();
@@ -411,16 +320,8 @@ test("editor-state", "isolates updated draft data from source updates", () => {
 
     updates.variables.speed.start = 9;
 
-    assertEqual(
-        state.getSnapshot()
-        .activeBlockDraft
-        .variables
-        .speed
-        .start,
-        4
-    );
+    assertEqual(state.getSnapshot().activeBlockDraft.variables.speed.start, 4);
 });
-
 
 test("editor-state", "rejects updating when no block draft is active", () => {
     const state = new EditorState();
@@ -431,7 +332,6 @@ test("editor-state", "rejects updating when no block draft is active", () => {
         });
     });
 });
-
 
 test("editor-state", "emits when block draft state changes", () => {
     const state = new EditorState();
@@ -457,7 +357,6 @@ test("editor-state", "emits when block draft state changes", () => {
     assertEqual(notificationCount, 2);
 });
 
-
 test("editor-state", "returns independent block draft snapshots", () => {
     const state = new EditorState();
 
@@ -476,16 +375,8 @@ test("editor-state", "returns independent block draft snapshots", () => {
 
     snapshot.activeBlockDraft.variables.speed.start = 9;
 
-    assertEqual(
-        state.getSnapshot()
-        .activeBlockDraft
-        .variables
-        .speed
-        .start,
-        4
-    );
+    assertEqual(state.getSnapshot().activeBlockDraft.variables.speed.start, 4);
 });
-
 
 test("editor-state", "block draft starts clean", () => {
     const state = new EditorState();
@@ -497,12 +388,8 @@ test("editor-state", "block draft starts clean", () => {
         durationSeconds: 300,
     });
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                false
-    );
+    assertEqual(state.isBlockDraftDirty(), false);
 });
-
 
 test("editor-state", "block draft becomes dirty after an update", () => {
     const state = new EditorState();
@@ -518,12 +405,8 @@ test("editor-state", "block draft becomes dirty after an update", () => {
         name: "Updated Warmup",
     });
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                true
-    );
+    assertEqual(state.isBlockDraftDirty(), true);
 });
-
 
 test("editor-state", "block draft returns clean when restored to baseline", () => {
     const state = new EditorState();
@@ -543,22 +426,14 @@ test("editor-state", "block draft returns clean when restored to baseline", () =
         name: "Warmup Block",
     });
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                false
-    );
+    assertEqual(state.isBlockDraftDirty(), false);
 });
-
 
 test("editor-state", "no active block draft is not dirty", () => {
     const state = new EditorState();
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                false
-    );
+    assertEqual(state.isBlockDraftDirty(), false);
 });
-
 
 test("editor-state", "dirty comparison ignores object key order", () => {
     const state = new EditorState();
@@ -583,12 +458,8 @@ test("editor-state", "dirty comparison ignores object key order", () => {
         },
     });
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                false
-    );
+    assertEqual(state.isBlockDraftDirty(), false);
 });
-
 
 test("editor-state", "cancels the active block draft", () => {
     const state = new EditorState();
@@ -601,17 +472,10 @@ test("editor-state", "cancels the active block draft", () => {
 
     state.cancelBlockDraft();
 
-    assertEqual(
-        state.getSnapshot().activeBlockDraft,
-                undefined
-    );
+    assertEqual(state.getSnapshot().activeBlockDraft, undefined);
 
-    assertEqual(
-        state.isBlockDraftDirty(),
-                false
-    );
+    assertEqual(state.isBlockDraftDirty(), false);
 });
-
 
 test("editor-state", "canceling a block draft emits once", () => {
     const state = new EditorState();
@@ -630,12 +494,8 @@ test("editor-state", "canceling a block draft emits once", () => {
 
     state.cancelBlockDraft();
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "canceling without an active draft does not emit", () => {
     const state = new EditorState();
@@ -648,12 +508,8 @@ test("editor-state", "canceling without an active draft does not emit", () => {
 
     state.cancelBlockDraft();
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "sets validation errors", () => {
     const state = new EditorState();
@@ -669,12 +525,8 @@ test("editor-state", "sets validation errors", () => {
 
     state.setValidationErrors(errors);
 
-    assertDeepEqual(
-        state.getSnapshot().validationErrors,
-                    errors
-    );
+    assertDeepEqual(state.getSnapshot().validationErrors, errors);
 });
-
 
 test("editor-state", "isolates validation errors from source data", () => {
     const state = new EditorState();
@@ -694,10 +546,9 @@ test("editor-state", "isolates validation errors from source data", () => {
 
     assertEqual(
         state.getSnapshot().validationErrors[0].message,
-                "Duration must be greater than zero."
+        "Duration must be greater than zero.",
     );
 });
-
 
 test("editor-state", "returns independent validation error snapshots", () => {
     const state = new EditorState();
@@ -717,10 +568,9 @@ test("editor-state", "returns independent validation error snapshots", () => {
 
     assertEqual(
         state.getSnapshot().validationErrors[0].message,
-                "Duration must be greater than zero."
+        "Duration must be greater than zero.",
     );
 });
-
 
 test("editor-state", "emits when validation errors change", () => {
     const state = new EditorState();
@@ -740,12 +590,8 @@ test("editor-state", "emits when validation errors change", () => {
         },
     ]);
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "does not emit when validation errors are unchanged", () => {
     const state = new EditorState();
@@ -767,16 +613,10 @@ test("editor-state", "does not emit when validation errors are unchanged", () =>
         notificationCount += 1;
     });
 
-    state.setValidationErrors(
-        structuredClone(errors)
-    );
+    state.setValidationErrors(structuredClone(errors));
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "validation error comparison ignores object key order", () => {
     const state = new EditorState();
@@ -805,12 +645,8 @@ test("editor-state", "validation error comparison ignores object key order", () 
         },
     ]);
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "clears validation errors", () => {
     const state = new EditorState();
@@ -826,12 +662,8 @@ test("editor-state", "clears validation errors", () => {
 
     state.clearValidationErrors();
 
-    assertDeepEqual(
-        state.getSnapshot().validationErrors,
-                    []
-    );
+    assertDeepEqual(state.getSnapshot().validationErrors, []);
 });
-
 
 test("editor-state", "clearing validation errors emits once", () => {
     const state = new EditorState();
@@ -853,12 +685,8 @@ test("editor-state", "clearing validation errors emits once", () => {
 
     state.clearValidationErrors();
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "clearing empty validation errors does not emit", () => {
     const state = new EditorState();
@@ -871,10 +699,7 @@ test("editor-state", "clearing empty validation errors does not emit", () => {
 
     state.clearValidationErrors();
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
 
 test("editor-state", "sets a phase insertion target", () => {
@@ -887,12 +712,8 @@ test("editor-state", "sets a phase insertion target", () => {
 
     state.setPendingInsertion(insertion);
 
-    assertDeepEqual(
-        state.getSnapshot().pendingInsertion,
-                    insertion
-    );
+    assertDeepEqual(state.getSnapshot().pendingInsertion, insertion);
 });
-
 
 test("editor-state", "sets a block insertion target", () => {
     const state = new EditorState();
@@ -905,12 +726,8 @@ test("editor-state", "sets a block insertion target", () => {
 
     state.setPendingInsertion(insertion);
 
-    assertDeepEqual(
-        state.getSnapshot().pendingInsertion,
-                    insertion
-    );
+    assertDeepEqual(state.getSnapshot().pendingInsertion, insertion);
 });
-
 
 test("editor-state", "isolates pending insertion from source data", () => {
     const state = new EditorState();
@@ -925,12 +742,8 @@ test("editor-state", "isolates pending insertion from source data", () => {
 
     insertion.index = 99;
 
-    assertEqual(
-        state.getSnapshot().pendingInsertion.index,
-                2
-    );
+    assertEqual(state.getSnapshot().pendingInsertion.index, 2);
 });
-
 
 test("editor-state", "returns independent pending insertion snapshots", () => {
     const state = new EditorState();
@@ -945,12 +758,8 @@ test("editor-state", "returns independent pending insertion snapshots", () => {
 
     snapshot.pendingInsertion.index = 99;
 
-    assertEqual(
-        state.getSnapshot().pendingInsertion.index,
-                2
-    );
+    assertEqual(state.getSnapshot().pendingInsertion.index, 2);
 });
-
 
 test("editor-state", "emits when pending insertion changes", () => {
     const state = new EditorState();
@@ -966,12 +775,8 @@ test("editor-state", "emits when pending insertion changes", () => {
         index: 1,
     });
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "does not emit when pending insertion is unchanged", () => {
     const state = new EditorState();
@@ -994,12 +799,8 @@ test("editor-state", "does not emit when pending insertion is unchanged", () => 
         type: "block",
     });
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });
-
 
 test("editor-state", "clears pending insertion", () => {
     const state = new EditorState();
@@ -1011,12 +812,8 @@ test("editor-state", "clears pending insertion", () => {
 
     state.clearPendingInsertion();
 
-    assertEqual(
-        state.getSnapshot().pendingInsertion,
-                undefined
-    );
+    assertEqual(state.getSnapshot().pendingInsertion, undefined);
 });
-
 
 test("editor-state", "clearing pending insertion emits once", () => {
     const state = new EditorState();
@@ -1034,12 +831,8 @@ test("editor-state", "clearing pending insertion emits once", () => {
 
     state.clearPendingInsertion();
 
-    assertEqual(
-        notificationCount,
-        1
-    );
+    assertEqual(notificationCount, 1);
 });
-
 
 test("editor-state", "clearing empty pending insertion does not emit", () => {
     const state = new EditorState();
@@ -1052,8 +845,5 @@ test("editor-state", "clearing empty pending insertion does not emit", () => {
 
     state.clearPendingInsertion();
 
-    assertEqual(
-        notificationCount,
-        0
-    );
+    assertEqual(notificationCount, 0);
 });

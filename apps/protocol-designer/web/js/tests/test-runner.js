@@ -1,7 +1,4 @@
-import {
-    getTests,
-    runTests,
-} from "/packages/js-testing/framework/test-framework.js";
+import { getTests, runTests } from "/packages/js-testing/framework/test-framework.js";
 
 import {
     renderTestSuites,

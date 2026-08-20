@@ -1,11 +1,6 @@
-import {
-    normalizeProtocol,
-} from "/packages/protocol-core/protocol-normalization.js";
+import { normalizeProtocol } from "/packages/protocol-core/protocol-normalization.js";
 
-import {
-    validateProtocol,
-} from "/packages/protocol-core/protocol-validation.js";
-
+import { validateProtocol } from "/packages/protocol-core/protocol-validation.js";
 
 export class ProtocolModel {
     #protocol;
@@ -13,22 +8,16 @@ export class ProtocolModel {
     #machineProfile;
     #listeners = new Set();
 
-
     /** Constructs a ProtocolModel from committed protocol data. */
     constructor(protocol, activityType, machineProfile = undefined) {
         const normalizedProtocol = normalizeProtocol(protocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            activityType,
-            machineProfile
-        );
+        validateProtocol(normalizedProtocol, activityType, machineProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#activityType = activityType;
         this.#machineProfile = machineProfile;
     }
-
 
     /** Returns a defensive snapshot of the committed protocol state. */
     getSnapshot() {
@@ -36,19 +25,10 @@ export class ProtocolModel {
     }
 
     /** Adds a new empty phase and returns its generated ID. */
-    addPhase(
-        name = "New Phase",
-        index = undefined
-    ) {
-        const nextProtocol =
-        structuredClone(this.#protocol);
+    addPhase(name = "New Phase", index = undefined) {
+        const nextProtocol = structuredClone(this.#protocol);
 
-        const insertionIndex =
-        getInsertionIndex(
-            index,
-            nextProtocol.phases.length,
-            "phase"
-        );
+        const insertionIndex = getInsertionIndex(index, nextProtocol.phases.length, "phase");
 
         const phase = {
             id: crypto.randomUUID(),
@@ -56,23 +36,13 @@ export class ProtocolModel {
             blocks: [],
         };
 
-        nextProtocol.phases.splice(
-            insertionIndex,
-            0,
-            phase
-        );
+        nextProtocol.phases.splice(insertionIndex, 0, phase);
 
-        const normalizedProtocol =
-        normalizeProtocol(nextProtocol);
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
-        this.#protocol =
-        structuredClone(normalizedProtocol);
+        this.#protocol = structuredClone(normalizedProtocol);
 
         this.#emit();
 
@@ -83,25 +53,17 @@ export class ProtocolModel {
     removePhase(phaseId) {
         const nextProtocol = structuredClone(this.#protocol);
 
-        const phaseIndex = nextProtocol.phases.findIndex(
-            phase => phase.id === phaseId
-        );
+        const phaseIndex = nextProtocol.phases.findIndex((phase) => phase.id === phaseId);
 
         if (phaseIndex === -1) {
-            throw new Error(
-                `Protocol phase "${phaseId}" does not exist.`
-            );
+            throw new Error(`Protocol phase "${phaseId}" does not exist.`);
         }
 
         nextProtocol.phases.splice(phaseIndex, 1);
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -111,14 +73,10 @@ export class ProtocolModel {
     updatePhase(phaseId, updates) {
         const nextProtocol = structuredClone(this.#protocol);
 
-        const phase = nextProtocol.phases.find(
-            candidate => candidate.id === phaseId
-        );
+        const phase = nextProtocol.phases.find((candidate) => candidate.id === phaseId);
 
         if (phase === undefined) {
-            throw new Error(
-                `Protocol phase "${phaseId}" does not exist.`
-            );
+            throw new Error(`Protocol phase "${phaseId}" does not exist.`);
         }
 
         if (Object.hasOwn(updates, "name")) {
@@ -127,66 +85,36 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
     }
 
-
     /** Adds a block to a phase and returns its generated ID. */
-    addBlock(
-        phaseId,
-        blockData,
-        index = undefined
-    ) {
-        const nextProtocol =
-        structuredClone(this.#protocol);
+    addBlock(phaseId, blockData, index = undefined) {
+        const nextProtocol = structuredClone(this.#protocol);
 
-        const phase = nextProtocol.phases.find(
-            candidate =>
-            candidate.id === phaseId
-        );
+        const phase = nextProtocol.phases.find((candidate) => candidate.id === phaseId);
 
         if (phase === undefined) {
-            throw new Error(
-                `Protocol phase "${phaseId}" does not exist.`
-            );
+            throw new Error(`Protocol phase "${phaseId}" does not exist.`);
         }
 
-        const insertionIndex =
-        getInsertionIndex(
-            index,
-            phase.blocks.length,
-            "block"
-        );
+        const insertionIndex = getInsertionIndex(index, phase.blocks.length, "block");
 
         const block = {
             ...blockData,
             id: crypto.randomUUID(),
         };
 
-        phase.blocks.splice(
-            insertionIndex,
-            0,
-            block
-        );
+        phase.blocks.splice(insertionIndex, 0, block);
 
-        const normalizedProtocol =
-        normalizeProtocol(nextProtocol);
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
-        this.#protocol =
-        structuredClone(normalizedProtocol);
+        this.#protocol = structuredClone(normalizedProtocol);
 
         this.#emit();
 
@@ -201,9 +129,7 @@ export class ProtocolModel {
         let targetPhase;
 
         for (const phase of nextProtocol.phases) {
-            blockIndex = phase.blocks.findIndex(
-                block => block.id === blockId
-            );
+            blockIndex = phase.blocks.findIndex((block) => block.id === blockId);
 
             if (blockIndex !== -1) {
                 targetPhase = phase;
@@ -212,20 +138,14 @@ export class ProtocolModel {
         }
 
         if (targetPhase === undefined) {
-            throw new Error(
-                `Protocol block "${blockId}" does not exist.`
-            );
+            throw new Error(`Protocol block "${blockId}" does not exist.`);
         }
 
         targetPhase.blocks.splice(blockIndex, 1);
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -238,9 +158,7 @@ export class ProtocolModel {
         let targetBlock;
 
         for (const phase of nextProtocol.phases) {
-            targetBlock = phase.blocks.find(
-                block => block.id === blockId
-            );
+            targetBlock = phase.blocks.find((block) => block.id === blockId);
 
             if (targetBlock !== undefined) {
                 break;
@@ -248,9 +166,7 @@ export class ProtocolModel {
         }
 
         if (targetBlock === undefined) {
-            throw new Error(
-                `Protocol block "${blockId}" does not exist.`
-            );
+            throw new Error(`Protocol block "${blockId}" does not exist.`);
         }
 
         if (Object.hasOwn(updates, "name")) {
@@ -267,11 +183,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile
-        );
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -296,25 +208,15 @@ export class ProtocolModel {
     }
 }
 
-
 /** Returns a validated insertion index, defaulting to append. */
-function getInsertionIndex(
-    index,
-    length,
-    entityName
-) {
+function getInsertionIndex(index, length, entityName) {
     if (index === undefined) {
         return length;
     }
 
-    if (
-        !Number.isInteger(index) ||
-        index < 0 ||
-        index > length
-    ) {
+    if (!Number.isInteger(index) || index < 0 || index > length) {
         throw new Error(
-            `${entityName} insertion index must be an integer ` +
-            `between 0 and ${length}.`
+            `${entityName} insertion index must be an integer ` + `between 0 and ${length}.`,
         );
     }
 

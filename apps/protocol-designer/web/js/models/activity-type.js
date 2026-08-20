@@ -1,9 +1,4 @@
-const VALID_VARIABLE_ROLES = new Set([
-    "cadence",
-    "pace",
-    "load",
-]);
-
+const VALID_VARIABLE_ROLES = new Set(["cadence", "pace", "load"]);
 
 /** Represents an immutable, validated activity type definition. */
 export class ActivityType {
@@ -32,16 +27,11 @@ export class ActivityType {
 
     /** Returns a defensive copy of a variable definition by ID, or undefined if absent. */
     getVariable(variableId) {
-        const variable = this.#data.variables.find(
-            variable => variable.id === variableId
-        );
+        const variable = this.#data.variables.find((variable) => variable.id === variableId);
 
-        return variable === undefined
-        ? undefined
-        : structuredClone(variable);
+        return variable === undefined ? undefined : structuredClone(variable);
     }
 }
-
 
 /** Validates the structure and invariants of raw ActivityType data. */
 function validateActivityType(data) {
@@ -67,7 +57,7 @@ function validateActivityType(data) {
 
         if (variableIds.has(variable.id)) {
             throw new Error(
-                `ActivityType variable IDs must be unique. Duplicate ID: "${variable.id}".`
+                `ActivityType variable IDs must be unique. Duplicate ID: "${variable.id}".`,
             );
         }
 
@@ -75,14 +65,9 @@ function validateActivityType(data) {
     }
 }
 
-
 /** Validates an activity variable definition. */
 function validateVariable(variable) {
-    if (
-        variable === null ||
-        typeof variable !== "object" ||
-        Array.isArray(variable)
-    ) {
+    if (variable === null || typeof variable !== "object" || Array.isArray(variable)) {
         throw new TypeError("ActivityType variable must be an object.");
     }
 
@@ -92,12 +77,9 @@ function validateVariable(variable) {
     requireNonEmptyString(variable.role, "ActivityType variable role");
 
     if (!VALID_VARIABLE_ROLES.has(variable.role)) {
-        throw new Error(
-            `Unknown ActivityType variable role: "${variable.role}".`
-        );
+        throw new Error(`Unknown ActivityType variable role: "${variable.role}".`);
     }
 }
-
 
 /** Validates an optional activity variable unit. */
 function validateOptionalUnit(unit) {
@@ -107,7 +89,6 @@ function validateOptionalUnit(unit) {
 
     requireNonEmptyString(unit, "ActivityType variable unit");
 }
-
 
 /** Requires a value to be a non-empty string. */
 function requireNonEmptyString(value, description) {

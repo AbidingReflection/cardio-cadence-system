@@ -1,8 +1,4 @@
-const VALID_CONTROL_MODES = new Set([
-    "user-produced",
-    "machine-set",
-]);
-
+const VALID_CONTROL_MODES = new Set(["user-produced", "machine-set"]);
 
 /** Represents an immutable, validated machine profile definition. */
 export class MachineProfile {
@@ -38,12 +34,9 @@ export class MachineProfile {
     getVariable(variableId) {
         const variable = this.#data.variables[variableId];
 
-        return variable === undefined
-        ? undefined
-        : structuredClone(variable);
+        return variable === undefined ? undefined : structuredClone(variable);
     }
 }
-
 
 /** Validates the structure and invariants of raw MachineProfile data. */
 function validateMachineProfile(data, activityType) {
@@ -59,7 +52,7 @@ function validateMachineProfile(data, activityType) {
 
     if (data.activityTypeId !== activityType.id) {
         throw new Error(
-            `MachineProfile activityTypeId "${data.activityTypeId}" does not match ActivityType "${activityType.id}".`
+            `MachineProfile activityTypeId "${data.activityTypeId}" does not match ActivityType "${activityType.id}".`,
         );
     }
 
@@ -74,7 +67,6 @@ function validateMachineProfile(data, activityType) {
     validateMachineVariables(data.variables, activityType);
 }
 
-
 /** Validates that the supplied ActivityType provides the API required by MachineProfile. */
 function validateActivityTypeReference(activityType) {
     if (
@@ -88,17 +80,14 @@ function validateActivityTypeReference(activityType) {
     }
 }
 
-
 /** Validates machine variable configurations against the referenced ActivityType. */
 function validateMachineVariables(variables, activityType) {
-    const activityVariableIds = new Set(
-        activityType.variables.map(variable => variable.id)
-    );
+    const activityVariableIds = new Set(activityType.variables.map((variable) => variable.id));
 
     for (const variableId of Object.keys(variables)) {
         if (!activityVariableIds.has(variableId)) {
             throw new Error(
-                `MachineProfile defines unknown ActivityType variable "${variableId}".`
+                `MachineProfile defines unknown ActivityType variable "${variableId}".`,
             );
         }
 
@@ -107,34 +96,25 @@ function validateMachineVariables(variables, activityType) {
 
     for (const variableId of activityVariableIds) {
         if (!Object.hasOwn(variables, variableId)) {
-            throw new Error(
-                `MachineProfile is missing ActivityType variable "${variableId}".`
-            );
+            throw new Error(`MachineProfile is missing ActivityType variable "${variableId}".`);
         }
     }
 }
 
-
 /** Validates a machine-specific variable configuration. */
 function validateMachineVariable(variable, variableId) {
-    if (
-        variable === null ||
-        typeof variable !== "object" ||
-        Array.isArray(variable)
-    ) {
-        throw new TypeError(
-            `MachineProfile variable "${variableId}" must be an object.`
-        );
+    if (variable === null || typeof variable !== "object" || Array.isArray(variable)) {
+        throw new TypeError(`MachineProfile variable "${variableId}" must be an object.`);
     }
 
     requireNonEmptyString(
         variable.controlMode,
-        `MachineProfile variable "${variableId}" controlMode`
+        `MachineProfile variable "${variableId}" controlMode`,
     );
 
     if (!VALID_CONTROL_MODES.has(variable.controlMode)) {
         throw new Error(
-            `Unknown controlMode "${variable.controlMode}" for MachineProfile variable "${variableId}".`
+            `Unknown controlMode "${variable.controlMode}" for MachineProfile variable "${variableId}".`,
         );
     }
 
@@ -142,23 +122,16 @@ function validateMachineVariable(variable, variableId) {
     validateOptionalNumber(variable.max, `MachineProfile variable "${variableId}" max`);
     validateOptionalNumber(variable.increment, `MachineProfile variable "${variableId}" increment`);
 
-    if (
-        variable.min !== undefined &&
-        variable.max !== undefined &&
-        variable.min > variable.max
-    ) {
-        throw new Error(
-            `MachineProfile variable "${variableId}" min cannot exceed max.`
-        );
+    if (variable.min !== undefined && variable.max !== undefined && variable.min > variable.max) {
+        throw new Error(`MachineProfile variable "${variableId}" min cannot exceed max.`);
     }
 
     if (variable.increment !== undefined && variable.increment <= 0) {
         throw new Error(
-            `MachineProfile variable "${variableId}" increment must be greater than zero.`
+            `MachineProfile variable "${variableId}" increment must be greater than zero.`,
         );
     }
 }
-
 
 /** Validates an optional numeric value when present. */
 function validateOptionalNumber(value, description) {
@@ -166,7 +139,6 @@ function validateOptionalNumber(value, description) {
         throw new TypeError(`${description} must be a finite number.`);
     }
 }
-
 
 /** Requires a value to be a non-empty string. */
 function requireNonEmptyString(value, description) {

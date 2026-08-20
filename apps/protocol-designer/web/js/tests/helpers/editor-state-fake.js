@@ -4,13 +4,8 @@
  */
 
 /** Creates a lightweight EditorState fake for controller tests. */
-export function createEditorStateFake(
-    activeBlockDraft
-) {
-    let draft =
-    activeBlockDraft === undefined
-    ? undefined
-    : structuredClone(activeBlockDraft);
+export function createEditorStateFake(activeBlockDraft) {
+    let draft = activeBlockDraft === undefined ? undefined : structuredClone(activeBlockDraft);
     let validationErrors = [
         {
             scope: "block",
@@ -27,10 +22,7 @@ export function createEditorStateFake(
 
     let expandedBlockId;
 
-    let expandedPhaseIds = [
-        "phase-1",
-        "phase-2",
-    ];
+    let expandedPhaseIds = ["phase-1", "phase-2"];
 
     const calls = {
         setValidationErrors: 0,
@@ -48,27 +40,18 @@ export function createEditorStateFake(
 
         getSnapshot() {
             return {
-                activeBlockDraft:
-                draft === undefined
-                ? undefined
-                : structuredClone(draft),
-                validationErrors:
-                structuredClone(validationErrors),
+                activeBlockDraft: draft === undefined ? undefined : structuredClone(draft),
+                validationErrors: structuredClone(validationErrors),
                 pendingInsertion:
-                pendingInsertion === undefined
-                ? undefined
-                : structuredClone(pendingInsertion),
+                    pendingInsertion === undefined ? undefined : structuredClone(pendingInsertion),
                 expandedBlockId,
-                expandedPhaseIds: [
-                    ...expandedPhaseIds,
-                ],
+                expandedPhaseIds: [...expandedPhaseIds],
             };
         },
 
         setValidationErrors(errors) {
             calls.setValidationErrors++;
-            validationErrors =
-            structuredClone(errors);
+            validationErrors = structuredClone(errors);
         },
 
         clearValidationErrors() {
@@ -106,10 +89,7 @@ export function createEditorStateFake(
 
         collapsePhase(phaseId) {
             calls.collapsePhase++;
-            expandedPhaseIds =
-            expandedPhaseIds.filter(
-                id => id !== phaseId
-            );
+            expandedPhaseIds = expandedPhaseIds.filter((id) => id !== phaseId);
         },
     };
 }

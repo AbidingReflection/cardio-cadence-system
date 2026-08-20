@@ -6,14 +6,9 @@
 import { loadDomainData } from "./domain-data.js";
 import { ProtocolModel } from "./models/protocol-model.js";
 import { EditorState } from "./state/editor-state.js";
-import {
-    renderProtocolTree,
-} from "./renderers/protocol-tree-renderer.js";
+import { renderProtocolTree } from "./renderers/protocol-tree-renderer.js";
 
-import {
-    requestCollapseBlock,
-    startBlockEdit,
-} from "./controllers/block-editor-controller.js";
+import { requestCollapseBlock, startBlockEdit } from "./controllers/block-editor-controller.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
 
@@ -23,59 +18,35 @@ const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.
  */
 async function main() {
     const domainData = await loadDomainData();
-    const protocolData =
-    await loadProtocolData(
-        INITIAL_PROTOCOL_URL
-    );
+    const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
 
-    console.log(
-        "Loaded protocol data:",
-        protocolData
-    );
+    console.log("Loaded protocol data:", protocolData);
 
-    const activityType =
-    domainData.activityTypes.get(
-        protocolData.activityTypeId
-    );
+    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
 
     if (activityType === undefined) {
-        throw new Error(
-            `Protocol ActivityType "${protocolData.activityTypeId}" was not found.`
-        );
+        throw new Error(`Protocol ActivityType "${protocolData.activityTypeId}" was not found.`);
     }
 
     const machineProfile =
-    protocolData.machineProfileId === undefined
-        ? undefined
-        : domainData.machineProfiles.get(
-            protocolData.machineProfileId
-    );
+        protocolData.machineProfileId === undefined
+            ? undefined
+            : domainData.machineProfiles.get(protocolData.machineProfileId);
 
-    if (
-        protocolData.machineProfileId !== undefined &&
-        machineProfile === undefined
-    ) {
+    if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
         throw new Error(
-            `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`
+            `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`,
         );
     }
 
-    const protocolModel =
-    new ProtocolModel(
-        protocolData,
-        activityType,
-        machineProfile
-    );
+    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
 
-    const editorState =
-    new EditorState();
+    const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
 
     if (protocolTree === null) {
-        throw new Error(
-            'Required element "#protocol-tree" was not found.'
-        );
+        throw new Error('Required element "#protocol-tree" was not found.');
     }
 
     const render = () => {
@@ -83,108 +54,67 @@ async function main() {
             protocolTree,
             protocolModel.getSnapshot(),
             editorState.getSnapshot(),
-            activityType
+            activityType,
         );
     };
 
     protocolModel.subscribe(render);
     editorState.subscribe(render);
 
-    protocolTree.addEventListener(
-        "click",
-        event => {
-            const expandBlockToggle =
-            event.target.closest(
-                '[data-action="expand-block"]'
-            );
+    protocolTree.addEventListener("click", (event) => {
+        const expandBlockToggle = event.target.closest('[data-action="expand-block"]');
 
-            if (expandBlockToggle !== null) {
-                const blockElement =
-                expandBlockToggle.closest(
-                    "[data-block-id]"
-                );
+        if (expandBlockToggle !== null) {
+            const blockElement = expandBlockToggle.closest("[data-block-id]");
 
-                if (blockElement === null) {
-                    throw new Error(
-                        "Block toggle is missing its block container."
-                    );
-                }
-
-                const blockId =
-                blockElement.dataset.blockId;
-
-                startBlockEdit(
-                    protocolModel,
-                    editorState,
-                    blockId
-                );
-
-                return;
+            if (blockElement === null) {
+                throw new Error("Block toggle is missing its block container.");
             }
 
-            const collapseBlockToggle =
-            event.target.closest(
-                '[data-action="collapse-block"]'
-            );
+            const blockId = blockElement.dataset.blockId;
 
-            if (collapseBlockToggle !== null) {
-                requestCollapseBlock(
-                    editorState
-                );
+            startBlockEdit(protocolModel, editorState, blockId);
 
-                return;
-            }
-
-            const phaseToggle =
-            event.target.closest(
-                '[data-action="toggle-phase"]'
-            );
-
-            if (phaseToggle === null) {
-                return;
-            }
-
-            const phaseElement =
-            phaseToggle.closest(
-                "[data-phase-id]"
-            );
-
-            if (phaseElement === null) {
-                throw new Error(
-                    "Phase toggle is missing its phase container."
-                );
-            }
-
-            const phaseId =
-            phaseElement.dataset.phaseId;
-
-            editorState.togglePhase(phaseId);
+            return;
         }
-    );
 
-    protocolTree.addEventListener(
-        "change",
-        (event) => {
-            const field =
-            event.target.closest(
-                "[data-field]"
-            );
+        const collapseBlockToggle = event.target.closest('[data-action="collapse-block"]');
 
-            if (field === null) {
-                return;
-            }
+        if (collapseBlockToggle !== null) {
+            requestCollapseBlock(editorState);
 
-            updateBlockDraftField(
-                editorState,
-                field.dataset.field,
-                field.value
-            );
+            return;
         }
-    );
+
+        const phaseToggle = event.target.closest('[data-action="toggle-phase"]');
+
+        if (phaseToggle === null) {
+            return;
+        }
+
+        const phaseElement = phaseToggle.closest("[data-phase-id]");
+
+        if (phaseElement === null) {
+            throw new Error("Phase toggle is missing its phase container.");
+        }
+
+        const phaseId = phaseElement.dataset.phaseId;
+
+        editorState.togglePhase(phaseId);
+    });
+
+    protocolTree.addEventListener("change", (event) => {
+        const field = event.target.closest("[data-field]");
+
+        if (field === null) {
+            return;
+        }
+
+        updateBlockDraftField(editorState, field.dataset.field, field.value);
+    });
 
     render();
 }
-
 
 /** Loads protocol JSON from the specified URL. */
 async function loadProtocolData(url) {
@@ -192,48 +122,30 @@ async function loadProtocolData(url) {
 
     if (!response.ok) {
         throw new Error(
-            `Failed to load protocol "${url}": ` +
-            `${response.status} ${response.statusText}.`
+            `Failed to load protocol "${url}": ` + `${response.status} ${response.statusText}.`,
         );
     }
 
     const data = await response.json();
 
-    if (
-        data === null ||
-        typeof data !== "object" ||
-        data.protocol === undefined
-    ) {
-        throw new Error(
-            `Protocol file "${url}" must contain a protocol object.`
-        );
+    if (data === null || typeof data !== "object" || data.protocol === undefined) {
+        throw new Error(`Protocol file "${url}" must contain a protocol object.`);
     }
 
     return data.protocol;
 }
 
 /** Updates one field in the active block draft. */
-function updateBlockDraftField(
-    editorState,
-    fieldPath,
-    value
-) {
-    const editorSnapshot =
-    editorState.getSnapshot();
+function updateBlockDraftField(editorState, fieldPath, value) {
+    const editorSnapshot = editorState.getSnapshot();
 
-    const draft =
-    editorSnapshot.activeBlockDraft;
+    const draft = editorSnapshot.activeBlockDraft;
 
     if (draft === undefined) {
-        throw new Error(
-            "Cannot update a block field without an active draft."
-        );
+        throw new Error("Cannot update a block field without an active draft.");
     }
 
-    if (
-        fieldPath === "name" ||
-        fieldPath === "duration"
-    ) {
+    if (fieldPath === "name" || fieldPath === "duration") {
         editorState.updateBlockDraft({
             [fieldPath]: value,
         });
@@ -241,28 +153,19 @@ function updateBlockDraftField(
         return;
     }
 
-    const parts =
-    fieldPath.split(".");
+    const parts = fieldPath.split(".");
 
-    if (
-        parts.length !== 3 ||
-        parts[0] !== "variables"
-    ) {
-        throw new Error(
-            `Unsupported block draft field: "${fieldPath}".`
-        );
+    if (parts.length !== 3 || parts[0] !== "variables") {
+        throw new Error(`Unsupported block draft field: "${fieldPath}".`);
     }
 
     const variableId = parts[1];
     const variableField = parts[2];
 
-    const progression =
-    draft.variables?.[variableId];
+    const progression = draft.variables?.[variableId];
 
     if (progression === undefined) {
-        throw new Error(
-            `Block draft has no variable "${variableId}".`
-        );
+        throw new Error(`Block draft has no variable "${variableId}".`);
     }
 
     editorState.updateBlockDraft({
@@ -277,10 +180,6 @@ function updateBlockDraftField(
     });
 }
 
-
-main().catch(error => {
-    console.error(
-        "Protocol Designer initialization failed.",
-        error
-    );
+main().catch((error) => {
+    console.error("Protocol Designer initialization failed.", error);
 });

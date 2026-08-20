@@ -8,15 +8,12 @@ export function renderTestSuites(tests) {
 
     container.replaceChildren();
 
-    const suites = new Set(
-        tests.map(test => test.suite)
-    );
+    const suites = new Set(tests.map((test) => test.suite));
 
     for (const suite of suites) {
         container.append(createTestSuite(suite));
     }
 }
-
 
 /** Renders all completed test results. */
 export function renderTestResults(results) {
@@ -25,22 +22,15 @@ export function renderTestResults(results) {
     }
 }
 
-
 /** Updates the overall test summary from completed results. */
 export function renderSummary(results) {
-    const passed = results.filter(
-        result => result.status === "PASSED"
-    ).length;
+    const passed = results.filter((result) => result.status === "PASSED").length;
 
-    const failed = results.filter(
-        result => result.status === "FAILED"
-    ).length;
+    const failed = results.filter((result) => result.status === "FAILED").length;
 
     const total = results.length;
 
-    const statusElement = getRequiredElement(
-        "#test-summary-status"
-    );
+    const statusElement = getRequiredElement("#test-summary-status");
 
     getRequiredElement("#test-summary-total").textContent = total;
     getRequiredElement("#test-summary-passed").textContent = passed;
@@ -49,7 +39,7 @@ export function renderSummary(results) {
     statusElement.classList.remove(
         "test-status--pending",
         "test-status--passed",
-        "test-status--failed"
+        "test-status--failed",
     );
 
     if (failed === 0) {
@@ -61,27 +51,18 @@ export function renderSummary(results) {
     }
 }
 
-
 /** Renders a summary row for each completed test suite. */
 export function renderSuiteSummary(results) {
-    const tableBody = getRequiredElement(
-        "#test-suite-summary"
-    );
+    const tableBody = getRequiredElement("#test-suite-summary");
 
     tableBody.replaceChildren();
 
     const suites = groupResultsBySuite(results);
 
     for (const [suite, suiteResults] of suites) {
-        tableBody.append(
-            createSuiteSummaryItem(
-                suite,
-                suiteResults
-            )
-        );
+        tableBody.append(createSuiteSummaryItem(suite, suiteResults));
     }
 }
-
 
 /** Creates the result table for a single test suite. */
 function createTestSuite(suite) {
@@ -113,21 +94,14 @@ function createTestSuite(suite) {
     return section;
 }
 
-
 /** Creates a summary row linking to a test suite section. */
 function createSuiteSummaryItem(suite, results) {
-    const passed = results.filter(
-        result => result.status === "PASSED"
-    ).length;
+    const passed = results.filter((result) => result.status === "PASSED").length;
 
-    const failed = results.filter(
-        result => result.status === "FAILED"
-    ).length;
+    const failed = results.filter((result) => result.status === "FAILED").length;
 
     const total = results.length;
-    const status = failed === 0
-    ? "PASSED"
-    : "FAILED";
+    const status = failed === 0 ? "PASSED" : "FAILED";
 
     const row = document.createElement("tr");
 
@@ -140,10 +114,7 @@ function createSuiteSummaryItem(suite, results) {
     suiteCell.append(suiteLink);
 
     const statusCell = document.createElement("td");
-    statusCell.className = [
-        "test-status",
-        getStatusClass(status),
-    ].join(" ");
+    statusCell.className = ["test-status", getStatusClass(status)].join(" ");
     statusCell.textContent = status;
 
     const totalCell = document.createElement("td");
@@ -155,17 +126,10 @@ function createSuiteSummaryItem(suite, results) {
     const failedCell = document.createElement("td");
     failedCell.textContent = failed;
 
-    row.append(
-        suiteCell,
-        statusCell,
-        totalCell,
-        passedCell,
-        failedCell
-    );
+    row.append(suiteCell, statusCell, totalCell, passedCell, failedCell);
 
     return row;
 }
-
 
 /** Groups completed test results by suite. */
 function groupResultsBySuite(results) {
@@ -182,23 +146,17 @@ function groupResultsBySuite(results) {
     return suites;
 }
 
-
 /** Returns the DOM ID used for a test suite section. */
 function getSuiteSectionId(suite) {
     return `test-suite-${suite}`;
 }
 
-
 /** Renders a completed test result into its suite table. */
 function renderTestResult(result) {
-    const tableBody = document.querySelector(
-        `[data-test-suite="${result.suite}"]`
-    );
+    const tableBody = document.querySelector(`[data-test-suite="${result.suite}"]`);
 
     if (tableBody === null) {
-        throw new Error(
-            `No test result table found for suite "${result.suite}".`
-        );
+        throw new Error(`No test result table found for suite "${result.suite}".`);
     }
 
     const row = document.createElement("tr");
@@ -207,24 +165,16 @@ function renderTestResult(result) {
     nameCell.textContent = result.name;
 
     const statusCell = document.createElement("td");
-    statusCell.className = [
-        "test-status",
-        getStatusClass(result.status),
-    ].join(" ");
+    statusCell.className = ["test-status", getStatusClass(result.status)].join(" ");
     statusCell.textContent = result.status;
 
     const messageCell = document.createElement("td");
     messageCell.textContent = result.message ?? "";
 
-    row.append(
-        nameCell,
-        statusCell,
-        messageCell
-    );
+    row.append(nameCell, statusCell, messageCell);
 
     tableBody.append(row);
 }
-
 
 /** Returns the CSS class corresponding to a test result status. */
 function getStatusClass(status) {
@@ -238,7 +188,6 @@ function getStatusClass(status) {
 
     throw new Error(`Unknown test result status "${status}".`);
 }
-
 
 /** Returns a required DOM element or throws if it is absent. */
 function getRequiredElement(selector) {

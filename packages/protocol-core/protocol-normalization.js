@@ -3,10 +3,7 @@
  * the source data. Validation is handled separately.
  */
 
-import {
-    getProgressionDefinition,
-} from "./progression-types.js";
-
+import { getProgressionDefinition } from "./progression-types.js";
 
 /** Returns a normalized copy of a protocol. */
 export function normalizeProtocol(protocol) {
@@ -16,7 +13,6 @@ export function normalizeProtocol(protocol) {
     };
 }
 
-
 /** Returns a normalized copy of a protocol phase. */
 function normalizePhase(phase) {
     return {
@@ -24,7 +20,6 @@ function normalizePhase(phase) {
         blocks: phase.blocks.map(normalizeBlock),
     };
 }
-
 
 /** Returns a normalized copy of a protocol block. */
 function normalizeBlock(block) {
@@ -34,19 +29,15 @@ function normalizeBlock(block) {
     };
 }
 
-
 /** Returns a normalized copy of a block variable collection. */
 function normalizeVariables(variables) {
     return Object.fromEntries(
-        Object.entries(variables).map(
-            ([variableId, progression]) => [
-                variableId,
-                normalizeProgression(progression),
-            ]
-        )
+        Object.entries(variables).map(([variableId, progression]) => [
+            variableId,
+            normalizeProgression(progression),
+        ]),
     );
 }
-
 
 /** Returns a normalized copy of a progression. */
 function normalizeProgression(progression) {
@@ -58,10 +49,7 @@ function normalizeProgression(progression) {
 
     return Object.fromEntries(
         definition.allowedFields
-        .filter(field => Object.hasOwn(progression, field))
-        .map(field => [
-            field,
-             progression[field],
-        ])
+            .filter((field) => Object.hasOwn(progression, field))
+            .map((field) => [field, progression[field]]),
     );
 }

@@ -1,12 +1,6 @@
-import {
-    test,
-    assertThrows,
-} from "/packages/js-testing/framework/test-framework.js";
+import { test, assertThrows } from "/packages/js-testing/framework/test-framework.js";
 
-import {
-    validateProtocol,
-} from "../protocol-validation.js";
-
+import { validateProtocol } from "../protocol-validation.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",
@@ -26,7 +20,6 @@ const ACTIVITY_TYPE = {
     ],
 };
 
-
 const MACHINE_VARIABLES = {
     speed: {
         controlMode: "machine-set",
@@ -42,7 +35,6 @@ const MACHINE_VARIABLES = {
     },
 };
 
-
 const MACHINE_PROFILE = {
     id: "test-treadmill",
     activityTypeId: "treadmill",
@@ -51,7 +43,6 @@ const MACHINE_PROFILE = {
         return MACHINE_VARIABLES[variableId];
     },
 };
-
 
 /** Creates a valid protocol for use as a test fixture. */
 function createProtocol() {
@@ -85,79 +76,48 @@ function createProtocol() {
     };
 }
 
-
 test("protocol-validation", "accepts a valid protocol", () => {
-    validateProtocol(
-        createProtocol(),
-                     ACTIVITY_TYPE,
-                     MACHINE_PROFILE
-    );
+    validateProtocol(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "allows a protocol with no phases", () => {
     const protocol = createProtocol();
     protocol.phases = [];
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "allows a phase with no blocks", () => {
     const protocol = createProtocol();
     protocol.phases[0].blocks = [];
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "allows unknown protocol fields", () => {
     const protocol = createProtocol();
     protocol.futureField = "allowed";
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "rejects mismatched ActivityType references", () => {
     const protocol = createProtocol();
     protocol.activityTypeId = "elliptical";
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects missing phases array", () => {
     const protocol = createProtocol();
     delete protocol.phases;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects duplicate phase IDs", () => {
     const protocol = createProtocol();
@@ -169,14 +129,9 @@ test("protocol-validation", "rejects duplicate phase IDs", () => {
     });
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects duplicate block IDs across phases", () => {
     const protocol = createProtocol();
@@ -204,28 +159,18 @@ test("protocol-validation", "rejects duplicate block IDs across phases", () => {
     });
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects non-positive block durations", () => {
     const protocol = createProtocol();
     protocol.phases[0].blocks[0].durationSeconds = 0;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects missing ActivityType variables", () => {
     const protocol = createProtocol();
@@ -233,14 +178,9 @@ test("protocol-validation", "rejects missing ActivityType variables", () => {
     delete protocol.phases[0].blocks[0].variables.incline;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects unknown block variables", () => {
     const protocol = createProtocol();
@@ -251,30 +191,19 @@ test("protocol-validation", "rejects unknown block variables", () => {
     };
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects unknown progression types", () => {
     const protocol = createProtocol();
 
-    protocol.phases[0].blocks[0].variables.speed.type =
-    "exponential";
+    protocol.phases[0].blocks[0].variables.speed.type = "exponential";
 
-assertThrows(() => {
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    assertThrows(() => {
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
+    });
 });
-});
-
 
 test("protocol-validation", "rejects missing progression fields", () => {
     const protocol = createProtocol();
@@ -282,30 +211,19 @@ test("protocol-validation", "rejects missing progression fields", () => {
     delete protocol.phases[0].blocks[0].variables.speed.end;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects non-numeric progression targets", () => {
     const protocol = createProtocol();
 
-    protocol.phases[0].blocks[0].variables.speed.start =
-    "3";
+    protocol.phases[0].blocks[0].variables.speed.start = "3";
 
-assertThrows(() => {
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    assertThrows(() => {
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
+    });
 });
-});
-
 
 test("protocol-validation", "accepts descending progressions", () => {
     const protocol = createProtocol();
@@ -316,13 +234,8 @@ test("protocol-validation", "accepts descending progressions", () => {
         end: 3,
     };
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "accepts flat linear progressions", () => {
     const protocol = createProtocol();
@@ -333,13 +246,8 @@ test("protocol-validation", "accepts flat linear progressions", () => {
         end: 4,
     };
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "accepts valid stepped progressions", () => {
     const protocol = createProtocol();
@@ -351,13 +259,8 @@ test("protocol-validation", "accepts valid stepped progressions", () => {
         stepIntervalSeconds: 60,
     };
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "rejects non-positive step intervals", () => {
     const protocol = createProtocol();
@@ -370,46 +273,29 @@ test("protocol-validation", "rejects non-positive step intervals", () => {
     };
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects targets below machine minimum", () => {
     const protocol = createProtocol();
 
-    protocol.phases[0].blocks[0].variables.speed.start =
-    0.4;
+    protocol.phases[0].blocks[0].variables.speed.start = 0.4;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects targets above machine maximum", () => {
     const protocol = createProtocol();
 
-    protocol.phases[0].blocks[0].variables.speed.end =
-    10.1;
+    protocol.phases[0].blocks[0].variables.speed.end = 10.1;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "accepts decimal machine increments", () => {
     const protocol = createProtocol();
@@ -426,41 +312,26 @@ test("protocol-validation", "accepts decimal machine increments", () => {
         end: 2.5,
     };
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
-
 
 test("protocol-validation", "rejects targets not aligned to machine increments", () => {
     const protocol = createProtocol();
 
-    protocol.phases[0].blocks[0].variables.incline.start =
-    0.25;
+    protocol.phases[0].blocks[0].variables.incline.start = 0.25;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "allows protocols without a MachineProfile", () => {
     const protocol = createProtocol();
 
     delete protocol.machineProfileId;
 
-    validateProtocol(
-        protocol,
-        ACTIVITY_TYPE
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE);
 });
-
 
 test("protocol-validation", "rejects a supplied MachineProfile when none is referenced", () => {
     const protocol = createProtocol();
@@ -468,26 +339,17 @@ test("protocol-validation", "rejects a supplied MachineProfile when none is refe
     delete protocol.machineProfileId;
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
-
 
 test("protocol-validation", "rejects missing referenced MachineProfiles", () => {
     const protocol = createProtocol();
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE);
     });
 });
-
 
 test("protocol-validation", "rejects mismatched MachineProfile IDs", () => {
     const protocol = createProtocol();
@@ -495,10 +357,6 @@ test("protocol-validation", "rejects mismatched MachineProfile IDs", () => {
     protocol.machineProfileId = "different-machine";
 
     assertThrows(() => {
-        validateProtocol(
-            protocol,
-            ACTIVITY_TYPE,
-            MACHINE_PROFILE
-        );
+        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
