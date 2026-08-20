@@ -36,8 +36,19 @@ export class ProtocolModel {
     }
 
     /** Adds a new empty phase and returns its generated ID. */
-    addPhase(name = "New Phase") {
-        const nextProtocol = structuredClone(this.#protocol);
+    addPhase(
+        name = "New Phase",
+        index = undefined
+    ) {
+        const nextProtocol =
+        structuredClone(this.#protocol);
+
+        const insertionIndex =
+        getInsertionIndex(
+            index,
+            nextProtocol.phases.length,
+            "phase"
+        );
 
         const phase = {
             id: crypto.randomUUID(),
@@ -45,9 +56,14 @@ export class ProtocolModel {
             blocks: [],
         };
 
-        nextProtocol.phases.push(phase);
+        nextProtocol.phases.splice(
+            insertionIndex,
+            0,
+            phase
+        );
 
-        const normalizedProtocol = normalizeProtocol(nextProtocol);
+        const normalizedProtocol =
+        normalizeProtocol(nextProtocol);
 
         validateProtocol(
             normalizedProtocol,
@@ -55,7 +71,9 @@ export class ProtocolModel {
             this.#machineProfile
         );
 
-        this.#protocol = structuredClone(normalizedProtocol);
+        this.#protocol =
+        structuredClone(normalizedProtocol);
+
         this.#emit();
 
         return phase.id;
@@ -119,12 +137,19 @@ export class ProtocolModel {
         this.#emit();
     }
 
+
     /** Adds a block to a phase and returns its generated ID. */
-    addBlock(phaseId, blockData) {
-        const nextProtocol = structuredClone(this.#protocol);
+    addBlock(
+        phaseId,
+        blockData,
+        index = undefined
+    ) {
+        const nextProtocol =
+        structuredClone(this.#protocol);
 
         const phase = nextProtocol.phases.find(
-            candidate => candidate.id === phaseId
+            candidate =>
+            candidate.id === phaseId
         );
 
         if (phase === undefined) {
@@ -133,14 +158,26 @@ export class ProtocolModel {
             );
         }
 
+        const insertionIndex =
+        getInsertionIndex(
+            index,
+            phase.blocks.length,
+            "block"
+        );
+
         const block = {
             ...blockData,
             id: crypto.randomUUID(),
         };
 
-        phase.blocks.push(block);
+        phase.blocks.splice(
+            insertionIndex,
+            0,
+            block
+        );
 
-        const normalizedProtocol = normalizeProtocol(nextProtocol);
+        const normalizedProtocol =
+        normalizeProtocol(nextProtocol);
 
         validateProtocol(
             normalizedProtocol,
@@ -148,7 +185,9 @@ export class ProtocolModel {
             this.#machineProfile
         );
 
-        this.#protocol = structuredClone(normalizedProtocol);
+        this.#protocol =
+        structuredClone(normalizedProtocol);
+
         this.#emit();
 
         return block.id;
@@ -255,4 +294,29 @@ export class ProtocolModel {
             listener(snapshot);
         }
     }
+}
+
+
+/** Returns a validated insertion index, defaulting to append. */
+function getInsertionIndex(
+    index,
+    length,
+    entityName
+) {
+    if (index === undefined) {
+        return length;
+    }
+
+    if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index > length
+    ) {
+        throw new Error(
+            `${entityName} insertion index must be an integer ` +
+            `between 0 and ${length}.`
+        );
+    }
+
+    return index;
 }

@@ -88,6 +88,15 @@ function createProtocol() {
     };
 }
 
+/** Creates a ProtocolModel using the standard test fixture. */
+function createProtocolModel() {
+    return new ProtocolModel(
+        createProtocol(),
+        ACTIVITY_TYPE,
+        MACHINE_PROFILE
+    );
+}
+
 
 test("protocol-model", "constructs from valid protocol data", () => {
     const protocol = createProtocol();
@@ -1388,3 +1397,264 @@ test("protocol-model", "emits once for each successful mutation method", () => {
     model.removePhase(phaseId);
     assertEqual(notificationCount, 6);
 });
+
+
+test(
+    "protocol-model",
+     "inserts a phase at the requested index",
+     () => {
+         const model = createProtocolModel();
+
+         const phaseId = model.addPhase(
+             "Inserted",
+             1
+         );
+
+         const snapshot = model.getSnapshot();
+
+         assertEqual(
+             snapshot.phases[1].id,
+             phaseId
+         );
+
+         assertEqual(
+             snapshot.phases[1].name,
+             "Inserted"
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "inserts a phase at the beginning",
+     () => {
+         const model = createProtocolModel();
+
+         const phaseId = model.addPhase(
+             "First",
+             0
+         );
+
+         assertEqual(
+             model.getSnapshot().phases[0].id,
+                     phaseId
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "appends a phase when insertion index is omitted",
+     () => {
+         const model = createProtocolModel();
+
+         const originalLength =
+         model.getSnapshot().phases.length;
+
+         const phaseId =
+         model.addPhase("Last");
+
+         const snapshot = model.getSnapshot();
+
+         assertEqual(
+             snapshot.phases.length,
+             originalLength + 1
+         );
+
+         assertEqual(
+             snapshot.phases.at(-1).id,
+                     phaseId
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "inserts a block at the requested index",
+     () => {
+         const model = createProtocolModel();
+
+         const blockId = model.addBlock(
+             "phase-1",
+             {
+                 name: "Inserted Block",
+                 durationSeconds: 180,
+                 variables: {
+                     speed: {
+                         type: "linear",
+                         start: 3,
+                         end: 4,
+                     },
+                     incline: {
+                         type: "steady",
+                         start: 0,
+                     },
+                 },
+             },
+             0
+         );
+
+         const phase = model
+         .getSnapshot()
+         .phases
+         .find(
+             candidate =>
+             candidate.id === "phase-1"
+         );
+
+         assertEqual(
+             phase.blocks[0].id,
+             blockId
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "appends a block when insertion index is omitted",
+     () => {
+         const model = createProtocolModel();
+
+         const blockId = model.addBlock(
+             "phase-1",
+             {
+                 name: "Last Block",
+                 durationSeconds: 180,
+                 variables: {
+                     speed: {
+                         type: "linear",
+                         start: 3,
+                         end: 4,
+                     },
+                     incline: {
+                         type: "steady",
+                         start: 0,
+                     },
+                 },
+             }
+         );
+
+         const phase = model
+         .getSnapshot()
+         .phases
+         .find(
+             candidate =>
+             candidate.id === "phase-1"
+         );
+
+         assertEqual(
+             phase.blocks.at(-1).id,
+                     blockId
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "rejects an invalid phase insertion index",
+     () => {
+         const model = createProtocolModel();
+
+         assertThrows(
+             () => model.addPhase(
+                 "Invalid",
+                 -1
+             ),
+             "phase insertion index"
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "rejects an invalid block insertion index",
+     () => {
+         const model = createProtocolModel();
+
+         assertThrows(
+             () => model.addBlock(
+                 "phase-1",
+                 {
+                     name: "Invalid Block",
+                     durationSeconds: 180,
+                     variables: {
+                         speed: {
+                             type: "linear",
+                             start: 3,
+                             end: 4,
+                         },
+                         incline: {
+                             type: "steady",
+                             start: 0,
+                         },
+                     },
+                 },
+                 1.5
+             ),
+             "block insertion index"
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "failed phase insertion leaves protocol state unchanged",
+     () => {
+         const model = createProtocolModel();
+
+         const before =
+         model.getSnapshot();
+
+         assertThrows(
+             () => model.addPhase(
+                 "Invalid",
+                 999
+             ),
+             "phase insertion index"
+         );
+
+         assertDeepEqual(
+             model.getSnapshot(),
+                         before
+         );
+     }
+);
+
+test(
+    "protocol-model",
+     "failed block insertion leaves protocol state unchanged",
+     () => {
+         const model = createProtocolModel();
+
+         const before =
+         model.getSnapshot();
+
+         assertThrows(
+             () => model.addBlock(
+                 "phase-1",
+                 {
+                     name: "Invalid Block",
+                     durationSeconds: 180,
+                     variables: {
+                         speed: {
+                             type: "linear",
+                             start: 3,
+                             end: 4,
+                         },
+                         incline: {
+                             type: "steady",
+                             start: 0,
+                         },
+                     },
+                 },
+                 999
+             ),
+             "block insertion index"
+         );
+
+         assertDeepEqual(
+             model.getSnapshot(),
+                         before
+         );
+     }
+);
