@@ -524,19 +524,19 @@ function createBlockEditorHeader(
     label.textContent =
     "Block Name";
 
-        const input =
-        document.createElement("input");
+    const input =
+    document.createElement("input");
 
-        input.type = "text";
-        input.id = `${block.id}-name`;
-        input.name = "block-name";
-        input.className =
-        "block-name-editor__input";
+    input.type = "text";
+    input.id = `${block.id}-name`;
+    input.name = "block-name";
+    input.className =
+    "block-name-editor__input";
 
-        input.value = draft.name;
+    input.value = draft.name;
 
-        input.dataset.field =
-        "name";
+    input.dataset.field =
+    "name";
 
     nameEditor.append(
         label,
@@ -952,28 +952,28 @@ function createBlockActions() {
     actions.className =
     "block-editor__actions";
 
-             const cancel =
-             document.createElement("button");
+    const cancel =
+    document.createElement("button");
 
-             cancel.type = "button";
-             cancel.className =
-             "block-editor__cancel";
+    cancel.type = "button";
+    cancel.className =
+    "block-editor__cancel";
 
-             cancel.dataset.action =
-             "cancel-block-edit";
+    cancel.dataset.action =
+    "cancel-block-edit";
 
-             cancel.textContent =
-             "Cancel";
+    cancel.textContent =
+    "Cancel";
 
-         const apply =
-         document.createElement("button");
+    const apply =
+    document.createElement("button");
 
-         apply.type = "submit";
-         apply.className =
-         "block-editor__apply";
+    apply.type = "submit";
+    apply.className =
+    "block-editor__apply";
 
-         apply.textContent =
-         "Apply";
+    apply.textContent =
+    "Apply";
 
     actions.append(
         cancel,

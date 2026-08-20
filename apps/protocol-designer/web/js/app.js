@@ -15,9 +15,7 @@ import {
     startBlockEdit,
 } from "./controllers/block-editor-controller.js";
 
-const INITIAL_PROTOCOL_URL =
-"/data/protocols/true-elliptical-75-minute-session.json";
-
+const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
 
 /**
  * Coordinates application startup by wiring data sources, models, state,
@@ -48,9 +46,9 @@ async function main() {
 
     const machineProfile =
     protocolData.machineProfileId === undefined
-    ? undefined
-    : domainData.machineProfiles.get(
-        protocolData.machineProfileId
+        ? undefined
+        : domainData.machineProfiles.get(
+            protocolData.machineProfileId
     );
 
     if (
@@ -72,10 +70,7 @@ async function main() {
     const editorState =
     new EditorState();
 
-    const protocolTree =
-    document.querySelector(
-        "#protocol-tree"
-    );
+    const protocolTree = document.querySelector("#protocol-tree");
 
     if (protocolTree === null) {
         throw new Error(
@@ -87,8 +82,8 @@ async function main() {
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
-                           editorState.getSnapshot(),
-                           activityType
+            editorState.getSnapshot(),
+            activityType
         );
     };
 
@@ -167,6 +162,26 @@ async function main() {
         }
     );
 
+    protocolTree.addEventListener(
+        "change",
+        (event) => {
+            const field =
+            event.target.closest(
+                "[data-field]"
+            );
+
+            if (field === null) {
+                return;
+            }
+
+            updateBlockDraftField(
+                editorState,
+                field.dataset.field,
+                field.value
+            );
+        }
+    );
+
     render();
 }
 
@@ -195,6 +210,71 @@ async function loadProtocolData(url) {
     }
 
     return data.protocol;
+}
+
+/** Updates one field in the active block draft. */
+function updateBlockDraftField(
+    editorState,
+    fieldPath,
+    value
+) {
+    const editorSnapshot =
+    editorState.getSnapshot();
+
+    const draft =
+    editorSnapshot.activeBlockDraft;
+
+    if (draft === undefined) {
+        throw new Error(
+            "Cannot update a block field without an active draft."
+        );
+    }
+
+    if (
+        fieldPath === "name" ||
+        fieldPath === "duration"
+    ) {
+        editorState.updateBlockDraft({
+            [fieldPath]: value,
+        });
+
+        return;
+    }
+
+    const parts =
+    fieldPath.split(".");
+
+    if (
+        parts.length !== 3 ||
+        parts[0] !== "variables"
+    ) {
+        throw new Error(
+            `Unsupported block draft field: "${fieldPath}".`
+        );
+    }
+
+    const variableId = parts[1];
+    const variableField = parts[2];
+
+    const progression =
+    draft.variables?.[variableId];
+
+    if (progression === undefined) {
+        throw new Error(
+            `Block draft has no variable "${variableId}".`
+        );
+    }
+
+    editorState.updateBlockDraft({
+        variables: {
+            ...draft.variables,
+
+            [variableId]: {
+                ...progression,
+                [variableField]: value,
+            },
+        },
+    });
 }
 
 
