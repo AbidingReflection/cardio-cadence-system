@@ -5,7 +5,6 @@
     "name": "True Elliptical 75-Minute Session",
     "activityTypeId": "elliptical",
     "machineProfileId": "true-elliptical-aquatic-center",
-
     "phases": [
       {
         "id": "warm-up",
@@ -17,18 +16,14 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 40,
-                  "end": 45
-                }
+                "type": "linear",
+                "start": 40,
+                "end": 45
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 1,
-                  "end": 2
-                }
+                "type": "linear",
+                "start": 1,
+                "end": 2
               }
             }
           },
@@ -38,18 +33,14 @@
             "durationSeconds": 600,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 45,
-                  "end": 60
-                }
+                "type": "linear",
+                "start": 45,
+                "end": 60
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 3,
-                  "end": 7
-                }
+                "type": "linear",
+                "start": 3,
+                "end": 7
               }
             }
           }
@@ -65,18 +56,14 @@
             "durationSeconds": 2700,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 60,
-                  "end": 70
-                }
+                "type": "linear",
+                "start": 60,
+                "end": 70
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 8,
-                  "end": 16
-                }
+                "type": "linear",
+                "start": 8,
+                "end": 16
               }
             }
           }
@@ -92,18 +79,14 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 70,
-                  "end": 60
-                }
+                "type": "linear",
+                "start": 70,
+                "end": 60
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 15,
-                  "end": 12
-                }
+                "type": "linear",
+                "start": 15,
+                "end": 12
               }
             }
           },
@@ -113,18 +96,14 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 60,
-                  "end": 50
-                }
+                "type": "linear",
+                "start": 60,
+                "end": 50
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 12,
-                  "end": 6
-                }
+                "type": "linear",
+                "start": 12,
+                "end": 6
               }
             }
           },
@@ -134,18 +113,14 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "progression": {
-                  "type": "linear",
-                  "start": 50,
-                  "end": 40
-                }
+                "type": "linear",
+                "start": 50,
+                "end": 40
               },
               "resistance": {
-                "progression": {
-                  "type": "linear",
-                  "start": 6,
-                  "end": 1
-                }
+                "type": "linear",
+                "start": 6,
+                "end": 1
               }
             }
           }
