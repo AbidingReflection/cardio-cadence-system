@@ -1056,13 +1056,19 @@ test(
          );
 
          assertEqual(
-             editorState.calls.collapseBlock,
+             editorState.calls.closeBlockDraft,
              1
          );
 
          assertEqual(
              editorState.getSnapshot()
              .expandedBlockId,
+             undefined
+         );
+
+         assertEqual(
+             editorState.getSnapshot()
+             .activeBlockDraft,
              undefined
          );
      }
@@ -1075,8 +1081,8 @@ test(
      () => {
          const editorState =
          createEditorStateFake(
-         	createEditDraft()
-		 );
+             createEditDraft()
+         );
 
          editorState.expandBlock("block-1");
          editorState.isBlockDraftDirty =
@@ -1096,26 +1102,26 @@ test(
 
          assertEqual(
              editorState.calls
-             .clearValidationErrors,
+             .closeBlockDraft,
              1
          );
 
          assertEqual(
-             editorState.calls
-             .cancelBlockDraft,
-             1
-         );
-
-         assertEqual(
-             editorState.calls
-             .collapseBlock,
-             1
+             editorState.getSnapshot()
+             .expandedBlockId,
+             undefined
          );
 
          assertEqual(
              editorState.getSnapshot()
              .activeBlockDraft,
              undefined
+         );
+
+         assertDeepEqual(
+             editorState.getSnapshot()
+             .validationErrors,
+             []
          );
      }
 );
@@ -1391,8 +1397,8 @@ test(
 
          const editorState =
          createEditorStateFake(
-         	createEditDraft()
-		 );
+             createEditDraft()
+         );
 
          editorState.expandBlock("block-1");
          editorState.isBlockDraftDirty =
@@ -1414,24 +1420,32 @@ test(
 
          assertEqual(
              editorState.calls
-             .clearValidationErrors,
+             .closeBlockDraft,
              1
          );
 
          assertEqual(
              editorState.calls
-             .cancelBlockDraft,
+             .collapsePhase,
              1
          );
 
          assertEqual(
-             editorState.calls.collapseBlock,
-             1
+             editorState.getSnapshot()
+             .expandedBlockId,
+             undefined
          );
 
          assertEqual(
-             editorState.calls.collapsePhase,
-             1
+             editorState.getSnapshot()
+             .activeBlockDraft,
+             undefined
+         );
+
+         assertDeepEqual(
+             editorState.getSnapshot()
+             .validationErrors,
+             []
          );
      }
 );

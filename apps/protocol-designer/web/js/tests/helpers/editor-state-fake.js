@@ -40,6 +40,7 @@ export function createEditorStateFake(
         expandBlock: 0,
         collapseBlock: 0,
         collapsePhase: 0,
+        closeBlockDraft: 0,
     };
 
     return {
@@ -78,6 +79,14 @@ export function createEditorStateFake(
         cancelBlockDraft() {
             calls.cancelBlockDraft++;
             draft = undefined;
+        },
+
+        closeBlockDraft() {
+            calls.closeBlockDraft++;
+
+            expandedBlockId = undefined;
+            draft = undefined;
+            validationErrors = [];
         },
 
         clearPendingInsertion() {

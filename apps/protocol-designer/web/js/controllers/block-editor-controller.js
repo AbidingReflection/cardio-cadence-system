@@ -266,14 +266,7 @@ export function requestCollapseBlock(editorState) {
         return navigation;
     }
 
-    if (
-        snapshot.activeBlockDraft !== undefined
-    ) {
-        editorState.clearValidationErrors();
-        editorState.cancelBlockDraft();
-    }
-
-    editorState.collapseBlock();
+    editorState.closeBlockDraft();
 
     return {
         outcome: "proceed",
@@ -331,15 +324,7 @@ export function requestCollapsePhase(
             return navigation;
         }
 
-        if (
-            editorSnapshot
-            .activeBlockDraft !== undefined
-        ) {
-            editorState.clearValidationErrors();
-            editorState.cancelBlockDraft();
-        }
-
-        editorState.collapseBlock();
+        editorState.closeBlockDraft();
     }
 
     editorState.collapsePhase(phaseId);
@@ -399,4 +384,183 @@ function getActiveBlockPhaseId(
         protocolModel,
         blockId
     );
+}
+
+/**
+ * Starts an edit draft for a committed block.
+ */
+export function startBlockEdit(
+    protocolModel,
+    editorState,
+    blockId
+) {
+    if (
+        typeof blockId !== "string" ||
+        blockId.trim() === ""
+    ) {
+        throw new Error(
+            "Block editing requires a block ID."
+        );
+    }
+
+    const snapshot =
+    editorState.getSnapshot();
+
+    if (
+        snapshot.expandedBlockId === blockId &&
+        snapshot.activeBlockDraft?.blockId === blockId
+    ) {
+        return {
+            outcome: "proceed",
+        };
+    }
+
+    const navigation =
+    checkBlockDraftNavigation(
+        editorState
+    );
+
+    if (navigation.outcome === "blocked") {
+        return navigation;
+    }
+
+    const block =
+    getProtocolBlock(
+        protocolModel,
+        blockId
+    );
+
+    const draft =
+    createEditDraft(block);
+
+    editorState.openBlockDraft(
+        blockId,
+        draft
+    );
+
+    return {
+        outcome: "proceed",
+    };
+}
+
+
+/** Returns a committed block by ID. */
+function getProtocolBlock(
+    protocolModel,
+    blockId
+) {
+    const protocol =
+    protocolModel.getSnapshot();
+
+    for (const phase of protocol.phases) {
+        const block =
+        phase.blocks.find(
+            candidate =>
+            candidate.id === blockId
+        );
+
+        if (block !== undefined) {
+            return block;
+        }
+    }
+
+    throw new Error(
+        `Protocol block "${blockId}" does not exist.`
+    );
+}
+
+
+/** Creates an editor draft from committed block data. */
+function createEditDraft(block) {
+    const variables = {};
+
+    for (
+        const [
+            variableId,
+         progression,
+        ] of Object.entries(block.variables)
+    ) {
+        variables[variableId] =
+        createProgressionDraft(
+            progression
+        );
+    }
+
+    return {
+        mode: "edit",
+        blockId: block.id,
+        name: block.name,
+        duration:
+        formatDuration(
+            block.durationSeconds
+        ),
+        variables,
+    };
+}
+
+
+/** Creates raw editor values from a committed progression. */
+function createProgressionDraft(
+    progression
+) {
+    const draft = {
+        type: progression.type,
+        start: String(
+            progression.start
+        ),
+    };
+
+    if (progression.end !== undefined) {
+        draft.end =
+        String(progression.end);
+    }
+
+    if (
+        progression.stepIntervalSeconds !==
+        undefined
+    ) {
+        draft.stepInterval =
+        formatDuration(
+            progression.stepIntervalSeconds
+        );
+    }
+
+    return draft;
+}
+
+
+/** Formats seconds as H:MM:SS or M:SS. */
+function formatDuration(totalSeconds) {
+    const hours =
+    Math.floor(totalSeconds / 3600);
+
+    const minutes =
+    Math.floor(
+        (totalSeconds % 3600) / 60
+    );
+
+    const seconds =
+    totalSeconds % 60;
+
+    if (hours > 0) {
+        return [
+            hours,
+            String(minutes).padStart(
+                2,
+                "0"
+            ),
+            String(seconds).padStart(
+                2,
+                "0"
+            ),
+        ].join(":");
+    }
+
+    return [
+        minutes,
+        String(seconds).padStart(
+            2,
+            "0"
+        ),
+    ].join(":");
 }

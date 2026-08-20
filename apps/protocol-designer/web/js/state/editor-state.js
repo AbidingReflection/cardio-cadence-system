@@ -195,6 +195,35 @@ export class EditorState {
     }
 
 
+    /** Opens a block editor with a new active draft. */
+    openBlockDraft(
+        blockId,
+        draft
+    ) {
+        this.#expandedBlockId = blockId;
+
+        this.#activeBlockDraft =
+        structuredClone(draft);
+
+        this.#blockDraftBaseline =
+        structuredClone(draft);
+
+        this.#validationErrors = [];
+
+        this.#emit();
+    }
+
+    /** Closes the active block editor and clears its draft state. */
+    closeBlockDraft() {
+        this.#expandedBlockId = undefined;
+        this.#activeBlockDraft = undefined;
+        this.#blockDraftBaseline = undefined;
+        this.#validationErrors = [];
+
+        this.#emit();
+    }
+
+
     /** Notifies all subscribers with the current editor-state snapshot. */
     #emit() {
         const snapshot = this.getSnapshot();
