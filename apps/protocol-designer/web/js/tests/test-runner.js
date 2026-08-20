@@ -10,6 +10,8 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("./suites/block-editor-controller.test.js");
+await import("./suites/block-draft-validation.test.js");
 await import("./suites/editor-state.test.js");
 await import("/packages/js-testing/tests/test-framework.test.js");
 await import("./suites/protocol-model.test.js");
