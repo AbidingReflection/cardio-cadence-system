@@ -8,7 +8,11 @@ import { ProtocolModel } from "./models/protocol-model.js";
 import { EditorState } from "./state/editor-state.js";
 import { renderProtocolTree } from "./renderers/protocol-tree-renderer.js";
 
-import { requestCollapseBlock, startBlockEdit } from "./controllers/block-editor-controller.js";
+import {
+    applyBlockDraft,
+    requestCollapseBlock,
+    startBlockEdit,
+} from "./controllers/block-editor-controller.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
 
@@ -173,6 +177,29 @@ async function main() {
 
                 throw error;
             }
+        }
+    );
+
+    protocolTree.addEventListener(
+        "submit",
+        (event) => {
+            const form =
+            event.target.closest(
+                "form.block-editor"
+            );
+
+            if (form === null) {
+                return;
+            }
+
+            event.preventDefault();
+
+            applyBlockDraft(
+                protocolModel,
+                editorState,
+                activityType,
+                machineProfile
+            );
         }
     );
 

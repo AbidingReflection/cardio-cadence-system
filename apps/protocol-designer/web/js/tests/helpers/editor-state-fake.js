@@ -33,6 +33,7 @@ export function createEditorStateFake(activeBlockDraft) {
         collapseBlock: 0,
         collapsePhase: 0,
         closeBlockDraft: 0,
+        openBlockDraft: 0,
     };
 
     return {
@@ -69,6 +70,15 @@ export function createEditorStateFake(activeBlockDraft) {
 
             expandedBlockId = undefined;
             draft = undefined;
+            validationErrors = [];
+        },
+
+        /** Opens a block editor with a fresh active draft. */
+        openBlockDraft(blockId, newDraft) {
+            calls.openBlockDraft++;
+
+            expandedBlockId = blockId;
+            draft = structuredClone(newDraft);
             validationErrors = [];
         },
 

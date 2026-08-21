@@ -16,51 +16,100 @@ export function applyBlockDraft(
         throw new Error("Cannot apply block draft: no active block draft.");
     }
 
-    const validationResult = validateBlockDraft(draft, activityType, machineProfile);
+    const validationResult = validateBlockDraft(
+        draft,
+        activityType,
+        machineProfile,
+    );
 
     if (!validationResult.isValid) {
-        editorState.setValidationErrors(validationResult.errors);
+        editorState.setValidationErrors(
+            validationResult.errors
+        );
 
         return false;
     }
 
     const mode = draft.mode;
 
-    if (mode !== "create" && mode !== "edit") {
-        throw new Error(`Unknown block draft mode: "${mode}".`);
+    if (
+        mode !== "create" &&
+        mode !== "edit"
+    ) {
+        throw new Error(
+            `Unknown block draft mode: "${mode}".`
+        );
     }
 
-    if (mode === "create" && (typeof draft.phaseId !== "string" || draft.phaseId.trim() === "")) {
-        throw new Error("New block draft requires a phase ID.");
+    if (
+        mode === "create" &&
+        (
+            typeof draft.phaseId !== "string" ||
+            draft.phaseId.trim() === ""
+        )
+    ) {
+        throw new Error(
+            "New block draft requires a phase ID."
+        );
     }
 
-    if (mode === "edit" && (typeof draft.blockId !== "string" || draft.blockId.trim() === "")) {
-        throw new Error("Existing block draft requires a block ID.");
+    if (
+        mode === "edit" &&
+        (
+            typeof draft.blockId !== "string" ||
+            draft.blockId.trim() === ""
+        )
+    ) {
+        throw new Error(
+            "Existing block draft requires a block ID."
+        );
     }
 
     if (mode === "create") {
-        applyNewBlock(protocolModel, editorState, draft, validationResult.blockData);
+        applyNewBlock(
+            protocolModel,
+            editorState,
+            draft,
+            validationResult.blockData,
+        );
     } else {
-        applyExistingBlock(protocolModel, draft, validationResult.blockData);
+        applyExistingBlock(
+            protocolModel,
+            draft,
+            validationResult.blockData,
+        );
     }
 
-    editorState.clearValidationErrors();
-    editorState.cancelBlockDraft();
+    editorState.closeBlockDraft();
 
     return true;
 }
 
 /** Adds a validated new block to the protocol. */
-function applyNewBlock(protocolModel, editorState, draft, blockData) {
-    const blockId = protocolModel.addBlock(draft.phaseId, blockData);
+function applyNewBlock(
+    protocolModel,
+    editorState,
+    draft,
+    blockData,
+) {
+    protocolModel.addBlock(
+        draft.phaseId,
+        blockData,
+    );
 
     editorState.clearPendingInsertion();
-    editorState.expandBlock(blockId);
 }
 
 /** Applies validated changes to an existing block. */
-function applyExistingBlock(protocolModel, draft, blockData) {
-    protocolModel.updateBlock(draft.blockId, blockData);
+function applyExistingBlock(
+    protocolModel,
+    draft,
+    blockData,
+) {
+    protocolModel.updateBlock(
+        draft.blockId,
+        blockData,
+    );
 }
 
 /**
