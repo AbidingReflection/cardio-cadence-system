@@ -695,8 +695,72 @@
  *  Block Editor Actions
  *  ============================================================ */
 
-.block-editor__actions {
+.block-editor__action-area {
     display: flex;
     justify-content: flex-end;
+}
+
+.block-editor__actions {
+    display: flex;
     gap: 8px;
+}
+
+/* ============================================================
+ *  Block Editor Footer
+ *  ============================================================ */
+
+.block-editor__footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+/*     gap: 24px; */
+}
+
+.block-editor__footer--invalid {
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+
+/* ============================================================
+ *  Block Editor Feedback
+ *  ============================================================ */
+
+.block-editor__feedback {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.block-editor__feedback:empty {
+    display: none;
+}
+
+.block-editor__feedback-message {
+    padding: 0;
+
+    border: 0;
+
+    background: none;
+
+    font: inherit;
+    font-size: 0.78rem;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.block-editor__feedback-message:hover,
+.block-editor__feedback-message:focus-visible {
+    text-decoration: underline;
+}
+
+
+/* ============================================================
+ *  Block Editor Validation
+ *  ============================================================ */
+
+.block-editor__control--invalid {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
 }

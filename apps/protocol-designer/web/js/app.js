@@ -78,7 +78,36 @@ async function main() {
     editorState.subscribe(render);
 
     protocolTree.addEventListener("click", (event) => {
-        const expandBlockToggle = event.target.closest('[data-action="expand-block"]');
+        const validationMessage = event.target.closest(
+            "[data-validation-field]"
+        );
+
+        if (validationMessage !== null) {
+            const fieldPath = validationMessage.dataset.validationField;
+
+            const field = Array.from(
+                protocolTree.querySelectorAll("[data-field]")
+            ).find(
+                (element) => element.dataset.field === fieldPath
+            );
+
+            if (field !== undefined) {
+                field.focus();
+
+                if (
+                    field instanceof HTMLInputElement &&
+                    field.type !== "number"
+                ) {
+                    field.select();
+                }
+            }
+
+            return;
+        }
+
+        const expandBlockToggle = event.target.closest(
+            '[data-action="expand-block"]'
+        );
 
         if (expandBlockToggle !== null) {
             const blockElement = expandBlockToggle.closest("[data-block-id]");
@@ -94,7 +123,9 @@ async function main() {
             return;
         }
 
-        const collapseBlockToggle = event.target.closest('[data-action="collapse-block"]');
+        const collapseBlockToggle = event.target.closest(
+            '[data-action="collapse-block"]'
+        );
 
         if (collapseBlockToggle !== null) {
             requestCollapseBlock(editorState);
@@ -102,22 +133,19 @@ async function main() {
             return;
         }
 
-        const cancelBlockEditButton =
-        event.target.closest(
+        const cancelBlockEditButton = event.target.closest(
             '[data-action="cancel-block-edit"]'
         );
 
-        if (
-            cancelBlockEditButton !== null
-        ) {
-            cancelBlockEdit(
-                editorState
-            );
+        if (cancelBlockEditButton !== null) {
+            cancelBlockEdit(editorState);
 
             return;
         }
 
-        const phaseToggle = event.target.closest('[data-action="toggle-phase"]');
+        const phaseToggle = event.target.closest(
+            '[data-action="toggle-phase"]'
+        );
 
         if (phaseToggle === null) {
             return;
@@ -195,7 +223,6 @@ async function main() {
             }
         }
     );
-
     protocolTree.addEventListener(
         "submit",
         (event) => {
@@ -210,12 +237,21 @@ async function main() {
 
             event.preventDefault();
 
+            const applied =
             applyBlockDraft(
                 protocolModel,
                 editorState,
                 activityType,
                 machineProfile
             );
+
+            if (!applied) {
+                console.warn(
+                    "Block validation errors:",
+                    editorState.getSnapshot()
+                    .validationErrors
+                );
+            }
         }
     );
 

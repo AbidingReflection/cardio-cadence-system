@@ -271,7 +271,12 @@ function createExpandedBlock(block, editorSnapshot, activityType) {
 
     form.append(
         createBlockEditorHeader(block, draft),
-        createBlockEditorBody(block, draft, activityType),
+        createBlockEditorBody(
+            block,
+            draft,
+            activityType,
+            editorSnapshot.validationErrors,
+        ),
     );
 
     return form;
@@ -327,19 +332,58 @@ function createBlockEditorHeader(block, draft) {
 }
 
 /** Creates the editable block body. */
-function createBlockEditorBody(block, draft, activityType) {
+function createBlockEditorBody(
+    block,
+    draft,
+    activityType,
+    validationErrors,
+) {
     const body = document.createElement("div");
 
     body.className = "block-editor__body";
 
+    const blockErrors = validationErrors.filter(
+        (error) =>
+        error.scope === "block" &&
+        (
+            error.entityId === undefined ||
+            error.entityId === block.id
+        ),
+    );
+
     body.append(
         createBlockProperties(block, draft),
         createVariableEditors(block, draft, activityType),
-        createBlockFeedback(),
-        createBlockActions(),
+        createBlockFooter(blockErrors),
     );
 
+    applyBlockValidationState(body, blockErrors);
+
     return body;
+}
+
+/** Creates the block-editor footer containing feedback and actions. */
+function createBlockFooter(validationErrors) {
+    const footer = document.createElement("div");
+
+    footer.className = "block-editor__footer";
+
+    if (validationErrors.length > 0) {
+        footer.classList.add("block-editor__footer--invalid");
+    }
+
+    const actionArea = document.createElement("div");
+
+    actionArea.className = "block-editor__action-area";
+
+    actionArea.append(createBlockActions());
+
+    footer.append(
+        createBlockFeedback(validationErrors),
+                  actionArea,
+    );
+
+    return footer;
 }
 
 /** Creates general block fields. */
@@ -525,14 +569,47 @@ function createStepField(block, variable, progression) {
 }
 
 /** Creates the block validation feedback region. */
-function createBlockFeedback() {
+function createBlockFeedback(validationErrors) {
     const feedback = document.createElement("div");
 
     feedback.className = "block-editor__feedback";
-
     feedback.setAttribute("aria-live", "polite");
 
+    for (const error of validationErrors) {
+        const message = document.createElement("button");
+
+        message.type = "button";
+        message.className = "block-editor__feedback-message";
+        message.dataset.validationField = error.field;
+        message.textContent = error.message;
+
+        message.setAttribute(
+            "aria-label",
+            `Go to invalid field: ${error.message}`,
+        );
+
+        feedback.append(message);
+    }
+
     return feedback;
+}
+
+/** Marks block-editor controls associated with validation errors. */
+function applyBlockValidationState(container, validationErrors) {
+    for (const error of validationErrors) {
+        const control = Array.from(
+            container.querySelectorAll("[data-field]"),
+        ).find(
+            (element) => element.dataset.field === error.field,
+        );
+
+        if (control === undefined) {
+            continue;
+        }
+
+        control.classList.add("block-editor__control--invalid");
+        control.setAttribute("aria-invalid", "true");
+    }
 }
 
 /** Creates Apply and Cancel block-editor actions. */
