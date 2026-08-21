@@ -426,7 +426,7 @@ function createVariableEditor(block, draft, variable) {
     }
 
     if (progression.type === "stepped") {
-        fields.append(createStepIntervalField(block, variable, progression));
+        fields.append(createStepField(block, variable, progression));
     }
 
     fieldset.append(legend, fields);
@@ -498,26 +498,26 @@ function createVariableValueField(block, variable, progression, key, labelText) 
     return field;
 }
 
-/** Creates the stepped progression interval input. */
-function createStepIntervalField(block, variable, progression) {
+/** Creates the stepped progression step-size input. */
+function createStepField(block, variable, progression) {
     const field = document.createElement("div");
 
     field.className = "block-editor__field";
 
-    const id = `${block.id}-${variable.id}-step-interval`;
+    const id = `${block.id}-${variable.id}-step`;
 
     const label = document.createElement("label");
 
     label.htmlFor = id;
-    label.textContent = "Step Interval";
+    label.textContent = "Step Size";
 
     const input = document.createElement("input");
 
-    input.type = "text";
+    input.type = "number";
     input.id = id;
-    input.value = progression.stepInterval ?? "";
+    input.value = progression.step ?? "";
 
-    input.dataset.field = `variables.${variable.id}.stepInterval`;
+    input.dataset.field = `variables.${variable.id}.step`;
 
     field.append(label, input);
 

@@ -41,8 +41,8 @@ test("progression-types", "returns the linear progression definition", () => {
 
 test("progression-types", "returns the stepped progression definition", () => {
     assertDeepEqual(getProgressionDefinition("stepped"), {
-        requiredFields: ["start", "end", "stepIntervalSeconds"],
-        allowedFields: ["type", "start", "end", "stepIntervalSeconds"],
+        requiredFields: ["start", "end", "step"],
+        allowedFields: ["type", "start", "end", "step"],
     });
 });
 

@@ -16,7 +16,7 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "type": "linear",
+                "type": "steady",
                 "start": 40,
                 "end": 45
               },

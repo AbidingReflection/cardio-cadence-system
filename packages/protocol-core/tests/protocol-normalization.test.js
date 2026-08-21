@@ -24,19 +24,19 @@ function createProtocol() {
                                 type: "steady",
                                 start: 4,
                                 end: 8,
-                                stepIntervalSeconds: 60,
+                                step: 2,
                             },
                             incline: {
                                 type: "linear",
                                 start: 0,
                                 end: 5,
-                                stepIntervalSeconds: 30,
+                                step: 1,
                             },
                             resistance: {
                                 type: "stepped",
                                 start: 2,
                                 end: 8,
-                                stepIntervalSeconds: 60,
+                                step: 2,
                             },
                         },
                     },
@@ -72,7 +72,7 @@ test("protocol-normalization", "preserves stepped progression fields", () => {
         type: "stepped",
         start: 2,
         end: 8,
-        stepIntervalSeconds: 60,
+        step: 2,
     });
 });
 

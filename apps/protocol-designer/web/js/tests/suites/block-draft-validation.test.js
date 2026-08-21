@@ -180,7 +180,7 @@ test("block-draft-validation", "ignores stale fields on steady progressions", ()
         type: "steady",
         start: "2",
         end: "8",
-        stepInterval: "1:00",
+        step: "1"
     };
 
     const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
@@ -209,7 +209,7 @@ test("block-draft-validation", "converts valid stepped progressions", () => {
         type: "stepped",
         start: "0",
         end: "5",
-        stepInterval: "1:00",
+        step: "1",
     };
 
     const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
@@ -218,25 +218,25 @@ test("block-draft-validation", "converts valid stepped progressions", () => {
         type: "stepped",
         start: 0,
         end: 5,
-        stepIntervalSeconds: 60,
+        step: 1,
     });
 });
 
-test("block-draft-validation", "requires a step interval for stepped progressions", () => {
+test("block-draft-validation", "requires a step size for stepped progressions", () => {
     const draft = createDraft();
 
     draft.variables.incline = {
         type: "stepped",
         start: "0",
         end: "5",
-        stepInterval: "",
+        step: "",
     };
 
     const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertEqual(result.isValid, false);
 
-    assertEqual(result.errors[0].field, "variables.incline.stepInterval");
+    assertEqual(result.errors[0].field, "variables.incline.step");
 });
 
 test("block-draft-validation", "rejects unknown progression types", () => {

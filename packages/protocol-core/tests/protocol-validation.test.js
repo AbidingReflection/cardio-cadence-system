@@ -256,20 +256,20 @@ test("protocol-validation", "accepts valid stepped progressions", () => {
         type: "stepped",
         start: 0,
         end: 5,
-        stepIntervalSeconds: 60,
+        step: 1,
     };
 
     validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
 
-test("protocol-validation", "rejects non-positive step intervals", () => {
+test("protocol-validation", "rejects non-positive step sizes", () => {
     const protocol = createProtocol();
 
     protocol.phases[0].blocks[0].variables.incline = {
         type: "stepped",
         start: 0,
         end: 5,
-        stepIntervalSeconds: 0,
+        step: 0,
     };
 
     assertThrows(() => {

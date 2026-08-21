@@ -120,10 +120,10 @@ function validateProgression(progression, variableId, blockId, machineVariable) 
         requireFiniteNumber(progression.end, `${description} end`);
     }
 
-    if (Object.hasOwn(progression, "stepIntervalSeconds")) {
+    if (Object.hasOwn(progression, "step")) {
         requirePositiveFiniteNumber(
-            progression.stepIntervalSeconds,
-            `${description} stepIntervalSeconds`,
+            progression.step,
+            `${description} step`,
         );
     }
 

@@ -173,18 +173,18 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
         }
     }
 
-    if (definition.requiredFields.includes("stepIntervalSeconds")) {
-        const interval = validateStepInterval(
-            draftProgression.stepInterval,
-            `${baseField}.stepInterval`,
+    if (definition.requiredFields.includes("step")) {
+        const step = validateStep(
+            draftProgression.step,
+            `${baseField}.step`,
             blockId,
             errors,
         );
 
-        if (interval === undefined) {
+        if (step === undefined) {
             isValid = false;
         } else {
-            progression.stepIntervalSeconds = interval;
+            progression.step = step;
         }
     }
 
@@ -258,21 +258,23 @@ function validateTarget(value, variable, machineVariable, field, label, blockId,
     return number;
 }
 
-/** Validates and converts a stepped progression interval. */
-function validateStepInterval(value, field, blockId, errors) {
-    if (typeof value !== "string" || value.trim() === "") {
-        errors.push(createError(field, "Step interval is required.", blockId));
+/** Validates and converts a stepped progression step size. */
+function validateStep(
+    value,
+    field,
+    blockId,
+    errors
+) {
+    const number = parseNumber(value);
 
-        return undefined;
-    }
-
-    const seconds = parseDuration(value);
-
-    if (seconds === undefined || seconds <= 0) {
+    if (
+        number === undefined ||
+        number <= 0
+    ) {
         errors.push(
             createError(
                 field,
-                "Step interval must be a positive M:SS or H:MM:SS duration.",
+                "Step size is required and must be a positive number.",
                 blockId,
             ),
         );
@@ -280,7 +282,7 @@ function validateStepInterval(value, field, blockId, errors) {
         return undefined;
     }
 
-    return seconds;
+    return number;
 }
 
 /** Parses a finite numeric form value. */

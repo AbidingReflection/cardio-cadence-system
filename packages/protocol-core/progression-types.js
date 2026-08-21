@@ -12,8 +12,8 @@ const PROGRESSION_DEFINITIONS = Object.freeze({
     }),
 
     stepped: Object.freeze({
-        requiredFields: Object.freeze(["start", "end", "stepIntervalSeconds"]),
-        allowedFields: Object.freeze(["type", "start", "end", "stepIntervalSeconds"]),
+        requiredFields: Object.freeze(["start", "end", "step"]),
+        allowedFields: Object.freeze(["type", "start", "end", "step"]),
     }),
 });
 

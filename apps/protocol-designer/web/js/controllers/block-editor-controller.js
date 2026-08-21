@@ -390,8 +390,8 @@ function createProgressionDraft(progression) {
         draft.end = String(progression.end);
     }
 
-    if (progression.stepIntervalSeconds !== undefined) {
-        draft.stepInterval = formatDuration(progression.stepIntervalSeconds);
+    if (progression.step !== undefined) {
+        draft.step = String(progression.step);
     }
 
     return draft;
