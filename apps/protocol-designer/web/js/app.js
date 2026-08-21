@@ -1,6 +1,6 @@
 /**
- * Application entry point that coordinates startup and wires together data,
- * models, state, and UI components.
+ * Application entry point that composes domain data, models, editor state,
+ * rendering, focus restoration, and protocol-tree interactions.
  */
 
 import { loadDomainData } from "./domain-data.js";
@@ -9,51 +9,70 @@ import { EditorState } from "./state/editor-state.js";
 import { renderProtocolTree } from "./renderers/protocol-tree-renderer.js";
 
 import {
-    applyBlockDraft,
-    requestCollapseBlock,
-    startBlockEdit,
-    cancelBlockEdit,
-} from "./controllers/block-editor-controller.js";
+    restoreProtocolFieldFocus,
+    restoreProtocolToggleFocus,
+} from "./interactions/protocol-focus.js";
 
-const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
+import {
+    wireProtocolTreeEvents,
+} from "./interactions/protocol-tree-events.js";
+
+const INITIAL_PROTOCOL_URL =
+"/data/protocols/true-elliptical-75-minute-session.json";
 
 /**
- * Coordinates application startup by wiring data sources, models, state,
- * and UI components.
+ * Initializes application data, state, rendering, subscriptions, and
+ * protocol-tree interactions.
  */
 async function main() {
     const domainData = await loadDomainData();
     const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
-    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
+    const activityType = domainData.activityTypes.get(
+        protocolData.activityTypeId,
+    );
 
     if (activityType === undefined) {
-        throw new Error(`Protocol ActivityType "${protocolData.activityTypeId}" was not found.`);
+        throw new Error(
+            `Protocol ActivityType "${protocolData.activityTypeId}" was not found.`,
+        );
     }
 
     const machineProfile =
-        protocolData.machineProfileId === undefined
-            ? undefined
-            : domainData.machineProfiles.get(protocolData.machineProfileId);
+    protocolData.machineProfileId === undefined
+    ? undefined
+    : domainData.machineProfiles.get(
+        protocolData.machineProfileId,
+    );
 
-    if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
+    if (
+        protocolData.machineProfileId !== undefined &&
+        machineProfile === undefined
+    ) {
         throw new Error(
             `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`,
         );
     }
 
-    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
+    const protocolModel = new ProtocolModel(
+        protocolData,
+        activityType,
+        machineProfile,
+    );
 
     const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
 
     if (protocolTree === null) {
-        throw new Error('Required element "#protocol-tree" was not found.');
+        throw new Error(
+            'Required element "#protocol-tree" was not found.',
+        );
     }
 
     let pendingFieldFocus;
     let pendingToggleFocus;
 
+    /** Renders the protocol tree and restores any pending interaction focus. */
     const render = () => {
         const fieldFocusContext = pendingFieldFocus;
         const toggleFocusContext = pendingToggleFocus;
@@ -64,14 +83,14 @@ async function main() {
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
-            editorState.getSnapshot(),
-            activityType,
+                           editorState.getSnapshot(),
+                           activityType,
         );
 
         if (fieldFocusContext !== undefined) {
             restoreProtocolFieldFocus(
-            protocolTree,
-            fieldFocusContext,
+                protocolTree,
+                fieldFocusContext,
             );
 
             return;
@@ -79,8 +98,8 @@ async function main() {
 
         if (toggleFocusContext !== undefined) {
             restoreProtocolToggleFocus(
-            protocolTree,
-            toggleFocusContext,
+                protocolTree,
+                toggleFocusContext,
             );
         }
     };
@@ -88,419 +107,54 @@ async function main() {
     protocolModel.subscribe(render);
     editorState.subscribe(render);
 
-    protocolTree.addEventListener("click", (event) => {
-        const validationMessage = event.target.closest(
-            "[data-validation-field]"
-        );
+    wireProtocolTreeEvents({
+        protocolTree,
+        protocolModel,
+        editorState,
+        activityType,
+        machineProfile,
 
-        if (validationMessage !== null) {
-            const fieldPath = validationMessage.dataset.validationField;
+        setPendingFieldFocus: (focusContext) => {
+            pendingFieldFocus = focusContext;
+        },
 
-            const field = Array.from(
-                protocolTree.querySelectorAll("[data-field]")
-            ).find(
-                (element) => element.dataset.field === fieldPath
-            );
-
-            if (field !== undefined) {
-                field.focus();
-
-                if (
-                    field instanceof HTMLInputElement &&
-                    field.type !== "number"
-                ) {
-                    field.select();
-                }
-            }
-
-            return;
-        }
-
-        const expandBlockToggle = event.target.closest(
-            '[data-action="expand-block"]'
-        );
-
-        if (expandBlockToggle !== null) {
-            const blockElement = expandBlockToggle.closest("[data-block-id]");
-
-            if (blockElement === null) {
-                throw new Error("Block toggle is missing its block container.");
-            }
-
-            const blockId = blockElement.dataset.blockId;
-
-            pendingToggleFocus = {
-                type: "block",
-                blockId,
-            };
-
-            try {
-                startBlockEdit(
-                    protocolModel,
-                    editorState,
-                    blockId,
-                );
-            } finally {
-                pendingToggleFocus = undefined;
-            }
-
-            return;
-        }
-
-        const collapseBlockToggle = event.target.closest(
-            '[data-action="collapse-block"]'
-        );
-
-        if (collapseBlockToggle !== null) {
-            const blockElement = collapseBlockToggle.closest(
-                "[data-block-id]",
-            );
-
-            if (blockElement === null) {
-                throw new Error(
-                    "Block toggle is missing its block container.",
-                );
-            }
-
-            pendingToggleFocus = {
-                type: "block",
-                blockId: blockElement.dataset.blockId,
-            };
-
-            try {
-                requestCollapseBlock(editorState);
-            } finally {
-                pendingToggleFocus = undefined;
-            }
-
-            return;
-        }
-
-        const cancelBlockEditButton = event.target.closest(
-            '[data-action="cancel-block-edit"]'
-        );
-
-        if (cancelBlockEditButton !== null) {
-            cancelBlockEdit(editorState);
-
-            return;
-        }
-
-        const phaseToggle = event.target.closest(
-            '[data-action="toggle-phase"]'
-        );
-
-        if (phaseToggle === null) {
-            return;
-        }
-
-        const phaseElement = phaseToggle.closest("[data-phase-id]");
-
-        if (phaseElement === null) {
-            throw new Error("Phase toggle is missing its phase container.");
-        }
-
-        const phaseId = phaseElement.dataset.phaseId;
-
-        pendingToggleFocus = {
-            type: "phase",
-            phaseId,
-        };
-
-        try {
-            editorState.togglePhase(phaseId);
-        } finally {
-            pendingToggleFocus = undefined;
-        }
+        setPendingToggleFocus: (focusContext) => {
+            pendingToggleFocus = focusContext;
+        },
     });
-
-    protocolTree.addEventListener(
-        "input",
-        (event) => {
-            const field =
-            event.target.closest(
-                "input[data-field]"
-            );
-
-            if (field === null) {
-                return;
-            }
-
-            pendingFieldFocus =
-            captureProtocolFieldFocus(
-                field
-            );
-
-            try {
-                updateBlockDraftField(
-                    editorState,
-                    field.dataset.field,
-                    field.value
-                );
-            } catch (error) {
-                pendingFieldFocus = undefined;
-
-                throw error;
-            }
-        }
-    );
-
-    protocolTree.addEventListener(
-        "change",
-        (event) => {
-            const field =
-            event.target.closest(
-                "select[data-field]"
-            );
-
-            if (field === null) {
-                return;
-            }
-
-            pendingFieldFocus =
-            captureProtocolFieldFocus(
-                field
-            );
-
-            try {
-                updateBlockDraftField(
-                    editorState,
-                    field.dataset.field,
-                    field.value
-                );
-            } catch (error) {
-                pendingFieldFocus = undefined;
-
-                throw error;
-            }
-        }
-    );
-    protocolTree.addEventListener(
-        "submit",
-        (event) => {
-            const form =
-            event.target.closest(
-                "form.block-editor"
-            );
-
-            if (form === null) {
-                return;
-            }
-
-            event.preventDefault();
-
-            const applied =
-            applyBlockDraft(
-                protocolModel,
-                editorState,
-                activityType,
-                machineProfile
-            );
-
-            if (!applied) {
-                console.warn(
-                    "Block validation errors:",
-                    editorState.getSnapshot()
-                    .validationErrors
-                );
-            }
-        }
-    );
 
     render();
 }
 
-/** Loads protocol JSON from the specified URL. */
+/** Loads and returns protocol data from the specified JSON resource. */
 async function loadProtocolData(url) {
     const response = await fetch(url);
 
     if (!response.ok) {
         throw new Error(
-            `Failed to load protocol "${url}": ` + `${response.status} ${response.statusText}.`,
+            `Failed to load protocol "${url}": ` +
+            `${response.status} ${response.statusText}.`,
         );
     }
 
     const data = await response.json();
 
-    if (data === null || typeof data !== "object" || data.protocol === undefined) {
-        throw new Error(`Protocol file "${url}" must contain a protocol object.`);
+    if (
+        data === null ||
+        typeof data !== "object" ||
+        data.protocol === undefined
+    ) {
+        throw new Error(
+            `Protocol file "${url}" must contain a protocol object.`,
+        );
     }
 
     return data.protocol;
 }
 
-/** Captures the logical identity and text selection of an editable protocol field. */
-function captureProtocolFieldFocus(field) {
-    const blockElement = field.closest("[data-block-id]");
-
-    if (blockElement === null) {
-        throw new Error(
-            "Editable block field is missing its block container."
-        );
-    }
-
-    return {
-        blockId: blockElement.dataset.blockId,
-        fieldPath: field.dataset.field,
-        selectionStart:
-        typeof field.selectionStart === "number"
-        ? field.selectionStart
-        : undefined,
-        selectionEnd:
-        typeof field.selectionEnd === "number"
-        ? field.selectionEnd
-        : undefined,
-    };
-}
-
-
-/** Restores focus to the equivalent editable protocol field after rendering. */
-function restoreProtocolFieldFocus(
-    protocolTree,
-    focusContext
-) {
-    const blockElement = Array
-    .from(
-        protocolTree.querySelectorAll(
-            "[data-block-id]"
-        )
-    )
-    .find(
-        (element) =>
-        element.dataset.blockId ===
-        focusContext.blockId
-    );
-
-    if (blockElement === undefined) {
-        return;
-    }
-
-    const field = Array
-    .from(
-        blockElement.querySelectorAll(
-            "[data-field]"
-        )
-    )
-    .find(
-        (element) =>
-        element.dataset.field ===
-        focusContext.fieldPath
-    );
-
-    if (field === undefined) {
-        return;
-    }
-
-    field.focus();
-
-    if (
-        typeof focusContext.selectionStart === "number" &&
-        typeof focusContext.selectionEnd === "number" &&
-        typeof field.selectionStart === "number"
-    ) {
-        field.setSelectionRange(
-            focusContext.selectionStart,
-            focusContext.selectionEnd
-        );
-    }
-}
-
-/** Restores focus to the equivalent phase or block toggle after rendering. */
-function restoreProtocolToggleFocus(
-    protocolTree,
-    focusContext,
-) {
-    if (focusContext.type === "block") {
-        const blockElement = Array.from(
-            protocolTree.querySelectorAll("[data-block-id]"),
-        ).find(
-            (element) =>
-            element.dataset.blockId === focusContext.blockId,
-        );
-
-        if (blockElement === undefined) {
-            return;
-        }
-
-        const toggle = blockElement.querySelector(
-            '[data-action="expand-block"], ' +
-            '[data-action="collapse-block"]',
-        );
-
-        toggle?.focus();
-
-        return;
-    }
-
-    if (focusContext.type === "phase") {
-        const phaseElement = Array.from(
-            protocolTree.querySelectorAll("[data-phase-id]"),
-        ).find(
-            (element) =>
-            element.dataset.phaseId === focusContext.phaseId,
-        );
-
-        if (phaseElement === undefined) {
-            return;
-        }
-
-        phaseElement
-        .querySelector('[data-action="toggle-phase"]')
-        ?.focus();
-
-        return;
-    }
-
-    throw new Error(
-        `Unsupported protocol toggle focus type: "${focusContext.type}".`,
-    );
-}
-
-/** Updates one field in the active block draft. */
-function updateBlockDraftField(editorState, fieldPath, value) {
-    const editorSnapshot = editorState.getSnapshot();
-
-    const draft = editorSnapshot.activeBlockDraft;
-
-    if (draft === undefined) {
-        throw new Error("Cannot update a block field without an active draft.");
-    }
-
-    if (fieldPath === "name" || fieldPath === "duration") {
-        editorState.updateBlockDraft({
-            [fieldPath]: value,
-        });
-
-        return;
-    }
-
-    const parts = fieldPath.split(".");
-
-    if (parts.length !== 3 || parts[0] !== "variables") {
-        throw new Error(`Unsupported block draft field: "${fieldPath}".`);
-    }
-
-    const variableId = parts[1];
-    const variableField = parts[2];
-
-    const progression = draft.variables?.[variableId];
-
-    if (progression === undefined) {
-        throw new Error(`Block draft has no variable "${variableId}".`);
-    }
-
-    editorState.updateBlockDraft({
-        variables: {
-            ...draft.variables,
-
-            [variableId]: {
-                ...progression,
-                [variableField]: value,
-            },
-        },
-    });
-}
-
 main().catch((error) => {
-    console.error("Protocol Designer initialization failed.", error);
+    console.error(
+        "Protocol Designer initialization failed.",
+        error,
+    );
 });
