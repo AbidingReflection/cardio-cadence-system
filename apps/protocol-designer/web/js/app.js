@@ -52,12 +52,14 @@ async function main() {
     }
 
     let pendingFieldFocus;
+    let pendingToggleFocus;
 
     const render = () => {
-        const focusContext =
-        pendingFieldFocus;
+        const fieldFocusContext = pendingFieldFocus;
+        const toggleFocusContext = pendingToggleFocus;
 
         pendingFieldFocus = undefined;
+        pendingToggleFocus = undefined;
 
         renderProtocolTree(
             protocolTree,
@@ -66,10 +68,19 @@ async function main() {
             activityType,
         );
 
-        if (focusContext !== undefined) {
+        if (fieldFocusContext !== undefined) {
             restoreProtocolFieldFocus(
-                protocolTree,
-                focusContext
+            protocolTree,
+            fieldFocusContext,
+            );
+
+            return;
+        }
+
+        if (toggleFocusContext !== undefined) {
+            restoreProtocolToggleFocus(
+            protocolTree,
+            toggleFocusContext,
             );
         }
     };
@@ -118,7 +129,20 @@ async function main() {
 
             const blockId = blockElement.dataset.blockId;
 
-            startBlockEdit(protocolModel, editorState, blockId);
+            pendingToggleFocus = {
+                type: "block",
+                blockId,
+            };
+
+            try {
+                startBlockEdit(
+                    protocolModel,
+                    editorState,
+                    blockId,
+                );
+            } finally {
+                pendingToggleFocus = undefined;
+            }
 
             return;
         }
@@ -128,7 +152,26 @@ async function main() {
         );
 
         if (collapseBlockToggle !== null) {
-            requestCollapseBlock(editorState);
+            const blockElement = collapseBlockToggle.closest(
+                "[data-block-id]",
+            );
+
+            if (blockElement === null) {
+                throw new Error(
+                    "Block toggle is missing its block container.",
+                );
+            }
+
+            pendingToggleFocus = {
+                type: "block",
+                blockId: blockElement.dataset.blockId,
+            };
+
+            try {
+                requestCollapseBlock(editorState);
+            } finally {
+                pendingToggleFocus = undefined;
+            }
 
             return;
         }
@@ -159,7 +202,16 @@ async function main() {
 
         const phaseId = phaseElement.dataset.phaseId;
 
-        editorState.togglePhase(phaseId);
+        pendingToggleFocus = {
+            type: "phase",
+            phaseId,
+        };
+
+        try {
+            editorState.togglePhase(phaseId);
+        } finally {
+            pendingToggleFocus = undefined;
+        }
     });
 
     protocolTree.addEventListener(
@@ -351,6 +403,57 @@ function restoreProtocolFieldFocus(
             focusContext.selectionEnd
         );
     }
+}
+
+/** Restores focus to the equivalent phase or block toggle after rendering. */
+function restoreProtocolToggleFocus(
+    protocolTree,
+    focusContext,
+) {
+    if (focusContext.type === "block") {
+        const blockElement = Array.from(
+            protocolTree.querySelectorAll("[data-block-id]"),
+        ).find(
+            (element) =>
+            element.dataset.blockId === focusContext.blockId,
+        );
+
+        if (blockElement === undefined) {
+            return;
+        }
+
+        const toggle = blockElement.querySelector(
+            '[data-action="expand-block"], ' +
+            '[data-action="collapse-block"]',
+        );
+
+        toggle?.focus();
+
+        return;
+    }
+
+    if (focusContext.type === "phase") {
+        const phaseElement = Array.from(
+            protocolTree.querySelectorAll("[data-phase-id]"),
+        ).find(
+            (element) =>
+            element.dataset.phaseId === focusContext.phaseId,
+        );
+
+        if (phaseElement === undefined) {
+            return;
+        }
+
+        phaseElement
+        .querySelector('[data-action="toggle-phase"]')
+        ?.focus();
+
+        return;
+    }
+
+    throw new Error(
+        `Unsupported protocol toggle focus type: "${focusContext.type}".`,
+    );
 }
 
 /** Updates one field in the active block draft. */
