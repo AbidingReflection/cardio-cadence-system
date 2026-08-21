@@ -12,6 +12,7 @@ import {
     applyBlockDraft,
     requestCollapseBlock,
     startBlockEdit,
+    cancelBlockEdit,
 } from "./controllers/block-editor-controller.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
@@ -97,6 +98,21 @@ async function main() {
 
         if (collapseBlockToggle !== null) {
             requestCollapseBlock(editorState);
+
+            return;
+        }
+
+        const cancelBlockEditButton =
+        event.target.closest(
+            '[data-action="cancel-block-edit"]'
+        );
+
+        if (
+            cancelBlockEditButton !== null
+        ) {
+            cancelBlockEdit(
+                editorState
+            );
 
             return;
         }

@@ -85,6 +85,17 @@ export function applyBlockDraft(
     return true;
 }
 
+/** Cancels the active block edit and discards its draft. */
+export function cancelBlockEdit(editorState) {
+    const snapshot = editorState.getSnapshot();
+
+    if (snapshot.expandedBlockId === undefined) {
+        return;
+    }
+
+    editorState.closeBlockDraft();
+}
+
 /** Adds a validated new block to the protocol. */
 function applyNewBlock(
     protocolModel,
@@ -157,8 +168,7 @@ export function resolveBlockDraftNavigation(
     }
 
     if (choice === "discard") {
-        editorState.clearValidationErrors();
-        editorState.cancelBlockDraft();
+        editorState.closeBlockDraft();
 
         return {
             outcome: "proceed",
