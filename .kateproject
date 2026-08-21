@@ -1,0 +1,12 @@
+{
+    "name": "Cardio Cadence System",
+    "files": [
+        {
+            "git": 1
+        },
+        {
+            "directory": "scripts/context_export/output",
+            "recursive": 1
+        }
+    ]
+}
