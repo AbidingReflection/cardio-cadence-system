@@ -19,9 +19,6 @@ const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.
 async function main() {
     const domainData = await loadDomainData();
     const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
-
-    console.log("Loaded protocol data:", protocolData);
-
     const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
 
     if (activityType === undefined) {
@@ -49,13 +46,27 @@ async function main() {
         throw new Error('Required element "#protocol-tree" was not found.');
     }
 
+    let pendingFieldFocus;
+
     const render = () => {
+        const focusContext =
+        pendingFieldFocus;
+
+        pendingFieldFocus = undefined;
+
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
             editorState.getSnapshot(),
             activityType,
         );
+
+        if (focusContext !== undefined) {
+            restoreProtocolFieldFocus(
+                protocolTree,
+                focusContext
+            );
+        }
     };
 
     protocolModel.subscribe(render);
@@ -103,15 +114,67 @@ async function main() {
         editorState.togglePhase(phaseId);
     });
 
-    protocolTree.addEventListener("change", (event) => {
-        const field = event.target.closest("[data-field]");
+    protocolTree.addEventListener(
+        "input",
+        (event) => {
+            const field =
+            event.target.closest(
+                "input[data-field]"
+            );
 
-        if (field === null) {
-            return;
+            if (field === null) {
+                return;
+            }
+
+            pendingFieldFocus =
+            captureProtocolFieldFocus(
+                field
+            );
+
+            try {
+                updateBlockDraftField(
+                    editorState,
+                    field.dataset.field,
+                    field.value
+                );
+            } catch (error) {
+                pendingFieldFocus = undefined;
+
+                throw error;
+            }
         }
+    );
 
-        updateBlockDraftField(editorState, field.dataset.field, field.value);
-    });
+    protocolTree.addEventListener(
+        "change",
+        (event) => {
+            const field =
+            event.target.closest(
+                "select[data-field]"
+            );
+
+            if (field === null) {
+                return;
+            }
+
+            pendingFieldFocus =
+            captureProtocolFieldFocus(
+                field
+            );
+
+            try {
+                updateBlockDraftField(
+                    editorState,
+                    field.dataset.field,
+                    field.value
+                );
+            } catch (error) {
+                pendingFieldFocus = undefined;
+
+                throw error;
+            }
+        }
+    );
 
     render();
 }
@@ -133,6 +196,82 @@ async function loadProtocolData(url) {
     }
 
     return data.protocol;
+}
+
+/** Captures the logical identity and text selection of an editable protocol field. */
+function captureProtocolFieldFocus(field) {
+    const blockElement = field.closest("[data-block-id]");
+
+    if (blockElement === null) {
+        throw new Error(
+            "Editable block field is missing its block container."
+        );
+    }
+
+    return {
+        blockId: blockElement.dataset.blockId,
+        fieldPath: field.dataset.field,
+        selectionStart:
+        typeof field.selectionStart === "number"
+        ? field.selectionStart
+        : undefined,
+        selectionEnd:
+        typeof field.selectionEnd === "number"
+        ? field.selectionEnd
+        : undefined,
+    };
+}
+
+
+/** Restores focus to the equivalent editable protocol field after rendering. */
+function restoreProtocolFieldFocus(
+    protocolTree,
+    focusContext
+) {
+    const blockElement = Array
+    .from(
+        protocolTree.querySelectorAll(
+            "[data-block-id]"
+        )
+    )
+    .find(
+        (element) =>
+        element.dataset.blockId ===
+        focusContext.blockId
+    );
+
+    if (blockElement === undefined) {
+        return;
+    }
+
+    const field = Array
+    .from(
+        blockElement.querySelectorAll(
+            "[data-field]"
+        )
+    )
+    .find(
+        (element) =>
+        element.dataset.field ===
+        focusContext.fieldPath
+    );
+
+    if (field === undefined) {
+        return;
+    }
+
+    field.focus();
+
+    if (
+        typeof focusContext.selectionStart === "number" &&
+        typeof focusContext.selectionEnd === "number" &&
+        typeof field.selectionStart === "number"
+    ) {
+        field.setSelectionRange(
+            focusContext.selectionStart,
+            focusContext.selectionEnd
+        );
+    }
 }
 
 /** Updates one field in the active block draft. */
