@@ -508,6 +508,43 @@
     white-space: nowrap;
 }
 
+.block-insertion-target {
+    width: 100%;
+    padding: 10px 14px;
+
+    border: 1px dashed var(--color-block-border);
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--color-text-muted);
+
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.block-insertion-target:hover {
+    background: var(--color-block-background);
+    color: var(--color-text);
+}
+
+.block-insertion-target:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.block-insertion-target:active {
+    transform: translateY(1px);
+}
+
 
 /* --------------------------------------------------------------------------
  * Selection
