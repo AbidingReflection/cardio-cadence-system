@@ -954,3 +954,144 @@ test("editor-state", "rejects unsupported insertion modes", () => {
         state.setInsertionMode("banana");
     });
 });
+
+test("editor-state", "opens a block create draft atomically", () => {
+    const state = new EditorState();
+
+    state.setInsertionMode("block");
+
+    const draft = {
+        mode: "create",
+        phaseId: "phase-1",
+        name: "",
+        duration: "",
+        variables: {
+            speed: {
+                type: "steady",
+                start: "",
+            },
+        },
+    };
+
+    const insertionTarget = {
+        type: "block",
+        phaseId: "phase-1",
+        index: 2,
+    };
+
+    state.openBlockCreateDraft(
+        "__new-block-draft__",
+        draft,
+        insertionTarget,
+    );
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(
+        snapshot.insertionMode,
+        undefined,
+    );
+
+    assertDeepEqual(
+        snapshot.insertionTarget,
+        insertionTarget,
+    );
+
+    assertEqual(
+        snapshot.expandedBlockId,
+        "__new-block-draft__",
+    );
+
+    assertDeepEqual(
+        snapshot.activeBlockDraft,
+        draft,
+    );
+
+    assertDeepEqual(
+        snapshot.validationErrors,
+        [],
+    );
+});
+
+test("editor-state", "isolates block create draft inputs from source data", () => {
+    const state = new EditorState();
+
+    const draft = {
+        mode: "create",
+        phaseId: "phase-1",
+        name: "",
+        duration: "",
+        variables: {
+            speed: {
+                type: "steady",
+                start: "",
+            },
+        },
+    };
+
+    const insertionTarget = {
+        type: "block",
+        phaseId: "phase-1",
+        index: 2,
+    };
+
+    state.openBlockCreateDraft(
+        "__new-block-draft__",
+        draft,
+        insertionTarget,
+    );
+
+    draft.name = "Mutated";
+    draft.variables.speed.start = "99";
+    insertionTarget.index = 99;
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(
+        snapshot.activeBlockDraft.name,
+        "",
+    );
+
+    assertEqual(
+        snapshot.activeBlockDraft.variables.speed.start,
+        "",
+    );
+
+    assertEqual(
+        snapshot.insertionTarget.index,
+        2,
+    );
+});
+
+test("editor-state", "opening a block create draft emits once", () => {
+    const state = new EditorState();
+
+    state.setInsertionMode("block");
+
+    let emitCount = 0;
+
+    state.subscribe(() => {
+        emitCount++;
+    });
+
+    state.openBlockCreateDraft(
+        "__new-block-draft__",
+        {
+            mode: "create",
+            phaseId: "phase-1",
+            name: "",
+            duration: "",
+            variables: {},
+        },
+        {
+            type: "block",
+            phaseId: "phase-1",
+            index: 1,
+        },
+    );
+
+    assertEqual(
+        emitCount,
+        1,
+    );
+});

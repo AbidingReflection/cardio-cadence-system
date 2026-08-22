@@ -45,5 +45,15 @@ export function createProtocolModelFake() {
                 blockData: structuredClone(blockData),
             });
         },
+
+        addBlock(phaseId, blockData, index = undefined) {
+            calls.addBlock.push({
+                phaseId,
+                blockData: structuredClone(blockData),
+                                index,
+            });
+
+            return "new-block-id";
+        },
     };
 }

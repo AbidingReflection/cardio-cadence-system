@@ -57,12 +57,32 @@ export function cancelBlockEdit(editorState) {
         return;
     }
 
+    if (snapshot.activeBlockDraft?.mode === "create") {
+        editorState.clearInsertionTarget();
+    }
+
     editorState.closeBlockDraft();
 }
 
 /** Adds a validated new block to the protocol. */
 function applyNewBlock(protocolModel, editorState, draft, blockData) {
-    protocolModel.addBlock(draft.phaseId, blockData);
+    const { insertionTarget } = editorState.getSnapshot();
+
+    if (
+        insertionTarget?.type !== "block" ||
+        insertionTarget.phaseId !== draft.phaseId ||
+        !Number.isInteger(insertionTarget.index)
+    ) {
+        throw new Error(
+            "New block draft requires a valid insertion target.",
+        );
+    }
+
+    protocolModel.addBlock(
+        draft.phaseId,
+        blockData,
+        insertionTarget.index,
+    );
 
     editorState.clearInsertionTarget();
 }
@@ -293,6 +313,72 @@ export function startBlockEdit(protocolModel, editorState, blockId) {
 
     return {
         outcome: "proceed",
+    };
+}
+
+const NEW_BLOCK_DRAFT_ID = "__new-block-draft__";
+
+/** Starts a create draft for a new block at a selected insertion target. */
+export function startBlockCreate(
+    editorState,
+    activityType,
+    phaseId,
+    index,
+) {
+    if (typeof phaseId !== "string" || phaseId.trim() === "") {
+        throw new Error("Block creation requires a phase ID.");
+    }
+
+    if (!Number.isInteger(index) || index < 0) {
+        throw new Error("Block creation requires a valid insertion index.");
+    }
+
+    const navigation = checkBlockDraftNavigation(editorState);
+
+    if (navigation.outcome === "blocked") {
+        return navigation;
+    }
+
+    const snapshot = editorState.getSnapshot();
+
+    if (snapshot.activeBlockDraft !== undefined) {
+        editorState.closeBlockDraft();
+    }
+
+    const draft = createCreateDraft(activityType, phaseId);
+
+    editorState.openBlockCreateDraft(
+        NEW_BLOCK_DRAFT_ID,
+        draft,
+        {
+            type: "block",
+            phaseId,
+            index,
+        },
+    );
+
+    return {
+        outcome: "proceed",
+    };
+}
+
+/** Creates a blank create-mode block draft for an activity type. */
+function createCreateDraft(activityType, phaseId) {
+    const variables = {};
+
+    for (const variable of activityType.variables) {
+        variables[variable.id] = {
+            type: "steady",
+            start: "",
+        };
+    }
+
+    return {
+        mode: "create",
+        phaseId,
+        name: "",
+        duration: "",
+        variables,
     };
 }
 

@@ -265,6 +265,19 @@ export class EditorState {
         this.#emit();
     }
 
+    /** Opens a new block draft at a concrete insertion target. */
+    openBlockCreateDraft(blockId, draft, insertionTarget) {
+        this.#insertionMode = undefined;
+        this.#insertionTarget = structuredClone(insertionTarget);
+
+        this.#expandedBlockId = blockId;
+        this.#activeBlockDraft = structuredClone(draft);
+        this.#blockDraftBaseline = structuredClone(draft);
+        this.#validationErrors = [];
+
+        this.#emit();
+    }
+
     /** Closes the active block editor and clears its draft state. */
     closeBlockDraft() {
         this.#expandedBlockId = undefined;

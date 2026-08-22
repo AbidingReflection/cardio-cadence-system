@@ -47,9 +47,17 @@ async function main() {
     const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
+    const addPhaseButton = document.querySelector("#add-phase-button");
+    const addBlockButton = document.querySelector("#add-block-button");
 
-    if (protocolTree === null) {
-        throw new Error('Required element "#protocol-tree" was not found.');
+    if (
+        protocolTree === null ||
+        addPhaseButton === null ||
+        addBlockButton === null
+    ) {
+        throw new Error(
+            "Required protocol editor controls were not found.",
+        );
     }
 
     let pendingFieldFocus;
@@ -66,11 +74,39 @@ async function main() {
         pendingToggleFocus = undefined;
         pendingPhaseNameFocus = undefined;
 
+        const editorSnapshot = editorState.getSnapshot();
+
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
-            editorState.getSnapshot(),
-            activityType,
+                           editorSnapshot,
+                           activityType,
+        );
+
+        const phaseInsertionActive =
+        editorSnapshot.insertionMode === "phase";
+
+        const blockInsertionActive =
+        editorSnapshot.insertionMode === "block";
+
+        addPhaseButton.classList.toggle(
+            "is-active",
+            phaseInsertionActive,
+        );
+
+        addBlockButton.classList.toggle(
+            "is-active",
+            blockInsertionActive,
+        );
+
+        addPhaseButton.setAttribute(
+            "aria-pressed",
+            String(phaseInsertionActive),
+        );
+
+        addBlockButton.setAttribute(
+            "aria-pressed",
+            String(blockInsertionActive),
         );
 
         if (fieldFocusContext !== undefined) {
@@ -120,6 +156,30 @@ async function main() {
         setPendingPhaseNameFocus: (focusContext) => {
             pendingPhaseNameFocus = focusContext;
         },
+    });
+
+    /** Toggles phase insertion mode. */
+    addPhaseButton.addEventListener("click", () => {
+        const { insertionMode } = editorState.getSnapshot();
+
+        if (insertionMode === "phase") {
+            editorState.clearInsertionMode();
+            return;
+        }
+
+        editorState.setInsertionMode("phase");
+    });
+
+    /** Toggles block insertion mode. */
+    addBlockButton.addEventListener("click", () => {
+        const { insertionMode } = editorState.getSnapshot();
+
+        if (insertionMode === "block") {
+            editorState.clearInsertionMode();
+            return;
+        }
+
+        editorState.setInsertionMode("block");
     });
 
     render();

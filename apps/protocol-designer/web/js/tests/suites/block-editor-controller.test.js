@@ -13,6 +13,7 @@ import {
     requestExpandBlock,
     requestCollapseBlock,
     requestCollapsePhase,
+    startBlockCreate,
 } from "../../controllers/block-editor-controller.js";
 
 import { createEditorStateFake } from "../helpers/editor-state-fake.js";
@@ -141,6 +142,7 @@ test("block-editor-controller", "applies a valid create draft", () => {
                     },
                 },
             },
+            index: 0,
         },
     ]);
 
@@ -148,7 +150,10 @@ test("block-editor-controller", "applies a valid create draft", () => {
 
     assertEqual(editorState.calls.clearInsertionTarget, 1);
 
-    assertEqual(editorState.getSnapshot().insertionTarget, undefined);
+    assertEqual(
+        editorState.getSnapshot().insertionTarget,
+                undefined,
+    );
 
     assertEqual(editorState.calls.closeBlockDraft, 1);
 
@@ -158,9 +163,15 @@ test("block-editor-controller", "applies a valid create draft", () => {
 
     assertEqual(editorState.calls.cancelBlockDraft, 0);
 
-    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
+    assertEqual(
+        editorState.getSnapshot().expandedBlockId,
+                undefined,
+    );
 
-    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
+    assertEqual(
+        editorState.getSnapshot().activeBlockDraft,
+                undefined,
+    );
 });
 
 test(
@@ -807,4 +818,139 @@ test("block-editor-controller", "cancel block edit is a no-op when no block is e
     cancelBlockEdit(editorState);
 
     assertEqual(editorState.calls.closeBlockDraft, 0);
+});
+
+test("block-editor-controller", "starts a block create draft at the selected insertion target", () => {
+    const editorState = createEditorStateFake(undefined);
+
+    const result = startBlockCreate(
+        editorState,
+        ACTIVITY_TYPE,
+        "phase-1",
+        2,
+    );
+
+    assertDeepEqual(result, {
+        outcome: "proceed",
+    });
+
+    assertDeepEqual(
+        editorState.calls.openBlockCreateDraft,
+        [
+            {
+                blockId: "__new-block-draft__",
+                draft: {
+                    mode: "create",
+                    phaseId: "phase-1",
+                    name: "",
+                    duration: "",
+                    variables: {
+                        speed: {
+                            type: "steady",
+                            start: "",
+                        },
+                        incline: {
+                            type: "steady",
+                            start: "",
+                        },
+                    },
+                },
+                insertionTarget: {
+                    type: "block",
+                    phaseId: "phase-1",
+                    index: 2,
+                },
+            },
+        ],
+    );
+
+    assertEqual(
+        editorState.calls.openBlockDraft,
+        0,
+    );
+
+    assertEqual(
+        editorState.calls.setInsertionTarget,
+        0,
+    );
+
+    assertEqual(
+        editorState.calls.clearInsertionMode,
+        0,
+    );
+});
+
+test("block-editor-controller", "applies a create draft at its selected insertion index", () => {
+    const protocolModel = createProtocolModelFake();
+
+    const editorState = createEditorStateFake(
+        createCreateDraft(),
+    );
+
+    editorState.setInsertionTarget({
+        type: "block",
+        phaseId: "phase-1",
+        index: 2,
+    });
+
+    const result = applyBlockDraft(
+        protocolModel,
+        editorState,
+        ACTIVITY_TYPE,
+    );
+
+    assertEqual(result, true);
+
+    assertDeepEqual(
+        protocolModel.calls.addBlock,
+        [
+            {
+                phaseId: "phase-1",
+                blockData: {
+                    name: "Climb",
+                    durationSeconds: 180,
+                    variables: {
+                        speed: {
+                            type: "linear",
+                            start: 3.5,
+                            end: 5,
+                        },
+                        incline: {
+                            type: "steady",
+                            start: 2,
+                        },
+                    },
+                },
+                index: 2,
+            },
+        ],
+    );
+});
+
+test("block-editor-controller", "canceling a create draft clears its insertion target", () => {
+    const editorState = createEditorStateFake(
+        createCreateDraft(),
+    );
+
+    editorState.openBlockDraft(
+        "__new-block-draft__",
+        createCreateDraft(),
+    );
+
+    cancelBlockEdit(editorState);
+
+    assertEqual(
+        editorState.calls.clearInsertionTarget,
+        1,
+    );
+
+    assertEqual(
+        editorState.getSnapshot().insertionTarget,
+                undefined,
+    );
+
+    assertEqual(
+        editorState.calls.closeBlockDraft,
+        1,
+    );
 });

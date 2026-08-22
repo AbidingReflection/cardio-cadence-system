@@ -183,14 +183,69 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
 
     blocks.className = "phase-blocks";
 
-    for (const block of phase.blocks) {
-        blocks.append(createBlockElement(block, editorSnapshot, activityType));
+    const insertionTarget = editorSnapshot.insertionTarget;
+    const draft = editorSnapshot.activeBlockDraft;
+
+    const hasCreateDraft =
+    draft?.mode === "create" &&
+    insertionTarget?.type === "block" &&
+    insertionTarget.phaseId === phase.id;
+
+    for (let index = 0; index <= phase.blocks.length; index += 1) {
+        if (
+            hasCreateDraft &&
+            insertionTarget.index === index
+        ) {
+            blocks.append(
+                createNewBlockElement(
+                    editorSnapshot,
+                    activityType,
+                ),
+            );
+        } else if (editorSnapshot.insertionMode === "block") {
+            blocks.append(
+                createBlockInsertionTarget(
+                    phase.id,
+                    index,
+                ),
+            );
+        }
+
+        if (index < phase.blocks.length) {
+            blocks.append(
+                createBlockElement(
+                    phase.blocks[index],
+                    editorSnapshot,
+                    activityType,
+                ),
+            );
+        }
     }
 
     table.append(blocks);
     body.append(table);
 
     return body;
+}
+
+/** Creates a selectable insertion target between blocks. */
+function createBlockInsertionTarget(phaseId, index) {
+    const target = document.createElement("button");
+
+    target.type = "button";
+    target.className = "block-insertion-target";
+    target.dataset.action = "insert-block";
+    target.dataset.phaseId = phaseId;
+    target.dataset.insertionIndex = String(index);
+
+    target.setAttribute(
+        "aria-label",
+        `Insert block at position ${index + 1}`,
+    );
+
+    target.textContent = "+ Add block here";
+
+    return target;
 }
 
 /** Creates the block-summary header for an expanded phase. */
@@ -362,6 +417,43 @@ function createBlockElement(block, editorSnapshot, activityType) {
     return blockElement;
 }
 
+/** Creates the expanded editor for an uncommitted new block. */
+function createNewBlockElement(editorSnapshot, activityType) {
+    const draft = editorSnapshot.activeBlockDraft;
+    const blockId = editorSnapshot.expandedBlockId;
+
+    if (
+        draft?.mode !== "create" ||
+        blockId === undefined
+    ) {
+        throw new Error(
+            "Cannot render a new block without an active create draft.",
+        );
+    }
+
+    const block = {
+        id: blockId,
+        name: draft.name || "New Block",
+    };
+
+    const blockElement = document.createElement("article");
+
+    blockElement.className =
+    "block-card block-card--expanded";
+
+        blockElement.dataset.blockId = block.id;
+
+        blockElement.append(
+            createExpandedBlock(
+                block,
+                editorSnapshot,
+                activityType,
+            ),
+        );
+
+        return blockElement;
+}
+
 /** Creates the collapsed block row. */
 function createCollapsedBlock(block, activityType) {
     const row = document.createElement("div");
@@ -414,8 +506,28 @@ function createCollapsedBlock(block, activityType) {
 function createExpandedBlock(block, editorSnapshot, activityType) {
     const draft = editorSnapshot.activeBlockDraft;
 
-    if (draft === undefined || draft.blockId !== block.id) {
-        throw new Error(`Expanded block "${block.id}" has no matching active draft.`);
+    if (draft === undefined) {
+        throw new Error(
+            `Expanded block "${block.id}" has no active draft.`,
+        );
+    }
+
+    if (
+        draft.mode === "edit" &&
+        draft.blockId !== block.id
+    ) {
+        throw new Error(
+            `Expanded block "${block.id}" has no matching edit draft.`,
+        );
+    }
+
+    if (
+        draft.mode === "create" &&
+        editorSnapshot.expandedBlockId !== block.id
+    ) {
+        throw new Error(
+            `Expanded block "${block.id}" has no matching create draft.`,
+        );
     }
 
     const form = document.createElement("form");

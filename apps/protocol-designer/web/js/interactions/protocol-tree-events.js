@@ -7,6 +7,7 @@ import {
     applyBlockDraft,
     requestCollapseBlock,
     startBlockEdit,
+    startBlockCreate,
     cancelBlockEdit,
 } from "../controllers/block-editor-controller.js";
 
@@ -45,6 +46,44 @@ export function wireProtocolTreeEvents({
                 if (field instanceof HTMLInputElement && field.type !== "number") {
                     field.select();
                 }
+            }
+
+            return;
+        }
+
+        const insertBlockTarget = event.target.closest(
+            '[data-action="insert-block"]',
+        );
+
+        if (insertBlockTarget !== null) {
+            const phaseId = insertBlockTarget.dataset.phaseId;
+            const index = Number(
+                insertBlockTarget.dataset.insertionIndex,
+            );
+
+            if (
+                phaseId === undefined ||
+                !Number.isInteger(index)
+            ) {
+                throw new Error(
+                    "Block insertion target is missing valid insertion data.",
+                );
+            }
+
+            setPendingFieldFocus({
+                blockId: "__new-block-draft__",
+                fieldPath: "name",
+            });
+
+            try {
+                startBlockCreate(
+                    editorState,
+                    activityType,
+                    phaseId,
+                    index,
+                );
+            } finally {
+                setPendingFieldFocus(undefined);
             }
 
             return;

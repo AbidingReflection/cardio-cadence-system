@@ -24,6 +24,8 @@ export function createEditorStateFake(activeBlockDraft) {
         index: 0,
     };
 
+    let insertionMode;
+
     let expandedBlockId;
 
     let expandedPhaseIds = ["phase-1", "phase-2"];
@@ -34,11 +36,14 @@ export function createEditorStateFake(activeBlockDraft) {
         cancelBlockDraft: 0,
         setInsertionTarget: 0,
         clearInsertionTarget: 0,
+        setInsertionMode: 0,
+        clearInsertionMode: 0,
         expandBlock: 0,
         collapseBlock: 0,
         collapsePhase: 0,
         closeBlockDraft: 0,
         openBlockDraft: 0,
+        openBlockCreateDraft: [],
     };
 
     return {
@@ -55,6 +60,7 @@ export function createEditorStateFake(activeBlockDraft) {
                 insertionTarget === undefined
                 ? undefined
                 : structuredClone(insertionTarget),
+                insertionMode,
                 expandedBlockId,
                 expandedPhaseIds: [...expandedPhaseIds],
             };
@@ -92,22 +98,41 @@ export function createEditorStateFake(activeBlockDraft) {
             validationErrors = [];
         },
 
+        /** Opens a create-mode block draft and its insertion target atomically. */
+        openBlockCreateDraft(blockId, newDraft, target) {
+            calls.openBlockCreateDraft.push({
+                blockId,
+                draft: structuredClone(newDraft),
+                                            insertionTarget: structuredClone(target),
+            });
+
+            insertionMode = undefined;
+            insertionTarget = structuredClone(target);
+            expandedBlockId = blockId;
+            draft = structuredClone(newDraft);
+            validationErrors = [];
+        },
+
         /** Sets the concrete insertion target. */
         setInsertionTarget(target) {
             calls.setInsertionTarget++;
-
-            if (deepEqual(insertionTarget, target)) {
-                return;
-            }
-
             insertionTarget = structuredClone(target);
         },
 
         /** Clears the concrete insertion target. */
         clearInsertionTarget() {
             calls.clearInsertionTarget++;
-
             insertionTarget = undefined;
+        },
+
+        setInsertionMode(mode) {
+            calls.setInsertionMode++;
+            insertionMode = mode;
+        },
+
+        clearInsertionMode() {
+            calls.clearInsertionMode++;
+            insertionMode = undefined;
         },
 
         expandBlock(blockId) {
