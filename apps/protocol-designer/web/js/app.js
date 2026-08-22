@@ -11,6 +11,7 @@ import { renderProtocolTree } from "./renderers/protocol-tree-renderer.js";
 import {
     restoreProtocolFieldFocus,
     restoreProtocolToggleFocus,
+    restorePhaseNameFocus,
 } from "./interactions/protocol-focus.js";
 
 import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
@@ -53,14 +54,17 @@ async function main() {
 
     let pendingFieldFocus;
     let pendingToggleFocus;
+    let pendingPhaseNameFocus;
 
     /** Renders the protocol tree and restores any pending interaction focus. */
     const render = () => {
         const fieldFocusContext = pendingFieldFocus;
         const toggleFocusContext = pendingToggleFocus;
+        const phaseNameFocusContext = pendingPhaseNameFocus;
 
         pendingFieldFocus = undefined;
         pendingToggleFocus = undefined;
+        pendingPhaseNameFocus = undefined;
 
         renderProtocolTree(
             protocolTree,
@@ -70,13 +74,28 @@ async function main() {
         );
 
         if (fieldFocusContext !== undefined) {
-            restoreProtocolFieldFocus(protocolTree, fieldFocusContext);
+            restoreProtocolFieldFocus(
+                protocolTree,
+                fieldFocusContext,
+            );
+
+            return;
+        }
+
+        if (phaseNameFocusContext !== undefined) {
+            restorePhaseNameFocus(
+                protocolTree,
+                phaseNameFocusContext,
+            );
 
             return;
         }
 
         if (toggleFocusContext !== undefined) {
-            restoreProtocolToggleFocus(protocolTree, toggleFocusContext);
+            restoreProtocolToggleFocus(
+                protocolTree,
+                toggleFocusContext,
+            );
         }
     };
 
@@ -96,6 +115,10 @@ async function main() {
 
         setPendingToggleFocus: (focusContext) => {
             pendingToggleFocus = focusContext;
+        },
+
+        setPendingPhaseNameFocus: (focusContext) => {
+            pendingPhaseNameFocus = focusContext;
         },
     });
 

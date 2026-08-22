@@ -8,6 +8,10 @@ export class EditorState {
     #expandedPhaseIds = new Set();
     #expandedBlockId;
     #listeners = new Set();
+
+    #editingPhaseId;
+    #phaseNameDraft;
+
     #activeBlockDraft;
     #blockDraftBaseline;
     #validationErrors = [];
@@ -18,15 +22,21 @@ export class EditorState {
         return {
             expandedPhaseIds: [...this.#expandedPhaseIds],
             expandedBlockId: this.#expandedBlockId,
+
+            editingPhaseId: this.#editingPhaseId,
+            phaseNameDraft: this.#phaseNameDraft,
+
             activeBlockDraft:
-                this.#activeBlockDraft === undefined
-                    ? undefined
-                    : structuredClone(this.#activeBlockDraft),
+            this.#activeBlockDraft === undefined
+            ? undefined
+            : structuredClone(this.#activeBlockDraft),
+
             validationErrors: structuredClone(this.#validationErrors),
+
             pendingInsertion:
-                this.#pendingInsertion === undefined
-                    ? undefined
-                    : structuredClone(this.#pendingInsertion),
+            this.#pendingInsertion === undefined
+            ? undefined
+            : structuredClone(this.#pendingInsertion),
         };
     }
 
@@ -86,6 +96,43 @@ export class EditorState {
         }
 
         this.#expandedBlockId = undefined;
+        this.#emit();
+    }
+
+    /** Starts editing a phase name from its committed value. */
+    startPhaseNameEdit(phaseId, name) {
+        this.#editingPhaseId = phaseId;
+        this.#phaseNameDraft = name;
+
+        this.#emit();
+    }
+
+    /** Updates the active phase-name draft. */
+    updatePhaseNameDraft(name) {
+        if (this.#editingPhaseId === undefined) {
+            throw new Error(
+                "Cannot update phase name because no phase-name edit is active.",
+            );
+        }
+
+        if (this.#phaseNameDraft === name) {
+            return;
+        }
+
+        this.#phaseNameDraft = name;
+
+        this.#emit();
+    }
+
+    /** Closes the active phase-name edit and discards its draft state. */
+    closePhaseNameEdit() {
+        if (this.#editingPhaseId === undefined) {
+            return;
+        }
+
+        this.#editingPhaseId = undefined;
+        this.#phaseNameDraft = undefined;
+
         this.#emit();
     }
 

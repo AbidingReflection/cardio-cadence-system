@@ -39,8 +39,6 @@
     border-color: var(--color-accent);
 }
 
-
-
 .phase-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -54,6 +52,125 @@
 
     background: var(--color-phase-header);
 }
+
+
+/* --------------------------------------------------------------------------
+ * Phase heading
+ * -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+ * Phase heading
+ * -------------------------------------------------------------------------- */
+
+.phase-heading {
+    display: grid;
+    grid-template-columns: max-content auto;
+    align-items: center;
+    justify-content: start;
+    column-gap: 8px;
+
+    min-width: 0;
+}
+
+.phase-index {
+    grid-column: 1 / -1;
+
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.phase-name,
+.phase-name-editor {
+    grid-column: 1;
+
+    min-width: 0;
+}
+
+.phase-name {
+    max-width: 320px;
+    margin: 0;
+
+    overflow: hidden;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phase-name-editor {
+    width: 320px;
+    max-width: 100%;
+}
+
+.phase-name-actions {
+    grid-column: 2;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.phase-name-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 26px;
+    height: 26px;
+    padding: 0;
+
+    border: 1px solid var(--color-phase-border);
+    border-radius: 4px;
+
+    background: rgb(255 255 255 / 45%);
+    color: var(--color-text-muted);
+
+    cursor: pointer;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.phase-name-action:hover {
+    border-color: var(--color-accent);
+    background: rgb(255 255 255 / 75%);
+    color: var(--color-text);
+}
+
+
+/* --------------------------------------------------------------------------
+ * Phase summary
+ * -------------------------------------------------------------------------- */
+
+.phase-summary {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    flex-shrink: 0;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Phase toggle
+ * -------------------------------------------------------------------------- */
 
 .phase-toggle {
     display: flex;
@@ -87,48 +204,6 @@
 .phase-toggle span {
     font-size: 0.72rem;
     line-height: 1;
-}
-
-.phase-heading {
-    min-width: 0;
-}
-
-.phase-index {
-    display: block;
-
-    margin-bottom: 2px;
-
-    color: var(--color-text-muted);
-
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.phase-name {
-    margin: 0;
-
-    overflow: hidden;
-
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.phase-summary {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-
-    flex-shrink: 0;
-
-    color: var(--color-text-muted);
-
-    font-size: 0.85rem;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
 }
 /* --------------------------------------------------------------------------
  * Expanded phase body

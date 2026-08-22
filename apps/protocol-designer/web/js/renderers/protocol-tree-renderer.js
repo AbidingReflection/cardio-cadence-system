@@ -14,26 +14,56 @@ export function renderProtocolTree(container, protocolSnapshot, editorSnapshot, 
 }
 
 /** Creates a phase card. */
-function createPhaseElement(phase, phaseIndex, editorSnapshot, activityType) {
-    const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
+function createPhaseElement(
+    phase,
+    phaseIndex,
+    editorSnapshot,
+    activityType,
+) {
+    const isExpanded = editorSnapshot.expandedPhaseIds.includes(
+        phase.id,
+    );
 
     const phaseElement = document.createElement("article");
 
-    phaseElement.className = isExpanded ? "phase-card phase-card--expanded" : "phase-card";
+    phaseElement.className = isExpanded
+    ? "phase-card phase-card--expanded"
+    : "phase-card";
 
     phaseElement.dataset.phaseId = phase.id;
 
-    phaseElement.append(createPhaseHeader(phase, phaseIndex, isExpanded));
+    phaseElement.append(
+        createPhaseHeader(
+            phase,
+            phaseIndex,
+            isExpanded,
+            editorSnapshot,
+        ),
+    );
 
     if (isExpanded) {
-        phaseElement.append(createPhaseBody(phase, editorSnapshot, activityType));
+        phaseElement.append(
+            createPhaseBody(
+                phase,
+                editorSnapshot,
+                activityType,
+            ),
+        );
     }
 
     return phaseElement;
 }
 
 /** Creates a phase header. */
-function createPhaseHeader(phase, phaseIndex, isExpanded) {
+function createPhaseHeader(
+    phase,
+    phaseIndex,
+    isExpanded,
+    editorSnapshot,
+) {
+    const isEditingName =
+    editorSnapshot.editingPhaseId === phase.id;
+
     const header = document.createElement("header");
 
     header.className = "phase-header";
@@ -47,12 +77,23 @@ function createPhaseHeader(phase, phaseIndex, isExpanded) {
     index.className = "phase-index";
     index.textContent = `Phase ${phaseIndex + 1}`;
 
-    const name = document.createElement("h2");
+    heading.append(index);
 
-    name.className = "phase-name";
-    name.textContent = phase.name;
+    if (isEditingName) {
+        heading.append(
+            createPhaseNameEditor(
+                phase,
+                editorSnapshot.phaseNameDraft,
+            ),
+        );
+    } else {
+        const name = document.createElement("h2");
 
-    heading.append(index, name);
+        name.className = "phase-name";
+        name.textContent = phase.name;
+
+        heading.append(name);
+    }
 
     const summary = document.createElement("div");
 
@@ -60,15 +101,24 @@ function createPhaseHeader(phase, phaseIndex, isExpanded) {
 
     const duration = document.createElement("span");
 
-    duration.textContent = `Duration: ${formatDuration(getPhaseDurationSeconds(phase))}`;
+    duration.textContent =
+    `Duration: ${formatDuration(
+        getPhaseDurationSeconds(phase),
+    )}`;
 
     const blockCount = document.createElement("span");
 
-    blockCount.textContent = `${phase.blocks.length} ${
-        phase.blocks.length === 1 ? "Block" : "Blocks"
+    blockCount.textContent =
+    `${phase.blocks.length} ${
+        phase.blocks.length === 1
+        ? "Block"
+        : "Blocks"
     }`;
 
-    summary.append(duration, blockCount);
+    summary.append(
+        duration,
+        blockCount,
+    );
 
     const toggle = document.createElement("button");
 
@@ -76,16 +126,43 @@ function createPhaseHeader(phase, phaseIndex, isExpanded) {
     toggle.className = "phase-toggle";
     toggle.dataset.action = "toggle-phase";
 
-    toggle.setAttribute("aria-expanded", String(isExpanded));
+    toggle.setAttribute(
+        "aria-expanded",
+        String(isExpanded),
+    );
 
     toggle.setAttribute(
         "aria-label",
-        `${isExpanded ? "Collapse" : "Expand"} Phase ${phaseIndex + 1}`,
+        `${
+            isExpanded
+            ? "Collapse"
+            : "Expand"
+        } Phase ${phaseIndex + 1}`,
     );
 
-    toggle.textContent = isExpanded ? "▲" : "▼";
+    toggle.textContent = isExpanded
+    ? "▲"
+    : "▼";
 
-    header.append(heading, summary, toggle);
+    header.append(
+        heading,
+        summary,
+    );
+
+    if (isExpanded) {
+        heading.append(
+            createPhaseNameActions(
+                phase,
+                isEditingName,
+            ),
+        );
+    }
+
+    header.append(
+        heading,
+        summary,
+        toggle,
+    );
 
     return header;
 }
@@ -187,6 +264,83 @@ function createPhaseBlockHeader(activityType) {
     row.append(header, spacer);
 
     return row;
+}
+
+/** Creates the inline phase-name editor. */
+function createPhaseNameEditor(
+    phase,
+    draftName,
+) {
+    const input = document.createElement("input");
+
+    input.type = "text";
+    input.className = "phase-name-editor";
+
+    input.id = `${phase.id}-name`;
+    input.name = "phase-name";
+
+    input.value = draftName ?? "";
+    input.dataset.phaseNameField = "";
+
+    input.setAttribute(
+        "aria-label",
+        `Edit phase name for ${phase.name}`,
+    );
+
+    return input;
+}
+
+/** Creates phase-name edit, save, and cancel controls. */
+function createPhaseNameActions(
+    phase,
+    isEditing,
+) {
+    const actions = document.createElement("div");
+
+    actions.className = "phase-name-actions";
+
+    if (!isEditing) {
+        const edit = document.createElement("button");
+
+        edit.type = "button";
+        edit.className = "phase-name-action";
+        edit.dataset.action = "edit-phase-name";
+        edit.setAttribute(
+            "aria-label",
+            `Edit phase name: ${phase.name}`,
+        );
+        edit.textContent = "✎";
+
+        actions.append(edit);
+
+        return actions;
+    }
+
+    const save = document.createElement("button");
+
+    save.type = "button";
+    save.className = "phase-name-action";
+    save.dataset.action = "save-phase-name";
+    save.setAttribute(
+        "aria-label",
+        "Save phase name",
+    );
+    save.textContent = "✓";
+
+    const cancel = document.createElement("button");
+
+    cancel.type = "button";
+    cancel.className = "phase-name-action";
+    cancel.dataset.action = "cancel-phase-name";
+    cancel.setAttribute(
+        "aria-label",
+        "Cancel phase-name edit",
+    );
+    cancel.textContent = "×";
+
+    actions.append(save, cancel);
+
+    return actions;
 }
 
 /** Creates a block card. */

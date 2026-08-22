@@ -10,7 +10,10 @@ import {
     cancelBlockEdit,
 } from "../controllers/block-editor-controller.js";
 
-import { captureProtocolFieldFocus } from "./protocol-focus.js";
+import {
+    captureProtocolFieldFocus,
+    capturePhaseNameFocus,
+} from "./protocol-focus.js";
 
 /**
  * Registers protocol-tree event handlers and connects them to application
@@ -24,6 +27,7 @@ export function wireProtocolTreeEvents({
     machineProfile,
     setPendingFieldFocus,
     setPendingToggleFocus,
+    setPendingPhaseNameFocus,
 }) {
     protocolTree.addEventListener("click", (event) => {
         const validationMessage = event.target.closest("[data-validation-field]");
@@ -102,6 +106,97 @@ export function wireProtocolTreeEvents({
             return;
         }
 
+        const editPhaseNameButton = event.target.closest(
+            '[data-action="edit-phase-name"]',
+        );
+
+        if (editPhaseNameButton !== null) {
+            const phaseElement = editPhaseNameButton.closest(
+                "[data-phase-id]",
+            );
+
+            if (phaseElement === null) {
+                throw new Error(
+                    "Phase-name edit action is missing its phase container.",
+                );
+            }
+
+            const phaseId = phaseElement.dataset.phaseId;
+
+            const phase = protocolModel
+            .getSnapshot()
+            .phases
+            .find(
+                (candidate) => candidate.id === phaseId,
+            );
+
+            if (phase === undefined) {
+                throw new Error(
+                    `Cannot edit missing phase "${phaseId}".`,
+                );
+            }
+
+            setPendingPhaseNameFocus({
+                phaseId,
+                target: "editor",
+            });
+
+            try {
+                editorState.startPhaseNameEdit(
+                    phaseId,
+                    phase.name,
+                );
+            } finally {
+                setPendingPhaseNameFocus(undefined);
+            }
+
+            return;
+        }
+
+        const savePhaseNameButton = event.target.closest(
+            '[data-action="save-phase-name"]',
+        );
+
+        if (savePhaseNameButton !== null) {
+            savePhaseName(
+                protocolTree,
+                protocolModel,
+                editorState,
+                setPendingPhaseNameFocus,
+            );
+
+            return;
+        }
+
+        const cancelPhaseNameButton = event.target.closest(
+            '[data-action="cancel-phase-name"]',
+        );
+
+        if (cancelPhaseNameButton !== null) {
+            const phaseElement = cancelPhaseNameButton.closest(
+                "[data-phase-id]",
+            );
+
+            if (phaseElement === null) {
+                throw new Error(
+                    "Phase-name cancel action is missing its phase container.",
+                );
+            }
+
+            setPendingPhaseNameFocus({
+                phaseId: phaseElement.dataset.phaseId,
+                target: "edit-action",
+            });
+
+            try {
+                editorState.closePhaseNameEdit();
+            } finally {
+                setPendingPhaseNameFocus(undefined);
+            }
+
+            return;
+        }
+
         const phaseToggle = event.target.closest('[data-action="toggle-phase"]');
 
         if (phaseToggle === null) {
@@ -129,16 +224,46 @@ export function wireProtocolTreeEvents({
     });
 
     protocolTree.addEventListener("input", (event) => {
-        const field = event.target.closest("input[data-field]");
+        const phaseNameField = event.target.closest(
+            "input[data-phase-name-field]",
+        );
+
+        if (phaseNameField !== null) {
+            setPendingPhaseNameFocus(
+                capturePhaseNameFocus(phaseNameField),
+            );
+
+            try {
+                editorState.updatePhaseNameDraft(
+                    phaseNameField.value,
+                );
+            } catch (error) {
+                setPendingPhaseNameFocus(undefined);
+
+                throw error;
+            }
+
+            return;
+        }
+
+        const field = event.target.closest(
+            "input[data-field]",
+        );
 
         if (field === null) {
             return;
         }
 
-        setPendingFieldFocus(captureProtocolFieldFocus(field));
+        setPendingFieldFocus(
+            captureProtocolFieldFocus(field),
+        );
 
         try {
-            updateBlockDraftField(editorState, field.dataset.field, field.value);
+            updateBlockDraftField(
+                editorState,
+                field.dataset.field,
+                field.value,
+            );
         } catch (error) {
             setPendingFieldFocus(undefined);
 
@@ -182,6 +307,119 @@ export function wireProtocolTreeEvents({
         //     );
         // }
     });
+
+    protocolTree.addEventListener("keydown", (event) => {
+        const phaseNameField = event.target.closest(
+            "input[data-phase-name-field]",
+        );
+
+        if (phaseNameField === null) {
+            return;
+        }
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+
+            savePhaseName(
+                protocolTree,
+                protocolModel,
+                editorState,
+                setPendingPhaseNameFocus,
+            );
+
+            return;
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+
+            const phaseElement = phaseNameField.closest(
+                "[data-phase-id]",
+            );
+
+            if (phaseElement === null) {
+                throw new Error(
+                    "Phase-name field is missing its phase container.",
+                );
+            }
+
+            setPendingPhaseNameFocus({
+                phaseId: phaseElement.dataset.phaseId,
+                target: "edit-action",
+            });
+
+            try {
+                editorState.closePhaseNameEdit();
+            } finally {
+                setPendingPhaseNameFocus(undefined);
+            }
+        }
+    });
+}
+
+/** Commits the active phase-name draft when it contains a non-empty name. */
+function savePhaseName(
+    protocolTree,
+    protocolModel,
+    editorState,
+    setPendingPhaseNameFocus,
+) {
+    const snapshot = editorState.getSnapshot();
+
+    const phaseId = snapshot.editingPhaseId;
+    const draftName = snapshot.phaseNameDraft;
+
+    if (
+        phaseId === undefined ||
+        typeof draftName !== "string"
+    ) {
+        throw new Error(
+            "Cannot save a phase name without an active phase-name edit.",
+        );
+    }
+
+    const name = draftName.trim();
+
+    if (name === "") {
+        const phaseElement = Array.from(
+            protocolTree.querySelectorAll("[data-phase-id]"),
+        ).find(
+            (element) =>
+            element.dataset.phaseId === phaseId,
+        );
+
+        const field = phaseElement?.querySelector(
+            "[data-phase-name-field]",
+        );
+
+        if (field !== undefined && field !== null) {
+            field.setCustomValidity(
+                "Phase name is required.",
+            );
+            field.reportValidity();
+            field.focus();
+        }
+
+        return;
+    }
+
+    protocolModel.updatePhase(
+        phaseId,
+        {
+            name,
+        },
+    );
+
+    setPendingPhaseNameFocus({
+        phaseId,
+        target: "edit-action",
+    });
+
+    try {
+        editorState.closePhaseNameEdit();
+    } finally {
+        setPendingPhaseNameFocus(undefined);
+    }
 }
 
 /** Updates one field in the active block draft. */

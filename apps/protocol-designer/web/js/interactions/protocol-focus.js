@@ -83,3 +83,79 @@ export function restoreProtocolToggleFocus(protocolTree, focusContext) {
 
     throw new Error(`Unsupported protocol toggle focus type: "${focusContext.type}".`);
 }
+
+/** Captures the identity and selection state of a phase-name editor. */
+export function capturePhaseNameFocus(field) {
+    const phaseElement = field.closest("[data-phase-id]");
+
+    if (phaseElement === null) {
+        throw new Error(
+            "Phase-name field is missing its phase container.",
+        );
+    }
+
+    return {
+        phaseId: phaseElement.dataset.phaseId,
+        target: "editor",
+        selectionStart:
+        typeof field.selectionStart === "number"
+        ? field.selectionStart
+        : undefined,
+        selectionEnd:
+        typeof field.selectionEnd === "number"
+        ? field.selectionEnd
+        : undefined,
+    };
+}
+
+/** Restores focus to a phase-name editor or its edit action after rendering. */
+export function restorePhaseNameFocus(
+    protocolTree,
+    focusContext,
+) {
+    const phaseElement = Array.from(
+        protocolTree.querySelectorAll("[data-phase-id]"),
+    ).find(
+        (element) =>
+        element.dataset.phaseId === focusContext.phaseId,
+    );
+
+    if (phaseElement === undefined) {
+        return;
+    }
+
+    if (focusContext.target === "edit-action") {
+        phaseElement
+        .querySelector('[data-action="edit-phase-name"]')
+        ?.focus();
+
+        return;
+    }
+
+    if (focusContext.target !== "editor") {
+        throw new Error(
+            `Unsupported phase-name focus target: "${focusContext.target}".`,
+        );
+    }
+
+    const field = phaseElement.querySelector(
+        "[data-phase-name-field]",
+    );
+
+    if (field === null) {
+        return;
+    }
+
+    field.focus();
+
+    if (
+        typeof focusContext.selectionStart === "number" &&
+        typeof focusContext.selectionEnd === "number" &&
+        typeof field.selectionStart === "number"
+    ) {
+        field.setSelectionRange(
+            focusContext.selectionStart,
+            focusContext.selectionEnd,
+        );
+    }
+}

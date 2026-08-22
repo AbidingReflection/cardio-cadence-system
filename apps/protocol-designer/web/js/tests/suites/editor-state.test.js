@@ -16,6 +16,8 @@ test("editor-state", "starts with no expanded phases or block", () => {
         activeBlockDraft: undefined,
         validationErrors: [],
         pendingInsertion: undefined,
+        editingPhaseId: undefined,
+        phaseNameDraft: undefined,
     });
 });
 
@@ -93,6 +95,8 @@ test("editor-state", "notifies subscribers after state changes", () => {
         activeBlockDraft: undefined,
         validationErrors: [],
         pendingInsertion: undefined,
+        editingPhaseId: undefined,
+        phaseNameDraft: undefined,
     });
 });
 
@@ -847,3 +851,50 @@ test("editor-state", "clearing empty pending insertion does not emit", () => {
 
     assertEqual(notificationCount, 0);
 });
+
+test("editor-state", "starts phase-name editing", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warm-up");
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.editingPhaseId, "phase-1");
+    assertEqual(snapshot.phaseNameDraft, "Warm-up");
+});
+
+test("editor-state", "updates the active phase-name draft", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warm-up");
+    state.updatePhaseNameDraft("Extended Warm-up");
+
+    assertEqual(
+        state.getSnapshot().phaseNameDraft,
+                "Extended Warm-up",
+    );
+});
+
+test("editor-state", "closes phase-name editing", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warm-up");
+    state.closePhaseNameEdit();
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.editingPhaseId, undefined);
+    assertEqual(snapshot.phaseNameDraft, undefined);
+});
+
+test(
+    "editor-state",
+     "rejects phase-name updates without an active edit",
+     () => {
+         const state = new EditorState();
+
+         assertThrows(() => {
+             state.updatePhaseNameDraft("Warm-up");
+         });
+     },
+);
