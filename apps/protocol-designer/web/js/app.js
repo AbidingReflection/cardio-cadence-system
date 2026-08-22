@@ -13,12 +13,9 @@ import {
     restoreProtocolToggleFocus,
 } from "./interactions/protocol-focus.js";
 
-import {
-    wireProtocolTreeEvents,
-} from "./interactions/protocol-tree-events.js";
+import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
 
-const INITIAL_PROTOCOL_URL =
-"/data/protocols/true-elliptical-75-minute-session.json";
+const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
 
 /**
  * Initializes application data, state, rendering, subscriptions, and
@@ -27,46 +24,31 @@ const INITIAL_PROTOCOL_URL =
 async function main() {
     const domainData = await loadDomainData();
     const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
-    const activityType = domainData.activityTypes.get(
-        protocolData.activityTypeId,
-    );
+    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
 
     if (activityType === undefined) {
-        throw new Error(
-            `Protocol ActivityType "${protocolData.activityTypeId}" was not found.`,
-        );
+        throw new Error(`Protocol ActivityType "${protocolData.activityTypeId}" was not found.`);
     }
 
     const machineProfile =
-    protocolData.machineProfileId === undefined
-    ? undefined
-    : domainData.machineProfiles.get(
-        protocolData.machineProfileId,
-    );
+        protocolData.machineProfileId === undefined
+            ? undefined
+            : domainData.machineProfiles.get(protocolData.machineProfileId);
 
-    if (
-        protocolData.machineProfileId !== undefined &&
-        machineProfile === undefined
-    ) {
+    if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
         throw new Error(
             `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`,
         );
     }
 
-    const protocolModel = new ProtocolModel(
-        protocolData,
-        activityType,
-        machineProfile,
-    );
+    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
 
     const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
 
     if (protocolTree === null) {
-        throw new Error(
-            'Required element "#protocol-tree" was not found.',
-        );
+        throw new Error('Required element "#protocol-tree" was not found.');
     }
 
     let pendingFieldFocus;
@@ -83,24 +65,18 @@ async function main() {
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
-                           editorState.getSnapshot(),
-                           activityType,
+            editorState.getSnapshot(),
+            activityType,
         );
 
         if (fieldFocusContext !== undefined) {
-            restoreProtocolFieldFocus(
-                protocolTree,
-                fieldFocusContext,
-            );
+            restoreProtocolFieldFocus(protocolTree, fieldFocusContext);
 
             return;
         }
 
         if (toggleFocusContext !== undefined) {
-            restoreProtocolToggleFocus(
-                protocolTree,
-                toggleFocusContext,
-            );
+            restoreProtocolToggleFocus(protocolTree, toggleFocusContext);
         }
     };
 
@@ -132,29 +108,19 @@ async function loadProtocolData(url) {
 
     if (!response.ok) {
         throw new Error(
-            `Failed to load protocol "${url}": ` +
-            `${response.status} ${response.statusText}.`,
+            `Failed to load protocol "${url}": ` + `${response.status} ${response.statusText}.`,
         );
     }
 
     const data = await response.json();
 
-    if (
-        data === null ||
-        typeof data !== "object" ||
-        data.protocol === undefined
-    ) {
-        throw new Error(
-            `Protocol file "${url}" must contain a protocol object.`,
-        );
+    if (data === null || typeof data !== "object" || data.protocol === undefined) {
+        throw new Error(`Protocol file "${url}" must contain a protocol object.`);
     }
 
     return data.protocol;
 }
 
 main().catch((error) => {
-    console.error(
-        "Protocol Designer initialization failed.",
-        error,
-    );
+    console.error("Protocol Designer initialization failed.", error);
 });

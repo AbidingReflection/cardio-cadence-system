@@ -174,12 +174,7 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
     }
 
     if (definition.requiredFields.includes("step")) {
-        const step = validateStep(
-            draftProgression.step,
-            `${baseField}.step`,
-            blockId,
-            errors,
-        );
+        const step = validateStep(draftProgression.step, `${baseField}.step`, blockId, errors);
 
         if (step === undefined) {
             isValid = false;
@@ -259,24 +254,12 @@ function validateTarget(value, variable, machineVariable, field, label, blockId,
 }
 
 /** Validates and converts a stepped progression step size. */
-function validateStep(
-    value,
-    field,
-    blockId,
-    errors
-) {
+function validateStep(value, field, blockId, errors) {
     const number = parseNumber(value);
 
-    if (
-        number === undefined ||
-        number <= 0
-    ) {
+    if (number === undefined || number <= 0) {
         errors.push(
-            createError(
-                field,
-                "Step size is required and must be a positive number.",
-                blockId,
-            ),
+            createError(field, "Step size is required and must be a positive number.", blockId),
         );
 
         return undefined;

@@ -100,28 +100,17 @@ test("protocol-model", "stores normalized protocol data", () => {
 
     protocol.phases[0].blocks[0].variables.incline = {
         type: "steady",
-     start: 0,
-     end: 5,
-     step: 1,
+        start: 0,
+        end: 5,
+        step: 1,
     };
 
-    const model = new ProtocolModel(
-        protocol,
-        ACTIVITY_TYPE,
-        MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 
-    assertDeepEqual(
-        model.getSnapshot()
-        .phases[0]
-        .blocks[0]
-        .variables
-        .incline,
-        {
-            type: "steady",
-            start: 0,
-        }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables.incline, {
+        type: "steady",
+        start: 0,
+    });
 });
 
 test("protocol-model", "rejects invalid protocol data", () => {
@@ -684,11 +673,7 @@ test("protocol-model", "replaces block variables", () => {
 });
 
 test("protocol-model", "normalizes updated block variables", () => {
-    const model = new ProtocolModel(
-        createProtocol(),
-                                    ACTIVITY_TYPE,
-                                    MACHINE_PROFILE
-    );
+    const model = new ProtocolModel(createProtocol(), ACTIVITY_TYPE, MACHINE_PROFILE);
 
     model.updateBlock("block-1", {
         variables: {
@@ -707,23 +692,17 @@ test("protocol-model", "normalizes updated block variables", () => {
         },
     });
 
-    assertDeepEqual(
-        model.getSnapshot()
-        .phases[0]
-        .blocks[0]
-        .variables,
-        {
-            speed: {
-                type: "steady",
-                start: 4,
-            },
-            incline: {
-                type: "linear",
-                start: 0,
-                end: 3,
-            },
-        }
-    );
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables, {
+        speed: {
+            type: "steady",
+            start: 4,
+        },
+        incline: {
+            type: "linear",
+            start: 0,
+            end: 3,
+        },
+    });
 });
 
 test("protocol-model", "updates only the targeted block", () => {

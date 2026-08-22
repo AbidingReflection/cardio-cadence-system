@@ -271,12 +271,7 @@ function createExpandedBlock(block, editorSnapshot, activityType) {
 
     form.append(
         createBlockEditorHeader(block, draft),
-        createBlockEditorBody(
-            block,
-            draft,
-            activityType,
-            editorSnapshot.validationErrors,
-        ),
+        createBlockEditorBody(block, draft, activityType, editorSnapshot.validationErrors),
     );
 
     return form;
@@ -332,23 +327,15 @@ function createBlockEditorHeader(block, draft) {
 }
 
 /** Creates the editable block body. */
-function createBlockEditorBody(
-    block,
-    draft,
-    activityType,
-    validationErrors,
-) {
+function createBlockEditorBody(block, draft, activityType, validationErrors) {
     const body = document.createElement("div");
 
     body.className = "block-editor__body";
 
     const blockErrors = validationErrors.filter(
         (error) =>
-        error.scope === "block" &&
-        (
-            error.entityId === undefined ||
-            error.entityId === block.id
-        ),
+            error.scope === "block" &&
+            (error.entityId === undefined || error.entityId === block.id),
     );
 
     body.append(
@@ -378,10 +365,7 @@ function createBlockFooter(validationErrors) {
 
     actionArea.append(createBlockActions());
 
-    footer.append(
-        createBlockFeedback(validationErrors),
-                  actionArea,
-    );
+    footer.append(createBlockFeedback(validationErrors), actionArea);
 
     return footer;
 }
@@ -583,10 +567,7 @@ function createBlockFeedback(validationErrors) {
         message.dataset.validationField = error.field;
         message.textContent = error.message;
 
-        message.setAttribute(
-            "aria-label",
-            `Go to invalid field: ${error.message}`,
-        );
+        message.setAttribute("aria-label", `Go to invalid field: ${error.message}`);
 
         feedback.append(message);
     }
@@ -597,9 +578,7 @@ function createBlockFeedback(validationErrors) {
 /** Marks block-editor controls associated with validation errors. */
 function applyBlockValidationState(container, validationErrors) {
     for (const error of validationErrors) {
-        const control = Array.from(
-            container.querySelectorAll("[data-field]"),
-        ).find(
+        const control = Array.from(container.querySelectorAll("[data-field]")).find(
             (element) => element.dataset.field === error.field,
         );
 

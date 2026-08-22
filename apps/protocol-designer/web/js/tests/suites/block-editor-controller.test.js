@@ -101,35 +101,17 @@ test("block-editor-controller", "applies a valid edit draft", () => {
 
     assertDeepEqual(protocolModel.calls.addBlock, []);
 
-    assertEqual(
-        editorState.calls.closeBlockDraft,
-        1
-    );
+    assertEqual(editorState.calls.closeBlockDraft, 1);
 
-    assertEqual(
-        editorState.calls.openBlockDraft,
-        0
-    );
+    assertEqual(editorState.calls.openBlockDraft, 0);
 
-    assertEqual(
-        editorState.calls.clearValidationErrors,
-        0
-    );
+    assertEqual(editorState.calls.clearValidationErrors, 0);
 
-    assertEqual(
-        editorState.calls.cancelBlockDraft,
-        0
-    );
+    assertEqual(editorState.calls.cancelBlockDraft, 0);
 
-    assertEqual(
-        editorState.getSnapshot().expandedBlockId,
-                undefined
-    );
+    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
 
-    assertEqual(
-        editorState.getSnapshot().activeBlockDraft,
-                undefined
-    );
+    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
 });
 
 test("block-editor-controller", "applies a valid create draft", () => {
@@ -164,45 +146,21 @@ test("block-editor-controller", "applies a valid create draft", () => {
 
     assertDeepEqual(protocolModel.calls.updateBlock, []);
 
-    assertEqual(
-        editorState.calls.clearPendingInsertion,
-        1
-    );
+    assertEqual(editorState.calls.clearPendingInsertion, 1);
 
-    assertEqual(
-        editorState.getSnapshot().pendingInsertion,
-                undefined
-    );
+    assertEqual(editorState.getSnapshot().pendingInsertion, undefined);
 
-    assertEqual(
-        editorState.calls.closeBlockDraft,
-        1
-    );
+    assertEqual(editorState.calls.closeBlockDraft, 1);
 
-    assertEqual(
-        editorState.calls.openBlockDraft,
-        0
-    );
+    assertEqual(editorState.calls.openBlockDraft, 0);
 
-    assertEqual(
-        editorState.calls.expandBlock,
-        0
-    );
+    assertEqual(editorState.calls.expandBlock, 0);
 
-    assertEqual(
-        editorState.calls.cancelBlockDraft,
-        0
-    );
+    assertEqual(editorState.calls.cancelBlockDraft, 0);
 
-    assertEqual(
-        editorState.getSnapshot().expandedBlockId,
-                undefined
-    );
+    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
 
-    assertEqual(
-        editorState.getSnapshot().activeBlockDraft,
-                undefined
-    );
+    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
 });
 
 test(
@@ -373,135 +331,58 @@ test("block-editor-controller", "stay leaves the dirty draft unchanged", () => {
     assertEqual(editorState.calls.clearValidationErrors, 0);
 });
 
-test(
-    "block-editor-controller",
-     "discard clears the draft and validation errors",
-     () => {
-         const protocolModel =
-         createProtocolModelFake();
+test("block-editor-controller", "discard clears the draft and validation errors", () => {
+    const protocolModel = createProtocolModelFake();
 
-         const editorState =
-         createEditorStateFake(
-             createEditDraft()
-         );
+    const editorState = createEditorStateFake(createEditDraft());
 
-         const result =
-         resolveBlockDraftNavigation(
-             "discard",
-             protocolModel,
-             editorState,
-             ACTIVITY_TYPE,
-         );
+    const result = resolveBlockDraftNavigation(
+        "discard",
+        protocolModel,
+        editorState,
+        ACTIVITY_TYPE,
+    );
 
-         assertDeepEqual(
-             result,
-             {
-                 outcome: "proceed",
-             }
-         );
+    assertDeepEqual(result, {
+        outcome: "proceed",
+    });
 
-         assertEqual(
-             editorState.calls
-             .closeBlockDraft,
-             1
-         );
+    assertEqual(editorState.calls.closeBlockDraft, 1);
 
-         assertEqual(
-             editorState.calls
-             .clearValidationErrors,
-             0
-         );
+    assertEqual(editorState.calls.clearValidationErrors, 0);
 
-         assertEqual(
-             editorState.calls
-             .cancelBlockDraft,
-             0
-         );
+    assertEqual(editorState.calls.cancelBlockDraft, 0);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .activeBlockDraft,
-             undefined
-         );
+    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .expandedBlockId,
-             undefined
-         );
+    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
 
-         assertDeepEqual(
-             editorState.getSnapshot()
-             .validationErrors,
-             []
-         );
-     }
-);
+    assertDeepEqual(editorState.getSnapshot().validationErrors, []);
+});
 
-test(
-    "block-editor-controller",
-     "apply proceeds when the draft commits successfully",
-     () => {
-         const protocolModel =
-         createProtocolModelFake();
+test("block-editor-controller", "apply proceeds when the draft commits successfully", () => {
+    const protocolModel = createProtocolModelFake();
 
-         const editorState =
-         createEditorStateFake(
-             createEditDraft()
-         );
+    const editorState = createEditorStateFake(createEditDraft());
 
-         const result =
-         resolveBlockDraftNavigation(
-             "apply",
-             protocolModel,
-             editorState,
-             ACTIVITY_TYPE
-         );
+    const result = resolveBlockDraftNavigation("apply", protocolModel, editorState, ACTIVITY_TYPE);
 
-         assertDeepEqual(
-             result,
-             {
-                 outcome: "proceed",
-             }
-         );
+    assertDeepEqual(result, {
+        outcome: "proceed",
+    });
 
-         assertEqual(
-             protocolModel.calls
-             .updateBlock.length,
-             1
-         );
+    assertEqual(protocolModel.calls.updateBlock.length, 1);
 
-         assertEqual(
-             editorState.calls
-             .closeBlockDraft,
-             1
-         );
+    assertEqual(editorState.calls.closeBlockDraft, 1);
 
-         assertEqual(
-             editorState.calls
-             .openBlockDraft,
-             0
-         );
+    assertEqual(editorState.calls.openBlockDraft, 0);
 
-         assertEqual(
-             editorState.calls
-             .cancelBlockDraft,
-             0
-         );
+    assertEqual(editorState.calls.cancelBlockDraft, 0);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .expandedBlockId,
-             undefined
-         );
+    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .activeBlockDraft,
-             undefined
-         );
-     }
-);
+    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
+});
 
 test("block-editor-controller", "apply stays when draft validation fails", () => {
     const draft = createEditDraft();
@@ -904,56 +785,26 @@ test(
 
 test(
     "block-editor-controller",
-     "cancel block edit discards the draft and collapses the block",
-     () => {
-         const editorState =
-         createEditorStateFake(
-             createEditDraft()
-         );
+    "cancel block edit discards the draft and collapses the block",
+    () => {
+        const editorState = createEditorStateFake(createEditDraft());
 
-         editorState.expandBlock(
-             "block-1"
-         );
+        editorState.expandBlock("block-1");
 
-         cancelBlockEdit(
-             editorState
-         );
+        cancelBlockEdit(editorState);
 
-         assertEqual(
-             editorState.calls
-             .closeBlockDraft,
-             1
-         );
+        assertEqual(editorState.calls.closeBlockDraft, 1);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .expandedBlockId,
-             undefined
-         );
+        assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
 
-         assertEqual(
-             editorState.getSnapshot()
-             .activeBlockDraft,
-             undefined
-         );
-     }
+        assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
+    },
 );
 
-test(
-    "block-editor-controller",
-     "cancel block edit is a no-op when no block is expanded",
-     () => {
-         const editorState =
-         createEditorStateFake();
+test("block-editor-controller", "cancel block edit is a no-op when no block is expanded", () => {
+    const editorState = createEditorStateFake();
 
-         cancelBlockEdit(
-             editorState
-         );
+    cancelBlockEdit(editorState);
 
-         assertEqual(
-             editorState.calls
-             .closeBlockDraft,
-             0
-         );
-     }
-);
+    assertEqual(editorState.calls.closeBlockDraft, 0);
+});

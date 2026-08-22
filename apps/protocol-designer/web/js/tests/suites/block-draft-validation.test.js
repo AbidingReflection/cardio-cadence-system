@@ -180,7 +180,7 @@ test("block-draft-validation", "ignores stale fields on steady progressions", ()
         type: "steady",
         start: "2",
         end: "8",
-        step: "1"
+        step: "1",
     };
 
     const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
