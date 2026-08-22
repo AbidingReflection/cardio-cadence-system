@@ -51,6 +51,48 @@ export function wireProtocolTreeEvents({
             return;
         }
 
+        const insertPhaseTarget = event.target.closest(
+            '[data-action="insert-phase"]',
+        );
+
+        if (insertPhaseTarget !== null) {
+            const index = Number(
+                insertPhaseTarget.dataset.insertionIndex,
+            );
+
+            if (!Number.isInteger(index)) {
+                throw new Error(
+                    "Phase insertion target is missing a valid insertion index.",
+                );
+            }
+
+            const phaseName = "New Phase";
+
+            const phaseId = protocolModel.addPhase(
+                phaseName,
+                index,
+            );
+
+            editorState.clearInsertionMode();
+            editorState.expandPhase(phaseId);
+
+            setPendingPhaseNameFocus({
+                phaseId,
+                target: "editor",
+            });
+
+            try {
+                editorState.startPhaseNameEdit(
+                    phaseId,
+                    phaseName,
+                );
+            } finally {
+                setPendingPhaseNameFocus(undefined);
+            }
+
+            return;
+        }
+
         const insertBlockTarget = event.target.closest(
             '[data-action="insert-block"]',
         );

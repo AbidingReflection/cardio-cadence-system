@@ -3,14 +3,58 @@
  */
 
 /** Renders the complete protocol tree. */
-export function renderProtocolTree(container, protocolSnapshot, editorSnapshot, activityType) {
+export function renderProtocolTree(
+    container,
+    protocolSnapshot,
+    editorSnapshot,
+    activityType,
+) {
     container.replaceChildren();
 
-    for (let phaseIndex = 0; phaseIndex < protocolSnapshot.phases.length; phaseIndex++) {
-        const phase = protocolSnapshot.phases[phaseIndex];
+    for (
+        let phaseIndex = 0;
+    phaseIndex <= protocolSnapshot.phases.length;
+    phaseIndex++
+    ) {
+        if (editorSnapshot.insertionMode === "phase") {
+            container.append(
+                createPhaseInsertionTarget(phaseIndex),
+            );
+        }
 
-        container.append(createPhaseElement(phase, phaseIndex, editorSnapshot, activityType));
+        if (phaseIndex < protocolSnapshot.phases.length) {
+            const phase =
+            protocolSnapshot.phases[phaseIndex];
+
+            container.append(
+                createPhaseElement(
+                    phase,
+                    phaseIndex,
+                    editorSnapshot,
+                    activityType,
+                ),
+            );
+        }
     }
+}
+
+/** Creates a selectable insertion target between phases. */
+function createPhaseInsertionTarget(index) {
+    const target = document.createElement("button");
+
+    target.type = "button";
+    target.className = "phase-insertion-target";
+    target.dataset.action = "insert-phase";
+    target.dataset.insertionIndex = String(index);
+
+    target.setAttribute(
+        "aria-label",
+        `Insert phase at position ${index + 1}`,
+    );
+
+    target.textContent = "+ Add phase here";
+
+    return target;
 }
 
 /** Creates a phase card. */
