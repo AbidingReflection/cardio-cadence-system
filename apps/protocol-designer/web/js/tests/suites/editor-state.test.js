@@ -15,9 +15,10 @@ test("editor-state", "starts with no expanded phases or block", () => {
         expandedBlockId: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
-        pendingInsertion: undefined,
+        insertionTarget: undefined,
         editingPhaseId: undefined,
         phaseNameDraft: undefined,
+        insertionMode: undefined,
     });
 });
 
@@ -94,9 +95,10 @@ test("editor-state", "notifies subscribers after state changes", () => {
         expandedBlockId: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
-        pendingInsertion: undefined,
+        insertionTarget: undefined,
         editingPhaseId: undefined,
         phaseNameDraft: undefined,
+        insertionMode: undefined,
     });
 });
 
@@ -714,9 +716,12 @@ test("editor-state", "sets a phase insertion target", () => {
         index: 1,
     };
 
-    state.setPendingInsertion(insertion);
+    state.setInsertionTarget(insertion);
 
-    assertDeepEqual(state.getSnapshot().pendingInsertion, insertion);
+    assertDeepEqual(
+        state.getSnapshot().insertionTarget,
+        insertion,
+    );
 });
 
 test("editor-state", "sets a block insertion target", () => {
@@ -728,12 +733,15 @@ test("editor-state", "sets a block insertion target", () => {
         index: 2,
     };
 
-    state.setPendingInsertion(insertion);
+    state.setInsertionTarget(insertion);
 
-    assertDeepEqual(state.getSnapshot().pendingInsertion, insertion);
+    assertDeepEqual(
+        state.getSnapshot().insertionTarget,
+        insertion,
+    );
 });
 
-test("editor-state", "isolates pending insertion from source data", () => {
+test("editor-state", "isolates insertion target from source data", () => {
     const state = new EditorState();
 
     const insertion = {
@@ -742,17 +750,20 @@ test("editor-state", "isolates pending insertion from source data", () => {
         index: 2,
     };
 
-    state.setPendingInsertion(insertion);
+    state.setInsertionTarget(insertion);
 
     insertion.index = 99;
 
-    assertEqual(state.getSnapshot().pendingInsertion.index, 2);
+    assertEqual(
+        state.getSnapshot().insertionTarget.index,
+                2,
+    );
 });
 
-test("editor-state", "returns independent pending insertion snapshots", () => {
+test("editor-state", "returns independent insertion target snapshots", () => {
     const state = new EditorState();
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         type: "block",
         phaseId: "phase-1",
         index: 2,
@@ -760,9 +771,12 @@ test("editor-state", "returns independent pending insertion snapshots", () => {
 
     const snapshot = state.getSnapshot();
 
-    snapshot.pendingInsertion.index = 99;
+    snapshot.insertionTarget.index = 99;
 
-    assertEqual(state.getSnapshot().pendingInsertion.index, 2);
+    assertEqual(
+        state.getSnapshot().insertionTarget.index,
+                2,
+    );
 });
 
 test("editor-state", "emits when pending insertion changes", () => {
@@ -774,7 +788,7 @@ test("editor-state", "emits when pending insertion changes", () => {
         notificationCount += 1;
     });
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         type: "phase",
         index: 1,
     });
@@ -785,7 +799,7 @@ test("editor-state", "emits when pending insertion changes", () => {
 test("editor-state", "does not emit when pending insertion is unchanged", () => {
     const state = new EditorState();
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         type: "block",
         phaseId: "phase-1",
         index: 2,
@@ -797,7 +811,7 @@ test("editor-state", "does not emit when pending insertion is unchanged", () => 
         notificationCount += 1;
     });
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         index: 2,
         phaseId: "phase-1",
         type: "block",
@@ -809,20 +823,20 @@ test("editor-state", "does not emit when pending insertion is unchanged", () => 
 test("editor-state", "clears pending insertion", () => {
     const state = new EditorState();
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         type: "phase",
         index: 1,
     });
 
-    state.clearPendingInsertion();
+    state.clearInsertionTarget();
 
-    assertEqual(state.getSnapshot().pendingInsertion, undefined);
+    assertEqual(state.getSnapshot().clearInsertionTarget, undefined);
 });
 
 test("editor-state", "clearing pending insertion emits once", () => {
     const state = new EditorState();
 
-    state.setPendingInsertion({
+    state.setInsertionTarget({
         type: "phase",
         index: 1,
     });
@@ -833,7 +847,7 @@ test("editor-state", "clearing pending insertion emits once", () => {
         notificationCount += 1;
     });
 
-    state.clearPendingInsertion();
+    state.clearInsertionTarget();
 
     assertEqual(notificationCount, 1);
 });
@@ -847,7 +861,7 @@ test("editor-state", "clearing empty pending insertion does not emit", () => {
         notificationCount += 1;
     });
 
-    state.clearPendingInsertion();
+    state.clearInsertionTarget();
 
     assertEqual(notificationCount, 0);
 });
@@ -898,3 +912,45 @@ test(
          });
      },
 );
+
+test("editor-state", "sets block insertion mode", () => {
+    const state = new EditorState();
+
+    state.setInsertionMode("block");
+
+    assertEqual(
+        state.getSnapshot().insertionMode,
+                "block",
+    );
+});
+
+test("editor-state", "sets phase insertion mode", () => {
+    const state = new EditorState();
+
+    state.setInsertionMode("phase");
+
+    assertEqual(
+        state.getSnapshot().insertionMode,
+                "phase",
+    );
+});
+
+test("editor-state", "clears insertion mode", () => {
+    const state = new EditorState();
+
+    state.setInsertionMode("block");
+    state.clearInsertionMode();
+
+    assertEqual(
+        state.getSnapshot().insertionMode,
+                undefined,
+    );
+});
+
+test("editor-state", "rejects unsupported insertion modes", () => {
+    const state = new EditorState();
+
+    assertThrows(() => {
+        state.setInsertionMode("banana");
+    });
+});

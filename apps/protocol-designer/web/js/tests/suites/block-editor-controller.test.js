@@ -146,9 +146,9 @@ test("block-editor-controller", "applies a valid create draft", () => {
 
     assertDeepEqual(protocolModel.calls.updateBlock, []);
 
-    assertEqual(editorState.calls.clearPendingInsertion, 1);
+    assertEqual(editorState.calls.clearInsertionTarget, 1);
 
-    assertEqual(editorState.getSnapshot().pendingInsertion, undefined);
+    assertEqual(editorState.getSnapshot().insertionTarget, undefined);
 
     assertEqual(editorState.calls.closeBlockDraft, 1);
 

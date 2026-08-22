@@ -5,7 +5,11 @@
 
 /** Creates a lightweight EditorState fake for controller tests. */
 export function createEditorStateFake(activeBlockDraft) {
-    let draft = activeBlockDraft === undefined ? undefined : structuredClone(activeBlockDraft);
+    let draft =
+    activeBlockDraft === undefined
+    ? undefined
+    : structuredClone(activeBlockDraft);
+
     let validationErrors = [
         {
             scope: "block",
@@ -14,7 +18,7 @@ export function createEditorStateFake(activeBlockDraft) {
         },
     ];
 
-    let pendingInsertion = {
+    let insertionTarget = {
         type: "block",
         phaseId: "phase-1",
         index: 0,
@@ -28,7 +32,8 @@ export function createEditorStateFake(activeBlockDraft) {
         setValidationErrors: 0,
         clearValidationErrors: 0,
         cancelBlockDraft: 0,
-        clearPendingInsertion: 0,
+        setInsertionTarget: 0,
+        clearInsertionTarget: 0,
         expandBlock: 0,
         collapseBlock: 0,
         collapsePhase: 0,
@@ -41,10 +46,15 @@ export function createEditorStateFake(activeBlockDraft) {
 
         getSnapshot() {
             return {
-                activeBlockDraft: draft === undefined ? undefined : structuredClone(draft),
+                activeBlockDraft:
+                draft === undefined
+                ? undefined
+                : structuredClone(draft),
                 validationErrors: structuredClone(validationErrors),
-                pendingInsertion:
-                    pendingInsertion === undefined ? undefined : structuredClone(pendingInsertion),
+                insertionTarget:
+                insertionTarget === undefined
+                ? undefined
+                : structuredClone(insertionTarget),
                 expandedBlockId,
                 expandedPhaseIds: [...expandedPhaseIds],
             };
@@ -82,9 +92,22 @@ export function createEditorStateFake(activeBlockDraft) {
             validationErrors = [];
         },
 
-        clearPendingInsertion() {
-            calls.clearPendingInsertion++;
-            pendingInsertion = undefined;
+        /** Sets the concrete insertion target. */
+        setInsertionTarget(target) {
+            calls.setInsertionTarget++;
+
+            if (deepEqual(insertionTarget, target)) {
+                return;
+            }
+
+            insertionTarget = structuredClone(target);
+        },
+
+        /** Clears the concrete insertion target. */
+        clearInsertionTarget() {
+            calls.clearInsertionTarget++;
+
+            insertionTarget = undefined;
         },
 
         expandBlock(blockId) {
@@ -99,7 +122,9 @@ export function createEditorStateFake(activeBlockDraft) {
 
         collapsePhase(phaseId) {
             calls.collapsePhase++;
-            expandedPhaseIds = expandedPhaseIds.filter((id) => id !== phaseId);
+            expandedPhaseIds = expandedPhaseIds.filter(
+                (id) => id !== phaseId,
+            );
         },
     };
 }

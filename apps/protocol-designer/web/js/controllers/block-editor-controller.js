@@ -64,7 +64,7 @@ export function cancelBlockEdit(editorState) {
 function applyNewBlock(protocolModel, editorState, draft, blockData) {
     protocolModel.addBlock(draft.phaseId, blockData);
 
-    editorState.clearPendingInsertion();
+    editorState.clearInsertionTarget();
 }
 
 /** Applies validated changes to an existing block. */

@@ -15,7 +15,8 @@ export class EditorState {
     #activeBlockDraft;
     #blockDraftBaseline;
     #validationErrors = [];
-    #pendingInsertion;
+    #insertionTarget;
+    #insertionMode;
 
     /** Returns a defensive snapshot of the current editor state. */
     getSnapshot() {
@@ -33,10 +34,12 @@ export class EditorState {
 
             validationErrors: structuredClone(this.#validationErrors),
 
-            pendingInsertion:
-            this.#pendingInsertion === undefined
-            ? undefined
-            : structuredClone(this.#pendingInsertion),
+            insertionTarget:
+                this.#insertionTarget === undefined
+                ? undefined
+                : structuredClone(this.#insertionTarget),
+
+            insertionMode: this.#insertionMode,
         };
     }
 
@@ -199,23 +202,53 @@ export class EditorState {
         this.#emit();
     }
 
-    /** Sets the pending insertion target. */
-    setPendingInsertion(insertion) {
-        if (deepEqual(this.#pendingInsertion, insertion)) {
+    /** Sets the concrete insertion target. */
+    setInsertionTarget(insertion) {
+        if (deepEqual(this.#insertionTarget, insertion)) {
             return;
         }
 
-        this.#pendingInsertion = structuredClone(insertion);
+        this.#insertionTarget = structuredClone(insertion);
         this.#emit();
     }
 
     /** Clears the pending insertion target. */
-    clearPendingInsertion() {
-        if (this.#pendingInsertion === undefined) {
+    clearInsertionTarget() {
+        if (this.#insertionTarget === undefined) {
             return;
         }
 
-        this.#pendingInsertion = undefined;
+        this.#insertionTarget = undefined;
+        this.#emit();
+    }
+
+    /** Sets the active insertion mode. */
+    setInsertionMode(mode) {
+        if (
+            mode !== undefined &&
+            mode !== "phase" &&
+            mode !== "block"
+        ) {
+            throw new Error(
+                `Unsupported insertion mode: "${mode}".`,
+            );
+        }
+
+        if (this.#insertionMode === mode) {
+            return;
+        }
+
+        this.#insertionMode = mode;
+        this.#emit();
+    }
+
+    /** Clears the active insertion mode. */
+    clearInsertionMode() {
+        if (this.#insertionMode === undefined) {
+            return;
+        }
+
+        this.#insertionMode = undefined;
         this.#emit();
     }
 
