@@ -53,10 +53,49 @@
     background: var(--color-phase-header);
 }
 
-
 /* --------------------------------------------------------------------------
- * Phase heading
+ * Phase insertion targets
  * -------------------------------------------------------------------------- */
+
+.phase-insertion-target {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+
+    border: 1px dashed var(--color-phase-border);
+    border-radius: 8px;
+
+    background: transparent;
+    color: var(--color-text-muted);
+
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.phase-insertion-target:hover {
+    border-color: var(--color-accent);
+    background: var(--color-phase-background);
+    color: var(--color-text);
+}
+
+.phase-insertion-target:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.phase-insertion-target:active {
+    transform: translateY(1px);
+}
+
 
 /* --------------------------------------------------------------------------
  * Phase heading
