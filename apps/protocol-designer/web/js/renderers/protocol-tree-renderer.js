@@ -631,7 +631,7 @@ function createBlockEditorHeader(block, draft) {
 
     toggle.textContent = "▲";
 
-    row.append(nameEditor, toggle);
+    row.append(toggle, nameEditor);
 
     return row;
 }
