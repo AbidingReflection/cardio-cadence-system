@@ -16,7 +16,7 @@ export class EditorState {
     #blockDraftBaseline;
     #validationErrors = [];
     #insertionTarget;
-    #insertionMode;
+    #editMode;
 
     /** Returns a defensive snapshot of the current editor state. */
     getSnapshot() {
@@ -39,7 +39,7 @@ export class EditorState {
                 ? undefined
                 : structuredClone(this.#insertionTarget),
 
-            insertionMode: this.#insertionMode,
+            editMode: this.#editMode,
         };
     }
 
@@ -222,33 +222,33 @@ export class EditorState {
         this.#emit();
     }
 
-    /** Sets the active insertion mode. */
-    setInsertionMode(mode) {
+    /** Sets the active structural edit mode. */
+    setEditMode(mode) {
         if (
             mode !== undefined &&
             mode !== "phase" &&
             mode !== "block"
         ) {
             throw new Error(
-                `Unsupported insertion mode: "${mode}".`,
+                `Unsupported edit mode: "${mode}".`,
             );
         }
 
-        if (this.#insertionMode === mode) {
+        if (this.#editMode === mode) {
             return;
         }
 
-        this.#insertionMode = mode;
+        this.#editMode = mode;
         this.#emit();
     }
 
-    /** Clears the active insertion mode. */
-    clearInsertionMode() {
-        if (this.#insertionMode === undefined) {
+    /** Clears the active structural edit mode. */
+    clearEditMode() {
+        if (this.#editMode === undefined) {
             return;
         }
 
-        this.#insertionMode = undefined;
+        this.#editMode = undefined;
         this.#emit();
     }
 
@@ -267,7 +267,7 @@ export class EditorState {
 
     /** Opens a new block draft at a concrete insertion target. */
     openBlockCreateDraft(blockId, draft, insertionTarget) {
-        this.#insertionMode = undefined;
+        this.#editMode = undefined;
         this.#insertionTarget = structuredClone(insertionTarget);
 
         this.#expandedBlockId = blockId;

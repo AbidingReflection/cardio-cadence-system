@@ -18,7 +18,7 @@ test("editor-state", "starts with no expanded phases or block", () => {
         insertionTarget: undefined,
         editingPhaseId: undefined,
         phaseNameDraft: undefined,
-        insertionMode: undefined,
+        editMode: undefined,
     });
 });
 
@@ -98,7 +98,7 @@ test("editor-state", "notifies subscribers after state changes", () => {
         insertionTarget: undefined,
         editingPhaseId: undefined,
         phaseNameDraft: undefined,
-        insertionMode: undefined,
+        editMode: undefined,
     });
 });
 
@@ -913,52 +913,52 @@ test(
      },
 );
 
-test("editor-state", "sets block insertion mode", () => {
+test("editor-state", "sets block edit mode", () => {
     const state = new EditorState();
 
-    state.setInsertionMode("block");
+    state.setEditMode("block");
 
     assertEqual(
-        state.getSnapshot().insertionMode,
+        state.getSnapshot().editMode,
                 "block",
     );
 });
 
-test("editor-state", "sets phase insertion mode", () => {
+test("editor-state", "sets phase edit mode", () => {
     const state = new EditorState();
 
-    state.setInsertionMode("phase");
+    state.setEditMode("phase");
 
     assertEqual(
-        state.getSnapshot().insertionMode,
+        state.getSnapshot().editMode,
                 "phase",
     );
 });
 
-test("editor-state", "clears insertion mode", () => {
+test("editor-state", "clears edit mode", () => {
     const state = new EditorState();
 
-    state.setInsertionMode("block");
-    state.clearInsertionMode();
+    state.setEditMode("block");
+    state.clearEditMode();
 
     assertEqual(
-        state.getSnapshot().insertionMode,
+        state.getSnapshot().editMode,
                 undefined,
     );
 });
 
-test("editor-state", "rejects unsupported insertion modes", () => {
+test("editor-state", "rejects unsupported edit modes", () => {
     const state = new EditorState();
 
     assertThrows(() => {
-        state.setInsertionMode("banana");
+        state.setEditMode("banana");
     });
 });
 
 test("editor-state", "opens a block create draft atomically", () => {
     const state = new EditorState();
 
-    state.setInsertionMode("block");
+    state.setEditMode("block");
 
     const draft = {
         mode: "create",
@@ -988,7 +988,7 @@ test("editor-state", "opens a block create draft atomically", () => {
     const snapshot = state.getSnapshot();
 
     assertEqual(
-        snapshot.insertionMode,
+        snapshot.editMode,
         undefined,
     );
 
@@ -1066,7 +1066,7 @@ test("editor-state", "isolates block create draft inputs from source data", () =
 test("editor-state", "opening a block create draft emits once", () => {
     const state = new EditorState();
 
-    state.setInsertionMode("block");
+    state.setEditMode("block");
 
     let emitCount = 0;
 

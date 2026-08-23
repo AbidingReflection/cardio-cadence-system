@@ -48,24 +48,32 @@
                     <span class="protocol-pane__title">Protocol</span>
 
                     <div class="protocol-pane__actions">
-                        <button type="button"
-                                class="protocol-pane__action-button"
-                                id="add-phase-button"
-                                aria-label="Add phase">
-                            <span class="protocol-pane__action-icon" aria-hidden="true">+</span>
-                            <span>Phase</span>
+                        <button
+                            type="button"
+                            class="protocol-pane__action-button"
+                            id="edit-phases-button"
+                            aria-label="Edit phases"
+                            aria-pressed="false"
+                        >
+                            <span>Edit Phases</span>
                         </button>
 
-                        <button type="button"
-                                class="protocol-pane__action-button"
-                                id="add-block-button"
-                                aria-label="Add block">
-                            <span class="protocol-pane__action-icon" aria-hidden="true">+</span>
-                            <span>Block</span>
+                        <button
+                            type="button"
+                            class="protocol-pane__action-button"
+                            id="edit-blocks-button"
+                            aria-label="Edit blocks"
+                            aria-pressed="false"
+                        >
+                            <span>Edit Blocks</span>
                         </button>
                     </div>
                 </header>
-                <div class="pane__content protocol-content" id="protocol-content">
+
+                <div
+                    class="pane__content protocol-content"
+                    id="protocol-content"
+                >
                     <div
                         class="protocol-tree"
                         id="protocol-tree"
@@ -112,4 +120,3 @@
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
-

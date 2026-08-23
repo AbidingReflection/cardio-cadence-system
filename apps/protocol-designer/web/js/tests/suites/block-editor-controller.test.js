@@ -875,7 +875,7 @@ test("block-editor-controller", "starts a block create draft at the selected ins
     );
 
     assertEqual(
-        editorState.calls.clearInsertionMode,
+        editorState.calls.clearEditMode,
         0,
     );
 });

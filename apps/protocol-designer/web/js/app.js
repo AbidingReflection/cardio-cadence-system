@@ -32,9 +32,9 @@ async function main() {
     }
 
     const machineProfile =
-        protocolData.machineProfileId === undefined
-            ? undefined
-            : domainData.machineProfiles.get(protocolData.machineProfileId);
+    protocolData.machineProfileId === undefined
+    ? undefined
+    : domainData.machineProfiles.get(protocolData.machineProfileId);
 
     if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
         throw new Error(
@@ -42,18 +42,24 @@ async function main() {
         );
     }
 
-    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
+    const protocolModel = new ProtocolModel(
+        protocolData,
+        activityType,
+        machineProfile,
+    );
+
+    window.protocolModel = protocolModel;
 
     const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
-    const addPhaseButton = document.querySelector("#add-phase-button");
-    const addBlockButton = document.querySelector("#add-block-button");
+    const editPhaseButton = document.querySelector("#edit-phases-button");
+    const editBlockButton = document.querySelector("#edit-blocks-button");
 
     if (
         protocolTree === null ||
-        addPhaseButton === null ||
-        addBlockButton === null
+        editPhaseButton === null ||
+        editBlockButton === null
     ) {
         throw new Error(
             "Required protocol editor controls were not found.",
@@ -83,30 +89,30 @@ async function main() {
                            activityType,
         );
 
-        const phaseInsertionActive =
-        editorSnapshot.insertionMode === "phase";
+        const phaseEditActive =
+        editorSnapshot.editMode === "phase";
 
-        const blockInsertionActive =
-        editorSnapshot.insertionMode === "block";
+        const blockEditActive =
+        editorSnapshot.editMode === "block";
 
-        addPhaseButton.classList.toggle(
+        editPhaseButton.classList.toggle(
             "is-active",
-            phaseInsertionActive,
+            phaseEditActive,
         );
 
-        addBlockButton.classList.toggle(
+        editBlockButton.classList.toggle(
             "is-active",
-            blockInsertionActive,
+            blockEditActive,
         );
 
-        addPhaseButton.setAttribute(
+        editPhaseButton.setAttribute(
             "aria-pressed",
-            String(phaseInsertionActive),
+            String(phaseEditActive),
         );
 
-        addBlockButton.setAttribute(
+        editBlockButton.setAttribute(
             "aria-pressed",
-            String(blockInsertionActive),
+            String(blockEditActive),
         );
 
         if (fieldFocusContext !== undefined) {
@@ -158,28 +164,28 @@ async function main() {
         },
     });
 
-    /** Toggles phase insertion mode. */
-    addPhaseButton.addEventListener("click", () => {
-        const { insertionMode } = editorState.getSnapshot();
+    /** Toggles phase structural edit mode. */
+    editPhaseButton.addEventListener("click", () => {
+        const { editMode } = editorState.getSnapshot();
 
-        if (insertionMode === "phase") {
-            editorState.clearInsertionMode();
+        if (editMode === "phase") {
+            editorState.clearEditMode();
             return;
         }
 
-        editorState.setInsertionMode("phase");
+        editorState.setEditMode("phase");
     });
 
-    /** Toggles block insertion mode. */
-    addBlockButton.addEventListener("click", () => {
-        const { insertionMode } = editorState.getSnapshot();
+    /** Toggles block structural edit mode. */
+    editBlockButton.addEventListener("click", () => {
+        const { editMode } = editorState.getSnapshot();
 
-        if (insertionMode === "block") {
-            editorState.clearInsertionMode();
+        if (editMode === "block") {
+            editorState.clearEditMode();
             return;
         }
 
-        editorState.setInsertionMode("block");
+        editorState.setEditMode("block");
     });
 
     render();

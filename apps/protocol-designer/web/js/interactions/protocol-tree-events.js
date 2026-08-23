@@ -73,7 +73,7 @@ export function wireProtocolTreeEvents({
                 index,
             );
 
-            editorState.clearInsertionMode();
+            editorState.clearEditMode();
             editorState.expandPhase(phaseId);
 
             setPendingPhaseNameFocus({

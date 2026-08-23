@@ -16,7 +16,7 @@ export function renderProtocolTree(
     phaseIndex <= protocolSnapshot.phases.length;
     phaseIndex++
     ) {
-        if (editorSnapshot.insertionMode === "phase") {
+        if (editorSnapshot.editMode === "phase") {
             container.append(
                 createPhaseInsertionTarget(phaseIndex),
             );
@@ -246,7 +246,7 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
                     activityType,
                 ),
             );
-        } else if (editorSnapshot.insertionMode === "block") {
+        } else if (editorSnapshot.editMode === "block") {
             blocks.append(
                 createBlockInsertionTarget(
                     phase.id,

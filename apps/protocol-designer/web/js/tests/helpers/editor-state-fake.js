@@ -24,7 +24,7 @@ export function createEditorStateFake(activeBlockDraft) {
         index: 0,
     };
 
-    let insertionMode;
+    let editMode;
 
     let expandedBlockId;
 
@@ -36,8 +36,8 @@ export function createEditorStateFake(activeBlockDraft) {
         cancelBlockDraft: 0,
         setInsertionTarget: 0,
         clearInsertionTarget: 0,
-        setInsertionMode: 0,
-        clearInsertionMode: 0,
+        setEditMode: 0,
+        clearEditMode: 0,
         expandBlock: 0,
         collapseBlock: 0,
         collapsePhase: 0,
@@ -49,6 +49,7 @@ export function createEditorStateFake(activeBlockDraft) {
     return {
         calls,
 
+        /** Returns the fake editor-state snapshot. */
         getSnapshot() {
             return {
                 activeBlockDraft:
@@ -60,27 +61,31 @@ export function createEditorStateFake(activeBlockDraft) {
                 insertionTarget === undefined
                 ? undefined
                 : structuredClone(insertionTarget),
-                insertionMode,
+                editMode,
                 expandedBlockId,
                 expandedPhaseIds: [...expandedPhaseIds],
             };
         },
 
+        /** Replaces the current validation errors. */
         setValidationErrors(errors) {
             calls.setValidationErrors++;
             validationErrors = structuredClone(errors);
         },
 
+        /** Clears all validation errors. */
         clearValidationErrors() {
             calls.clearValidationErrors++;
             validationErrors = [];
         },
 
+        /** Cancels the active block draft. */
         cancelBlockDraft() {
             calls.cancelBlockDraft++;
             draft = undefined;
         },
 
+        /** Closes the active block editor. */
         closeBlockDraft() {
             calls.closeBlockDraft++;
 
@@ -106,7 +111,7 @@ export function createEditorStateFake(activeBlockDraft) {
                                             insertionTarget: structuredClone(target),
             });
 
-            insertionMode = undefined;
+            editMode = undefined;
             insertionTarget = structuredClone(target);
             expandedBlockId = blockId;
             draft = structuredClone(newDraft);
@@ -125,26 +130,31 @@ export function createEditorStateFake(activeBlockDraft) {
             insertionTarget = undefined;
         },
 
-        setInsertionMode(mode) {
-            calls.setInsertionMode++;
-            insertionMode = mode;
+        /** Sets the active structural edit mode. */
+        setEditMode(mode) {
+            calls.setEditMode++;
+            editMode = mode;
         },
 
-        clearInsertionMode() {
-            calls.clearInsertionMode++;
-            insertionMode = undefined;
+        /** Clears the active structural edit mode. */
+        clearEditMode() {
+            calls.clearEditMode++;
+            editMode = undefined;
         },
 
+        /** Expands a block by ID. */
         expandBlock(blockId) {
             calls.expandBlock++;
             expandedBlockId = blockId;
         },
 
+        /** Collapses the expanded block. */
         collapseBlock() {
             calls.collapseBlock++;
             expandedBlockId = undefined;
         },
 
+        /** Collapses a phase by ID. */
         collapsePhase(phaseId) {
             calls.collapsePhase++;
             expandedPhaseIds = expandedPhaseIds.filter(
