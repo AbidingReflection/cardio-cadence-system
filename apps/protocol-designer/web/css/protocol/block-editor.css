@@ -1,83 +1,12 @@
 .block-editor {
-    padding: 16px;
-    font-size: 0.82rem;
     display: flex;
     flex-direction: column;
-/*     gap: 16px; */
+
+    padding: 16px;
+
+    font-size: 0.82rem;
 }
 
-
-/* ============================================================
- *  Variable Editors
- *  ============================================================ */
-
-.block-editor__variables {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-
-.variable-editor {
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-
-    border: 0;
-}
-
-
-.variable-editor + .variable-editor {
-    padding-left: 24px;
-    border-left: 1px solid var(--color-border);
-}
-
-
-.variable-editor__legend {
-    margin-bottom: 12px;
-    padding: 0;
-
-    font-weight: 600;
-}
-
-
-/* ============================================================
- *  Editor Fields
- *  ============================================================ */
-
-.variable-editor__fields {
-    display: grid;
-    gap: 10px;
-}
-
-
-.block-editor__field {
-    display: grid;
-    grid-template-columns: max-content minmax(120px, 1fr);
-    align-items: center;
-    gap: 12px;
-}
-
-
-.block-editor__field label {
-    white-space: nowrap;
-}
-
-
-.block-editor__field input,
-.block-editor__field select {
-    width: 100%;
-    min-width: 0;
-}
-
-
-/* ============================================================
- *  Validation
- *  ============================================================ */
-
-.block-editor__feedback:empty {
-    display: none;
-}
 
 /* ============================================================
  *  Expanded Block
@@ -129,6 +58,7 @@
     min-width: 0;
 }
 
+
 /* ============================================================
  *  Block Editor Body
  *  ============================================================ */
@@ -151,6 +81,7 @@
     grid-template-columns: minmax(220px, 320px);
 
     padding-bottom: 16px;
+
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -175,6 +106,7 @@
 
 .variable-editor + .variable-editor {
     padding-left: 24px;
+
     border-left: 1px solid var(--color-border);
 }
 
@@ -218,29 +150,6 @@
 
 
 /* ============================================================
- *  Block Editor Feedback
- *  ============================================================ */
-
-.block-editor__feedback:empty {
-    display: none;
-}
-
-
-/* ============================================================
- *  Block Editor Actions
- *  ============================================================ */
-
-.block-editor__action-area {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.block-editor__actions {
-    display: flex;
-    gap: 8px;
-}
-
-/* ============================================================
  *  Block Editor Footer
  *  ============================================================ */
 
@@ -248,11 +157,11 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
-/*     gap: 24px; */
 }
 
 .block-editor__footer--invalid {
     padding-top: 16px;
+
     border-top: 1px solid var(--color-border);
 }
 
@@ -264,6 +173,7 @@
 .block-editor__feedback {
     display: grid;
     gap: 4px;
+
     min-width: 0;
 }
 
@@ -291,6 +201,20 @@
 }
 
 
+/* ============================================================
+ *  Block Editor Actions
+ *  ============================================================ */
+
+.block-editor__action-area {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.block-editor__actions {
+    display: flex;
+    gap: 8px;
+}
+
 
 /* ============================================================
  *  Block Editor Validation
@@ -300,6 +224,11 @@
     outline: 2px solid currentColor;
     outline-offset: 1px;
 }
+
+
+/* ============================================================
+ *  Block Structural Actions
+ *  ============================================================ */
 
 .block-name-actions {
     display: flex;
@@ -345,6 +274,7 @@
 
 .block-delete-action:hover {
     border-color: #b3261e;
+
     background: rgb(179 38 30 / 8%);
     color: #b3261e;
 }

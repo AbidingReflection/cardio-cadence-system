@@ -15,15 +15,15 @@
     width: 100%;
 
     grid-template-columns:
-    minmax(100px, 1.2fr)
-    minmax(64px, 0.7fr)
-    minmax(72px, 1fr)
-    minmax(54px, 0.7fr)
-    minmax(54px, 0.7fr)
+    minmax(100px, 1.7fr)
+    minmax(64px, 0.8fr)
+    minmax(72px, 0.7fr)
+    minmax(54px, 0.5fr)
+    minmax(54px, 0.5fr)
     8px
-    minmax(72px, 1fr)
-    minmax(54px, 0.7fr)
-    minmax(54px, 0.7fr);
+    minmax(72px, 0.7fr)
+    minmax(54px, 0.5fr)
+    minmax(54px, 0.5fr);
 
     column-gap: 0;
 }
