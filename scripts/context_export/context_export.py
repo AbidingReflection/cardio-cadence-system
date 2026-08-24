@@ -6,17 +6,33 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime
+import os
 from pathlib import Path
 
+from exporters import css
 from exporters import javascript
+from exporters import python
 
 
 TOOL_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = TOOL_DIR / "output"
 
+IGNORED_DIRECTORIES = {
+    ".git",
+    ".venv",
+    "node_modules",
+    "__pycache__",
+}
+
 EXPORTERS = {
     ".js": javascript,
+    ".css": css,
+    ".py": python,
 }
+
+def is_ignored_path(path: Path) -> bool:
+    """Return whether a source path is inside an ignored directory."""
+    return any(part in IGNORED_DIRECTORIES for part in path.parts)
 
 
 def exporter_for(path: Path):
@@ -28,22 +44,36 @@ def exporter_for(path: Path):
             f"Unsupported file type: {path}"
         ) from exc
 
-
 def discover_source_files(path: Path) -> list[Path]:
-    """Return supported source files for a file or recursive directory input."""
+    """Return supported source files while pruning ignored directories."""
     if path.is_file():
+        if is_ignored_path(path):
+            raise ValueError(f"Path is inside an ignored directory: {path}")
+
         exporter_for(path)
         return [path]
 
-    if path.is_dir():
-        return sorted(
-            candidate
-            for candidate in path.rglob("*")
-            if candidate.is_file()
-            and candidate.suffix in EXPORTERS
-        )
+    if not path.is_dir():
+        raise FileNotFoundError(f"Path does not exist: {path}")
 
-    raise FileNotFoundError(f"Path does not exist: {path}")
+    files = []
+
+    for root, directories, filenames in os.walk(path):
+        directories[:] = [
+            directory
+            for directory in directories
+            if directory not in IGNORED_DIRECTORIES
+        ]
+
+        root_path = Path(root)
+
+        for filename in filenames:
+            candidate = root_path / filename
+
+            if candidate.suffix in EXPORTERS:
+                files.append(candidate)
+
+    return sorted(files)
 
 
 def project_relative_path(path: Path, project_root: Path) -> Path:
