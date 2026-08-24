@@ -188,12 +188,7 @@ function createPhaseHeader(
     ? "▲"
     : "▼";
 
-    header.append(
-        heading,
-        summary,
-    );
-
-    if (isExpanded) {
+    if (editorSnapshot.editMode === "phase") {
         heading.append(
             createPhaseNameActions(
                 phase,
@@ -230,14 +225,20 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
     const insertionTarget = editorSnapshot.insertionTarget;
     const draft = editorSnapshot.activeBlockDraft;
 
-    const hasCreateDraft =
-    draft?.mode === "create" &&
+    const blockManageActive =
+    editorSnapshot.editMode === "block";
+
+    const hasActiveCreateDraft =
+    draft?.mode === "create";
+
+    const hasCreateDraftInPhase =
+    hasActiveCreateDraft &&
     insertionTarget?.type === "block" &&
     insertionTarget.phaseId === phase.id;
 
     for (let index = 0; index <= phase.blocks.length; index += 1) {
         if (
-            hasCreateDraft &&
+            hasCreateDraftInPhase &&
             insertionTarget.index === index
         ) {
             blocks.append(
@@ -246,7 +247,10 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
                     activityType,
                 ),
             );
-        } else if (editorSnapshot.editMode === "block") {
+        } else if (
+            blockManageActive &&
+            !hasActiveCreateDraft
+        ) {
             blocks.append(
                 createBlockInsertionTarget(
                     phase.id,
@@ -389,7 +393,7 @@ function createPhaseNameEditor(
     return input;
 }
 
-/** Creates phase-name edit, save, and cancel controls. */
+/** Creates phase-name edit, save, cancel, and delete controls. */
 function createPhaseNameActions(
     phase,
     isEditing,
@@ -404,13 +408,18 @@ function createPhaseNameActions(
         edit.type = "button";
         edit.className = "phase-name-action";
         edit.dataset.action = "edit-phase-name";
+
         edit.setAttribute(
             "aria-label",
             `Edit phase name: ${phase.name}`,
         );
+
         edit.textContent = "✎";
 
-        actions.append(edit);
+        actions.append(
+            edit,
+            createPhaseDeleteButton(phase),
+        );
 
         return actions;
     }
@@ -442,20 +451,56 @@ function createPhaseNameActions(
     return actions;
 }
 
+/** Creates a phase delete control. */
+function createPhaseDeleteButton(phase) {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "phase-name-action phase-delete-action";
+
+    button.dataset.action = "delete-phase";
+    button.dataset.phaseId = phase.id;
+
+    button.setAttribute(
+        "aria-label",
+        `Delete ${phase.name} phase`,
+    );
+
+    button.textContent = "x";
+
+    return button;
+}
+
 /** Creates a block card. */
 function createBlockElement(block, editorSnapshot, activityType) {
-    const isExpanded = editorSnapshot.expandedBlockId === block.id;
+    const isExpanded =
+    editorSnapshot.expandedBlockId === block.id;
 
-    const blockElement = document.createElement("article");
+    const blockElement =
+    document.createElement("article");
 
-    blockElement.className = isExpanded ? "block-card block-card--expanded" : "block-card";
+    blockElement.className = isExpanded
+    ? "block-card block-card--expanded"
+    : "block-card";
 
     blockElement.dataset.blockId = block.id;
 
     if (isExpanded) {
-        blockElement.append(createExpandedBlock(block, editorSnapshot, activityType));
+        blockElement.append(
+            createExpandedBlock(
+                block,
+                editorSnapshot,
+                activityType,
+            ),
+        );
     } else {
-        blockElement.append(createCollapsedBlock(block, activityType));
+        blockElement.append(
+            createCollapsedBlock(
+                block,
+                activityType,
+                editorSnapshot,
+            ),
+        );
     }
 
     return blockElement;
@@ -499,7 +544,11 @@ function createNewBlockElement(editorSnapshot, activityType) {
 }
 
 /** Creates the collapsed block row. */
-function createCollapsedBlock(block, activityType) {
+function createCollapsedBlock(
+    block,
+    activityType,
+    editorSnapshot,
+) {
     const row = document.createElement("div");
 
     row.className = "block-row";
@@ -508,24 +557,40 @@ function createCollapsedBlock(block, activityType) {
 
     summary.className = "block-summary";
 
+    const nameActions = document.createElement("div");
+
+    nameActions.className = "block-name-actions";
+
     const name = document.createElement("span");
 
     name.className = "block-name";
     name.textContent = block.name;
 
+    nameActions.append(name);
+
+    if (editorSnapshot.editMode === "block") {
+        nameActions.append(
+            createBlockDeleteButton(block),
+        );
+    }
+
     const duration = document.createElement("span");
 
-    duration.textContent = formatDuration(block.durationSeconds);
+    duration.textContent =
+    formatDuration(block.durationSeconds);
 
-    summary.append(name, duration);
+    summary.append(
+        nameActions,
+        duration,
+    );
 
     for (const variable of activityType.variables) {
         const progression = block.variables[variable.id];
 
         summary.append(
             createTextSpan(progression.type),
-            createTextSpan(progression.start),
-            createTextSpan(progression.end ?? "—"),
+                       createTextSpan(progression.start),
+                       createTextSpan(progression.end ?? "—"),
         );
     }
 
@@ -535,15 +600,45 @@ function createCollapsedBlock(block, activityType) {
     toggle.className = "block-toggle";
     toggle.dataset.action = "expand-block";
 
-    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute(
+        "aria-expanded",
+        "false",
+    );
 
-    toggle.setAttribute("aria-label", `Expand ${block.name} block`);
+    toggle.setAttribute(
+        "aria-label",
+        `Expand ${block.name} block`,
+    );
 
     toggle.textContent = "▼";
 
-    row.append(summary, toggle);
+    row.append(
+        summary,
+        toggle,
+    );
 
     return row;
+}
+
+/** Creates a block delete control. */
+function createBlockDeleteButton(block) {
+    const button =
+    document.createElement("button");
+
+    button.type = "button";
+    button.className = "block-delete-action";
+
+    button.dataset.action = "delete-block";
+    button.dataset.blockId = block.id;
+
+    button.setAttribute(
+        "aria-label",
+        `Delete ${block.name} block`,
+    );
+
+    button.textContent = "×";
+
+    return button;
 }
 
 /** Creates the expanded block editor. */

@@ -955,7 +955,7 @@ test("editor-state", "rejects unsupported edit modes", () => {
     });
 });
 
-test("editor-state", "opens a block create draft atomically", () => {
+test("editor-state", "opens a block create draft atomically without clearing edit mode", () => {
     const state = new EditorState();
 
     state.setEditMode("block");
@@ -989,7 +989,7 @@ test("editor-state", "opens a block create draft atomically", () => {
 
     assertEqual(
         snapshot.editMode,
-        undefined,
+        "block",
     );
 
     assertDeepEqual(

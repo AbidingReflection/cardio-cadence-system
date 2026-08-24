@@ -6,6 +6,9 @@
 import {
     applyBlockDraft,
     requestCollapseBlock,
+    requestCollapsePhase,
+    requestDeleteBlock,
+    requestDeletePhase,
     startBlockEdit,
     startBlockCreate,
     cancelBlockEdit,
@@ -73,7 +76,6 @@ export function wireProtocolTreeEvents({
                 index,
             );
 
-            editorState.clearEditMode();
             editorState.expandPhase(phaseId);
 
             setPendingPhaseNameFocus({
@@ -127,6 +129,59 @@ export function wireProtocolTreeEvents({
             } finally {
                 setPendingFieldFocus(undefined);
             }
+
+            return;
+        }
+
+
+        const deleteBlockButton = event.target.closest(
+            '[data-action="delete-block"]',
+        );
+
+        if (deleteBlockButton !== null) {
+            const blockId =
+            deleteBlockButton.dataset.blockId;
+
+            if (
+                typeof blockId !== "string" ||
+                blockId.trim() === ""
+            ) {
+                throw new Error(
+                    "Block delete action is missing a block ID.",
+                );
+            }
+
+            requestDeleteBlock(
+                protocolModel,
+                editorState,
+                blockId,
+            );
+
+            return;
+        }
+
+        const deletePhaseButton = event.target.closest(
+            '[data-action="delete-phase"]',
+        );
+
+        if (deletePhaseButton !== null) {
+            const phaseId =
+            deletePhaseButton.dataset.phaseId;
+
+            if (
+                typeof phaseId !== "string" ||
+                phaseId.trim() === ""
+            ) {
+                throw new Error(
+                    "Phase delete action is missing a phase ID.",
+                );
+            }
+
+            requestDeletePhase(
+                protocolModel,
+                editorState,
+                phaseId,
+            );
 
             return;
         }
@@ -278,16 +333,22 @@ export function wireProtocolTreeEvents({
             return;
         }
 
-        const phaseToggle = event.target.closest('[data-action="toggle-phase"]');
+        const phaseToggle = event.target.closest(
+            '[data-action="toggle-phase"]',
+        );
 
         if (phaseToggle === null) {
             return;
         }
 
-        const phaseElement = phaseToggle.closest("[data-phase-id]");
+        const phaseElement = phaseToggle.closest(
+            "[data-phase-id]",
+        );
 
         if (phaseElement === null) {
-            throw new Error("Phase toggle is missing its phase container.");
+            throw new Error(
+                "Phase toggle is missing its phase container.",
+            );
         }
 
         const phaseId = phaseElement.dataset.phaseId;
@@ -298,7 +359,18 @@ export function wireProtocolTreeEvents({
         });
 
         try {
-            editorState.togglePhase(phaseId);
+            const { expandedPhaseIds } =
+            editorState.getSnapshot();
+
+            if (expandedPhaseIds.includes(phaseId)) {
+                requestCollapsePhase(
+                    protocolModel,
+                    editorState,
+                    phaseId,
+                );
+            } else {
+                editorState.expandPhase(phaseId);
+            }
         } finally {
             setPendingToggleFocus(undefined);
         }

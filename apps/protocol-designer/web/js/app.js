@@ -53,8 +53,8 @@ async function main() {
     const editorState = new EditorState();
 
     const protocolTree = document.querySelector("#protocol-tree");
-    const editPhaseButton = document.querySelector("#edit-phases-button");
-    const editBlockButton = document.querySelector("#edit-blocks-button");
+    const editPhaseButton = document.querySelector("#manage-phases-button");
+    const editBlockButton = document.querySelector("#manage-blocks-button");
 
     if (
         protocolTree === null ||

@@ -267,7 +267,6 @@ export class EditorState {
 
     /** Opens a new block draft at a concrete insertion target. */
     openBlockCreateDraft(blockId, draft, insertionTarget) {
-        this.#editMode = undefined;
         this.#insertionTarget = structuredClone(insertionTarget);
 
         this.#expandedBlockId = blockId;

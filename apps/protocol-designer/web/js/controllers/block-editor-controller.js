@@ -253,6 +253,76 @@ export function requestCollapsePhase(protocolModel, editorState, phaseId) {
     };
 }
 
+/** Requests deletion of a block while protecting its active draft. */
+export function requestDeleteBlock(
+    protocolModel,
+    editorState,
+    blockId,
+) {
+    if (typeof blockId !== "string" || blockId.trim() === "") {
+        throw new Error("Block deletion requires a block ID.");
+    }
+
+    const editorSnapshot = editorState.getSnapshot();
+
+    if (editorSnapshot.expandedBlockId === blockId) {
+        const navigation =
+        checkBlockDraftNavigation(editorState);
+
+        if (navigation.outcome === "blocked") {
+            return navigation;
+        }
+
+        editorState.closeBlockDraft();
+    }
+
+    protocolModel.removeBlock(blockId);
+
+    return {
+        outcome: "proceed",
+    };
+}
+
+/** Requests deletion of a phase while protecting drafts inside it. */
+export function requestDeletePhase(
+    protocolModel,
+    editorState,
+    phaseId,
+) {
+    if (typeof phaseId !== "string" || phaseId.trim() === "") {
+        throw new Error("Phase deletion requires a phase ID.");
+    }
+
+    const editorSnapshot = editorState.getSnapshot();
+
+    const activeBlockPhaseId =
+    getActiveBlockPhaseId(
+        protocolModel,
+        editorSnapshot,
+    );
+
+    if (activeBlockPhaseId === phaseId) {
+        const navigation =
+        checkBlockDraftNavigation(editorState);
+
+        if (navigation.outcome === "blocked") {
+            return navigation;
+        }
+
+        editorState.closeBlockDraft();
+    }
+
+    if (editorSnapshot.editingPhaseId === phaseId) {
+        editorState.closePhaseNameEdit();
+    }
+
+    protocolModel.removePhase(phaseId);
+
+    return {
+        outcome: "proceed",
+    };
+}
+
 /** Returns the phase ID containing a block. */
 function getBlockPhaseId(protocolModel, blockId) {
     const protocol = protocolModel.getSnapshot();
