@@ -14,6 +14,8 @@ import {
     requestCollapseBlock,
     requestCollapsePhase,
     startBlockCreate,
+    requestDeletePhase,
+    requestDeleteBlock
 } from "../../controllers/block-editor-controller.js";
 
 import { createEditorStateFake } from "../helpers/editor-state-fake.js";
@@ -954,3 +956,227 @@ test("block-editor-controller", "canceling a create draft clears its insertion t
         1,
     );
 });
+
+test(
+    "block-editor-controller",
+     "deletes an unrelated block without closing the active editor",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         const result = requestDeleteBlock(
+             protocolModel,
+             editorState,
+             "block-3",
+         );
+
+         assertDeepEqual(
+             result,
+             { outcome: "proceed" },
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removeBlock,
+             ["block-3"],
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             0,
+         );
+     },
+);
+
+test(
+    "block-editor-controller",
+     "deletes the active clean block after closing its editor",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         const result = requestDeleteBlock(
+             protocolModel,
+             editorState,
+             "block-1",
+         );
+
+         assertDeepEqual(
+             result,
+             { outcome: "proceed" },
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             1,
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removeBlock,
+             ["block-1"],
+         );
+     },
+);
+
+test(
+    "block-editor-controller",
+     "blocks deletion of the active block when its draft is dirty",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         editorState.updateBlockDraft({
+             name: "Changed",
+         });
+
+         const result = requestDeleteBlock(
+             protocolModel,
+             editorState,
+             "block-1",
+         );
+
+         assertDeepEqual(
+             result,
+             {
+                 outcome: "blocked",
+                 reason: "dirty-draft",
+             },
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             0,
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removeBlock,
+             [],
+         );
+     },
+);
+
+test(
+    "block-editor-controller",
+     "deletes an unrelated phase without closing the active block editor",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         const result = requestDeletePhase(
+             protocolModel,
+             editorState,
+             "phase-2",
+         );
+
+         assertDeepEqual(
+             result,
+             { outcome: "proceed" },
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             0,
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removePhase,
+             ["phase-2"],
+         );
+     },
+);
+
+test(
+    "block-editor-controller",
+     "deletes a phase containing a clean active block after closing its editor",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         const result = requestDeletePhase(
+             protocolModel,
+             editorState,
+             "phase-1",
+         );
+
+         assertDeepEqual(
+             result,
+             { outcome: "proceed" },
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             1,
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removePhase,
+             ["phase-1"],
+         );
+     },
+);
+
+test(
+    "block-editor-controller",
+     "blocks deletion of a phase containing a dirty active block",
+     () => {
+         const protocolModel = createProtocolModelFake();
+         const editorState = createEditorStateFake();
+
+         editorState.openBlockDraft(
+             "block-1",
+             createEditDraft(),
+         );
+
+         editorState.updateBlockDraft({
+             name: "Changed",
+         });
+
+         const result = requestDeletePhase(
+             protocolModel,
+             editorState,
+             "phase-1",
+         );
+
+         assertDeepEqual(
+             result,
+             {
+                 outcome: "blocked",
+                 reason: "dirty-draft",
+             },
+         );
+
+         assertEqual(
+             editorState.calls.closeBlockDraft,
+             0,
+         );
+
+         assertDeepEqual(
+             protocolModel.calls.removePhase,
+             [],
+         );
+     },
+);

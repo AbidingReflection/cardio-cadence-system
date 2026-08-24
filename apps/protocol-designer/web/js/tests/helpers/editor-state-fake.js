@@ -3,9 +3,16 @@
  * snapshot state, mutation tracking, and basic draft/navigation behavior.
  */
 
+import { deepEqual } from "/packages/utils/deep-equal.js";
+
 /** Creates a lightweight EditorState fake for controller tests. */
 export function createEditorStateFake(activeBlockDraft) {
     let draft =
+    activeBlockDraft === undefined
+    ? undefined
+    : structuredClone(activeBlockDraft);
+
+    let blockDraftBaseline =
     activeBlockDraft === undefined
     ? undefined
     : structuredClone(activeBlockDraft);
@@ -30,6 +37,10 @@ export function createEditorStateFake(activeBlockDraft) {
 
     let expandedPhaseIds = ["phase-1", "phase-2"];
 
+    let editingPhaseId;
+
+    let phaseNameDraft;
+
     const calls = {
         setValidationErrors: 0,
         clearValidationErrors: 0,
@@ -44,6 +55,8 @@ export function createEditorStateFake(activeBlockDraft) {
         closeBlockDraft: 0,
         openBlockDraft: 0,
         openBlockCreateDraft: [],
+        startPhaseNameEdit: 0,
+        closePhaseNameEdit: 0,
     };
 
     return {
@@ -64,7 +77,24 @@ export function createEditorStateFake(activeBlockDraft) {
                 editMode,
                 expandedBlockId,
                 expandedPhaseIds: [...expandedPhaseIds],
+                editingPhaseId,
+                phaseNameDraft,
             };
+        },
+
+        /** Returns whether the active block draft differs from its baseline. */
+        isBlockDraftDirty() {
+            if (
+                draft === undefined ||
+                blockDraftBaseline === undefined
+            ) {
+                return false;
+            }
+
+            return !deepEqual(
+                draft,
+                blockDraftBaseline,
+            );
         },
 
         /** Replaces the current validation errors. */
@@ -79,10 +109,25 @@ export function createEditorStateFake(activeBlockDraft) {
             validationErrors = [];
         },
 
+        /** Updates the active block draft. */
+        updateBlockDraft(updates) {
+            if (draft === undefined) {
+                throw new Error(
+                    "Cannot update a missing block draft.",
+                );
+            }
+
+            draft = {
+                ...draft,
+                ...structuredClone(updates),
+            };
+        },
+
         /** Cancels the active block draft. */
         cancelBlockDraft() {
             calls.cancelBlockDraft++;
             draft = undefined;
+            blockDraftBaseline = undefined;
         },
 
         /** Closes the active block editor. */
@@ -91,6 +136,7 @@ export function createEditorStateFake(activeBlockDraft) {
 
             expandedBlockId = undefined;
             draft = undefined;
+            blockDraftBaseline = undefined;
             validationErrors = [];
         },
 
@@ -100,6 +146,7 @@ export function createEditorStateFake(activeBlockDraft) {
 
             expandedBlockId = blockId;
             draft = structuredClone(newDraft);
+            blockDraftBaseline = structuredClone(newDraft);
             validationErrors = [];
         },
 
@@ -111,10 +158,10 @@ export function createEditorStateFake(activeBlockDraft) {
                                             insertionTarget: structuredClone(target),
             });
 
-            editMode = undefined;
             insertionTarget = structuredClone(target);
             expandedBlockId = blockId;
             draft = structuredClone(newDraft);
+            blockDraftBaseline = structuredClone(newDraft);
             validationErrors = [];
         },
 
@@ -160,6 +207,20 @@ export function createEditorStateFake(activeBlockDraft) {
             expandedPhaseIds = expandedPhaseIds.filter(
                 (id) => id !== phaseId,
             );
+        },
+
+        /** Starts editing a phase name. */
+        startPhaseNameEdit(phaseId, name = "") {
+            calls.startPhaseNameEdit++;
+            editingPhaseId = phaseId;
+            phaseNameDraft = name;
+        },
+
+        /** Closes the active phase-name edit. */
+        closePhaseNameEdit() {
+            calls.closePhaseNameEdit++;
+            editingPhaseId = undefined;
+            phaseNameDraft = undefined;
         },
     };
 }
