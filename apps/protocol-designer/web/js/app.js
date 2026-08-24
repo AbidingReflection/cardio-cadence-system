@@ -6,7 +6,7 @@
 import { loadDomainData } from "./domain-data.js";
 import { ProtocolModel } from "./models/protocol-model.js";
 import { EditorState } from "./state/editor-state.js";
-import { renderProtocolTree } from "./renderers/protocol-tree-renderer.js";
+import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
 
 import {
     restoreProtocolFieldFocus,
