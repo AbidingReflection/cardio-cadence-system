@@ -5,7 +5,7 @@
 
 import { createBlockElement, createNewBlockElement } from "./block-renderer.js";
 
-import { formatDuration } from "./renderer-utils.js";
+import { formatDuration } from "../../../../../packages/utils/format-duration.js";
 
 /** Creates a selectable insertion target between phases. */
 export function createPhaseInsertionTarget(index) {

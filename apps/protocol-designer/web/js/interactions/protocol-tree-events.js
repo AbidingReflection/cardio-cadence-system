@@ -7,12 +7,16 @@ import {
     applyBlockDraft,
     requestCollapseBlock,
     requestCollapsePhase,
-    requestDeleteBlock,
-    requestDeletePhase,
+
     startBlockEdit,
     startBlockCreate,
     cancelBlockEdit,
 } from "../controllers/block-editor-controller.js";
+
+import {
+    requestDeleteBlock,
+    requestDeletePhase,
+} from "../controllers/protocol-structure-controller.js";
 
 import {
     captureProtocolFieldFocus,

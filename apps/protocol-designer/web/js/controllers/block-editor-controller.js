@@ -1,4 +1,8 @@
+import { formatDuration } from "../../../../../packages/utils/format-duration.js";
 import { validateBlockDraft } from "../editor/block-draft-validation.js";
+import { getActiveBlockPhaseId } from "./protocol-controller-utils.js";
+
+const NEW_BLOCK_DRAFT_ID = "__new-block-draft__";
 
 /**
  * Applies the active block draft to the protocol model.
@@ -73,16 +77,10 @@ function applyNewBlock(protocolModel, editorState, draft, blockData) {
         insertionTarget.phaseId !== draft.phaseId ||
         !Number.isInteger(insertionTarget.index)
     ) {
-        throw new Error(
-            "New block draft requires a valid insertion target.",
-        );
+        throw new Error("New block draft requires a valid insertion target.");
     }
 
-    protocolModel.addBlock(
-        draft.phaseId,
-        blockData,
-        insertionTarget.index,
-    );
+    protocolModel.addBlock(draft.phaseId, blockData, insertionTarget.index);
 
     editorState.clearInsertionTarget();
 }
@@ -253,106 +251,6 @@ export function requestCollapsePhase(protocolModel, editorState, phaseId) {
     };
 }
 
-/** Requests deletion of a block while protecting its active draft. */
-export function requestDeleteBlock(
-    protocolModel,
-    editorState,
-    blockId,
-) {
-    if (typeof blockId !== "string" || blockId.trim() === "") {
-        throw new Error("Block deletion requires a block ID.");
-    }
-
-    const editorSnapshot = editorState.getSnapshot();
-
-    if (editorSnapshot.expandedBlockId === blockId) {
-        const navigation =
-        checkBlockDraftNavigation(editorState);
-
-        if (navigation.outcome === "blocked") {
-            return navigation;
-        }
-
-        editorState.closeBlockDraft();
-    }
-
-    protocolModel.removeBlock(blockId);
-
-    return {
-        outcome: "proceed",
-    };
-}
-
-/** Requests deletion of a phase while protecting drafts inside it. */
-export function requestDeletePhase(
-    protocolModel,
-    editorState,
-    phaseId,
-) {
-    if (typeof phaseId !== "string" || phaseId.trim() === "") {
-        throw new Error("Phase deletion requires a phase ID.");
-    }
-
-    const editorSnapshot = editorState.getSnapshot();
-
-    const activeBlockPhaseId =
-    getActiveBlockPhaseId(
-        protocolModel,
-        editorSnapshot,
-    );
-
-    if (activeBlockPhaseId === phaseId) {
-        const navigation =
-        checkBlockDraftNavigation(editorState);
-
-        if (navigation.outcome === "blocked") {
-            return navigation;
-        }
-
-        editorState.closeBlockDraft();
-    }
-
-    if (editorSnapshot.editingPhaseId === phaseId) {
-        editorState.closePhaseNameEdit();
-    }
-
-    protocolModel.removePhase(phaseId);
-
-    return {
-        outcome: "proceed",
-    };
-}
-
-/** Returns the phase ID containing a block. */
-function getBlockPhaseId(protocolModel, blockId) {
-    const protocol = protocolModel.getSnapshot();
-
-    for (const phase of protocol.phases) {
-        if (phase.blocks.some((block) => block.id === blockId)) {
-            return phase.id;
-        }
-    }
-
-    throw new Error(`Expanded block not found in protocol: "${blockId}".`);
-}
-
-/** Returns the phase containing the active expanded block editor. */
-function getActiveBlockPhaseId(protocolModel, editorSnapshot) {
-    const draft = editorSnapshot.activeBlockDraft;
-
-    if (draft?.mode === "create" && typeof draft.phaseId === "string") {
-        return draft.phaseId;
-    }
-
-    const blockId = editorSnapshot.expandedBlockId;
-
-    if (blockId === undefined) {
-        return undefined;
-    }
-
-    return getBlockPhaseId(protocolModel, blockId);
-}
-
 /**
  * Starts an edit draft for a committed block.
  */
@@ -386,15 +284,8 @@ export function startBlockEdit(protocolModel, editorState, blockId) {
     };
 }
 
-const NEW_BLOCK_DRAFT_ID = "__new-block-draft__";
-
 /** Starts a create draft for a new block at a selected insertion target. */
-export function startBlockCreate(
-    editorState,
-    activityType,
-    phaseId,
-    index,
-) {
+export function startBlockCreate(editorState, activityType, phaseId, index) {
     if (typeof phaseId !== "string" || phaseId.trim() === "") {
         throw new Error("Block creation requires a phase ID.");
     }
@@ -417,15 +308,11 @@ export function startBlockCreate(
 
     const draft = createCreateDraft(activityType, phaseId);
 
-    editorState.openBlockCreateDraft(
-        NEW_BLOCK_DRAFT_ID,
-        draft,
-        {
-            type: "block",
-            phaseId,
-            index,
-        },
-    );
+    editorState.openBlockCreateDraft(NEW_BLOCK_DRAFT_ID, draft, {
+        type: "block",
+        phaseId,
+        index,
+    });
 
     return {
         outcome: "proceed",
@@ -500,21 +387,4 @@ function createProgressionDraft(progression) {
     }
 
     return draft;
-}
-
-/** Formats seconds as H:MM:SS or M:SS. */
-function formatDuration(totalSeconds) {
-    const hours = Math.floor(totalSeconds / 3600);
-
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-    const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-        return [hours, String(minutes).padStart(2, "0"), String(seconds).padStart(2, "0")].join(
-            ":",
-        );
-    }
-
-    return [minutes, String(seconds).padStart(2, "0")].join(":");
 }
