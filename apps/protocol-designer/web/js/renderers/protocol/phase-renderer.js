@@ -25,8 +25,17 @@ export function createPhaseElement(phase, phaseIndex, editorSnapshot, activityTy
     const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
 
     const phaseElement = document.createElement("article");
+
     phaseElement.className = isExpanded ? "phase-card phase-card--expanded" : "phase-card";
+
     phaseElement.dataset.phaseId = phase.id;
+
+    if (editorSnapshot.editMode === "phase") {
+        phaseElement.dataset.structuralItem = "phase";
+
+        phaseElement.tabIndex = 0;
+    }
+
     phaseElement.append(createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot));
 
     if (isExpanded) {

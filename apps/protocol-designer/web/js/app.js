@@ -10,6 +10,7 @@ import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.
 
 import {
     restoreProtocolFieldFocus,
+    restoreProtocolStructuralFocus,
     restoreProtocolToggleFocus,
     restorePhaseNameFocus,
 } from "./interactions/protocol-focus.js";
@@ -32,9 +33,9 @@ async function main() {
     }
 
     const machineProfile =
-    protocolData.machineProfileId === undefined
-    ? undefined
-    : domainData.machineProfiles.get(protocolData.machineProfileId);
+        protocolData.machineProfileId === undefined
+            ? undefined
+            : domainData.machineProfiles.get(protocolData.machineProfileId);
 
     if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
         throw new Error(
@@ -42,11 +43,7 @@ async function main() {
         );
     }
 
-    const protocolModel = new ProtocolModel(
-        protocolData,
-        activityType,
-        machineProfile,
-    );
+    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
 
     window.protocolModel = protocolModel;
 
@@ -56,88 +53,63 @@ async function main() {
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
 
-    if (
-        protocolTree === null ||
-        editPhaseButton === null ||
-        editBlockButton === null
-    ) {
-        throw new Error(
-            "Required protocol editor controls were not found.",
-        );
+    if (protocolTree === null || editPhaseButton === null || editBlockButton === null) {
+        throw new Error("Required protocol editor controls were not found.");
     }
 
     let pendingFieldFocus;
     let pendingToggleFocus;
     let pendingPhaseNameFocus;
+    let pendingStructuralFocus;
 
     /** Renders the protocol tree and restores any pending interaction focus. */
     const render = () => {
         const fieldFocusContext = pendingFieldFocus;
         const toggleFocusContext = pendingToggleFocus;
         const phaseNameFocusContext = pendingPhaseNameFocus;
+        const structuralFocusContext = pendingStructuralFocus;
 
         pendingFieldFocus = undefined;
         pendingToggleFocus = undefined;
         pendingPhaseNameFocus = undefined;
+        pendingStructuralFocus = undefined;
 
         const editorSnapshot = editorState.getSnapshot();
 
-        renderProtocolTree(
-            protocolTree,
-            protocolModel.getSnapshot(),
-                           editorSnapshot,
-                           activityType,
-        );
+        renderProtocolTree(protocolTree, protocolModel.getSnapshot(), editorSnapshot, activityType);
 
-        const phaseEditActive =
-        editorSnapshot.editMode === "phase";
+        const phaseEditActive = editorSnapshot.editMode === "phase";
 
-        const blockEditActive =
-        editorSnapshot.editMode === "block";
+        const blockEditActive = editorSnapshot.editMode === "block";
 
-        editPhaseButton.classList.toggle(
-            "is-active",
-            phaseEditActive,
-        );
+        editPhaseButton.classList.toggle("is-active", phaseEditActive);
 
-        editBlockButton.classList.toggle(
-            "is-active",
-            blockEditActive,
-        );
+        editBlockButton.classList.toggle("is-active", blockEditActive);
 
-        editPhaseButton.setAttribute(
-            "aria-pressed",
-            String(phaseEditActive),
-        );
+        editPhaseButton.setAttribute("aria-pressed", String(phaseEditActive));
 
-        editBlockButton.setAttribute(
-            "aria-pressed",
-            String(blockEditActive),
-        );
+        editBlockButton.setAttribute("aria-pressed", String(blockEditActive));
 
         if (fieldFocusContext !== undefined) {
-            restoreProtocolFieldFocus(
-                protocolTree,
-                fieldFocusContext,
-            );
+            restoreProtocolFieldFocus(protocolTree, fieldFocusContext);
 
             return;
         }
 
         if (phaseNameFocusContext !== undefined) {
-            restorePhaseNameFocus(
-                protocolTree,
-                phaseNameFocusContext,
-            );
+            restorePhaseNameFocus(protocolTree, phaseNameFocusContext);
 
             return;
         }
 
         if (toggleFocusContext !== undefined) {
-            restoreProtocolToggleFocus(
-                protocolTree,
-                toggleFocusContext,
-            );
+            restoreProtocolToggleFocus(protocolTree, toggleFocusContext);
+        }
+
+        if (structuralFocusContext !== undefined) {
+            restoreProtocolStructuralFocus(protocolTree, structuralFocusContext);
+
+            return;
         }
     };
 
@@ -161,6 +133,10 @@ async function main() {
 
         setPendingPhaseNameFocus: (focusContext) => {
             pendingPhaseNameFocus = focusContext;
+        },
+
+        setPendingStructuralFocus: (focusContext) => {
+            pendingStructuralFocus = focusContext;
         },
     });
 

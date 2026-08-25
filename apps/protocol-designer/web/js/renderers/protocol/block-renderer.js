@@ -11,8 +11,16 @@ export function createBlockElement(block, editorSnapshot, activityType) {
     const isExpanded = editorSnapshot.expandedBlockId === block.id;
 
     const blockElement = document.createElement("article");
+
     blockElement.className = isExpanded ? "block-card block-card--expanded" : "block-card";
+
     blockElement.dataset.blockId = block.id;
+
+    if (editorSnapshot.editMode === "block") {
+        blockElement.dataset.structuralItem = "block";
+
+        blockElement.tabIndex = 0;
+    }
 
     if (isExpanded) {
         blockElement.append(createExpandedBlock(block, editorSnapshot, activityType));

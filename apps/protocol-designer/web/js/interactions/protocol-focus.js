@@ -136,3 +136,26 @@ export function restorePhaseNameFocus(protocolTree, focusContext) {
         field.setSelectionRange(focusContext.selectionStart, focusContext.selectionEnd);
     }
 }
+
+/** Restores focus to the equivalent structural phase or block after rendering. */
+export function restoreProtocolStructuralFocus(protocolTree, focusContext) {
+    if (focusContext.type === "phase") {
+        const phaseElement = Array.from(
+            protocolTree.querySelectorAll('[data-structural-item="phase"]'),
+        ).find((element) => element.dataset.phaseId === focusContext.phaseId);
+
+        phaseElement?.focus();
+        return;
+    }
+
+    if (focusContext.type === "block") {
+        const blockElement = Array.from(
+            protocolTree.querySelectorAll('[data-structural-item="block"]'),
+        ).find((element) => element.dataset.blockId === focusContext.blockId);
+
+        blockElement?.focus();
+        return;
+    }
+
+    throw new Error(`Unsupported structural focus type: "${focusContext.type}".`);
+}
