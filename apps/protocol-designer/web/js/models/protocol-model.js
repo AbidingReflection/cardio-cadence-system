@@ -49,6 +49,34 @@ export class ProtocolModel {
         return phase.id;
     }
 
+    /** Moves a phase to its final zero-based index. */
+    movePhase(phaseId, targetIndex) {
+        const phaseIndex = this.#protocol.phases.findIndex((phase) => phase.id === phaseId);
+
+        if (phaseIndex === -1) {
+            throw new Error(`Unknown phase ID: "${phaseId}".`);
+        }
+
+        const moveIndex = getMoveIndex(targetIndex, this.#protocol.phases.length, "Phase");
+
+        if (phaseIndex === moveIndex) {
+            return;
+        }
+
+        const nextProtocol = structuredClone(this.#protocol);
+
+        const [phase] = nextProtocol.phases.splice(phaseIndex, 1);
+
+        nextProtocol.phases.splice(moveIndex, 0, phase);
+
+        const normalized = normalizeProtocol(nextProtocol, this.#activityType);
+
+        validateProtocol(normalized, this.#activityType, this.#machineProfile);
+
+        this.#protocol = normalized;
+        this.#emit();
+    }
+
     /** Removes a phase by ID. */
     removePhase(phaseId) {
         const nextProtocol = structuredClone(this.#protocol);
@@ -119,6 +147,40 @@ export class ProtocolModel {
         this.#emit();
 
         return block.id;
+    }
+
+    /** Moves a block within its current phase to its final zero-based index. */
+    moveBlock(blockId, targetIndex) {
+        const phase = this.#protocol.phases.find((candidate) =>
+            candidate.blocks.some((block) => block.id === blockId),
+        );
+
+        if (phase === undefined) {
+            throw new Error(`Unknown block ID: "${blockId}".`);
+        }
+
+        const blockIndex = phase.blocks.findIndex((block) => block.id === blockId);
+
+        const moveIndex = getMoveIndex(targetIndex, phase.blocks.length, "Block");
+
+        if (blockIndex === moveIndex) {
+            return;
+        }
+
+        const nextProtocol = structuredClone(this.#protocol);
+
+        const nextPhase = nextProtocol.phases.find((candidate) => candidate.id === phase.id);
+
+        const [block] = nextPhase.blocks.splice(blockIndex, 1);
+
+        nextPhase.blocks.splice(moveIndex, 0, block);
+
+        const normalized = normalizeProtocol(nextProtocol, this.#activityType);
+
+        validateProtocol(normalized, this.#activityType, this.#machineProfile);
+
+        this.#protocol = normalized;
+        this.#emit();
     }
 
     /** Removes a block by ID. */
@@ -218,6 +280,19 @@ function getInsertionIndex(index, length, entityName) {
         throw new Error(
             `${entityName} insertion index must be an integer ` + `between 0 and ${length}.`,
         );
+    }
+
+    return index;
+}
+
+/** Returns a validated final move index. */
+function getMoveIndex(index, length, entityName) {
+    if (!Number.isInteger(index)) {
+        throw new Error(`${entityName} move index must be an integer.`);
+    }
+
+    if (index < 0 || index >= length) {
+        throw new Error(`${entityName} move index is out of range.`);
     }
 
     return index;

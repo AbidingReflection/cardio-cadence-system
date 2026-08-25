@@ -8,6 +8,8 @@ import {
 import {
     requestDeleteBlock,
     requestDeletePhase,
+    requestMoveBlock,
+    requestMovePhase,
 } from "../../controllers/protocol-structure-controller.js";
 
 import { createEditorStateFake } from "../helpers/editor-state-fake.js";
@@ -162,3 +164,185 @@ test(
         assertDeepEqual(protocolModel.calls.removePhase, []);
     },
 );
+
+test(
+    "protocol-structure-controller",
+    "moves an unrelated block without closing the active editor",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        const result = requestMoveBlock(protocolModel, editorState, "block-2", 0);
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        assertDeepEqual(protocolModel.calls.moveBlock, [
+            {
+                blockId: "block-2",
+                targetIndex: 0,
+            },
+        ]);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "moves the active clean block without closing its editor",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        const result = requestMoveBlock(protocolModel, editorState, "block-1", 1);
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        assertDeepEqual(protocolModel.calls.moveBlock, [
+            {
+                blockId: "block-1",
+                targetIndex: 1,
+            },
+        ]);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+
+        assertEqual(editorState.calls.closeBlockDraft, 0);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "blocks moving the active block when its draft is dirty",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        editorState.updateBlockDraft({
+            name: "Dirty Block",
+        });
+
+        const result = requestMoveBlock(protocolModel, editorState, "block-1", 1);
+
+        assertDeepEqual(result, {
+            outcome: "blocked",
+            reason: "dirty-draft",
+        });
+
+        assertEqual(protocolModel.calls.moveBlock.length, 0);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+    },
+);
+
+test("protocol-structure-controller", "move block throws without a block ID", () => {
+    const protocolModel = createProtocolModelFake();
+    const editorState = createEditorStateFake();
+
+    assertThrows(() => {
+        requestMoveBlock(protocolModel, editorState, undefined, 0);
+    });
+});
+
+test(
+    "protocol-structure-controller",
+    "moves an unrelated phase despite a dirty draft in another phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        editorState.updateBlockDraft({
+            name: "Dirty Block",
+        });
+
+        const result = requestMovePhase(protocolModel, editorState, "phase-2", 0);
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        assertDeepEqual(protocolModel.calls.movePhase, [
+            {
+                phaseId: "phase-2",
+                targetIndex: 0,
+            },
+        ]);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "moves a phase containing a clean active block without closing its editor",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        const result = requestMovePhase(protocolModel, editorState, "phase-1", 1);
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        assertDeepEqual(protocolModel.calls.movePhase, [
+            {
+                phaseId: "phase-1",
+                targetIndex: 1,
+            },
+        ]);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+
+        assertEqual(editorState.calls.closeBlockDraft, 0);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "blocks moving a phase containing a dirty active block",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.openBlockDraft("block-1", createEditDraft());
+
+        editorState.updateBlockDraft({
+            name: "Dirty Block",
+        });
+
+        const result = requestMovePhase(protocolModel, editorState, "phase-1", 1);
+
+        assertDeepEqual(result, {
+            outcome: "blocked",
+            reason: "dirty-draft",
+        });
+
+        assertEqual(protocolModel.calls.movePhase.length, 0);
+
+        assertEqual(editorState.getSnapshot().expandedBlockId, "block-1");
+    },
+);
+
+test("protocol-structure-controller", "move phase throws without a phase ID", () => {
+    const protocolModel = createProtocolModelFake();
+    const editorState = createEditorStateFake();
+
+    assertThrows(() => {
+        requestMovePhase(protocolModel, editorState, undefined, 0);
+    });
+});

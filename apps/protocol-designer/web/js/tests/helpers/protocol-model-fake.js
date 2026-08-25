@@ -10,22 +10,19 @@ export function createProtocolModelFake() {
         updateBlock: [],
         removeBlock: [],
         removePhase: [],
+        moveBlock: [],
+        movePhase: [],
     };
 
     const protocol = {
         phases: [
             {
                 id: "phase-1",
-                blocks: [
-                    { id: "block-1" },
-                    { id: "block-2" },
-                ],
+                blocks: [{ id: "block-1" }, { id: "block-2" }],
             },
             {
                 id: "phase-2",
-                blocks: [
-                    { id: "block-3" },
-                ],
+                blocks: [{ id: "block-3" }],
             },
         ],
     };
@@ -39,18 +36,30 @@ export function createProtocolModelFake() {
         },
 
         /** Adds a block and records the mutation. */
-        addBlock(
-            phaseId,
-            blockData,
-            index = undefined,
-        ) {
+        addBlock(phaseId, blockData, index = undefined) {
             calls.addBlock.push({
                 phaseId,
                 blockData: structuredClone(blockData),
-                                index,
+                index,
             });
 
             return "new-block-id";
+        },
+
+        /** Moves a block and records the mutation. */
+        moveBlock(blockId, targetIndex) {
+            calls.moveBlock.push({
+                blockId,
+                targetIndex,
+            });
+        },
+
+        /** Moves a phase and records the mutation. */
+        movePhase(phaseId, targetIndex) {
+            calls.movePhase.push({
+                phaseId,
+                targetIndex,
+            });
         },
 
         /** Updates a block and records the mutation. */
@@ -66,9 +75,7 @@ export function createProtocolModelFake() {
             calls.removeBlock.push(blockId);
 
             for (const phase of protocol.phases) {
-                phase.blocks = phase.blocks.filter(
-                    (block) => block.id !== blockId,
-                );
+                phase.blocks = phase.blocks.filter((block) => block.id !== blockId);
             }
         },
 
@@ -76,9 +83,7 @@ export function createProtocolModelFake() {
         removePhase(phaseId) {
             calls.removePhase.push(phaseId);
 
-            protocol.phases = protocol.phases.filter(
-                (phase) => phase.id !== phaseId,
-            );
+            protocol.phases = protocol.phases.filter((phase) => phase.id !== phaseId);
         },
     };
 }

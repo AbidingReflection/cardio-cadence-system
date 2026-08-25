@@ -1096,3 +1096,253 @@ test("protocol-model", "failed block insertion leaves protocol state unchanged",
 
     assertDeepEqual(model.getSnapshot(), before);
 });
+
+test("protocol-model", "moves a phase to a later final index", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+    const phaseId = before.phases[0].id;
+
+    model.movePhase(phaseId, before.phases.length - 1);
+
+    const after = model.getSnapshot();
+
+    assertEqual(after.phases.at(-1).id, phaseId);
+});
+
+test("protocol-model", "moves a phase to an earlier final index", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+    const phaseId = before.phases.at(-1).id;
+
+    model.movePhase(phaseId, 0);
+
+    const after = model.getSnapshot();
+
+    assertEqual(after.phases[0].id, phaseId);
+});
+
+test("protocol-model", "preserves phase data when moving a phase", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+    const phase = before.phases[0];
+
+    model.movePhase(phase.id, before.phases.length - 1);
+
+    const after = model.getSnapshot();
+    const movedPhase = after.phases.find((candidate) => candidate.id === phase.id);
+
+    assertDeepEqual(movedPhase, phase);
+});
+
+test("protocol-model", "phase move to its current index is a no-op", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+    const phaseId = before.phases[0].id;
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    model.movePhase(phaseId, 0);
+
+    assertDeepEqual(model.getSnapshot(), before);
+
+    assertEqual(notificationCount, 0);
+});
+
+test("protocol-model", "rejects moving an unknown phase", () => {
+    const model = createProtocolModel();
+
+    assertThrows(() => {
+        model.movePhase("missing-phase", 0);
+    });
+});
+
+test("protocol-model", "rejects a non-integer phase move index", () => {
+    const model = createProtocolModel();
+
+    const phaseId = model.getSnapshot().phases[0].id;
+
+    assertThrows(() => {
+        model.movePhase(phaseId, 1.5);
+    });
+});
+
+test("protocol-model", "rejects an out-of-range phase move index", () => {
+    const model = createProtocolModel();
+
+    const snapshot = model.getSnapshot();
+    const phaseId = snapshot.phases[0].id;
+
+    assertThrows(() => {
+        model.movePhase(phaseId, snapshot.phases.length);
+    });
+});
+
+test("protocol-model", "failed phase move leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+
+    assertThrows(() => {
+        model.movePhase(before.phases[0].id, before.phases.length);
+    });
+
+    assertDeepEqual(model.getSnapshot(), before);
+});
+
+test("protocol-model", "moves a block to a later final index", () => {
+    const model = createProtocolModel();
+
+    const initial = model.getSnapshot();
+    const phase = initial.phases.find((candidate) => candidate.blocks.length > 0);
+
+    const originalBlockId = phase.blocks[0].id;
+
+    model.addBlock(phase.id, phase.blocks[0]);
+
+    const before = model.getSnapshot();
+    const updatedPhase = before.phases.find((candidate) => candidate.id === phase.id);
+
+    model.moveBlock(originalBlockId, updatedPhase.blocks.length - 1);
+
+    const after = model.getSnapshot();
+    const movedPhase = after.phases.find((candidate) => candidate.id === phase.id);
+
+    assertEqual(movedPhase.blocks.at(-1).id, originalBlockId);
+});
+
+test("protocol-model", "moves a block to an earlier final index", () => {
+    const model = createProtocolModel();
+
+    const initial = model.getSnapshot();
+    const phase = initial.phases.find((candidate) => candidate.blocks.length > 0);
+
+    const newBlockId = model.addBlock(phase.id, phase.blocks[0]);
+
+    model.moveBlock(newBlockId, 0);
+
+    const after = model.getSnapshot();
+    const movedPhase = after.phases.find((candidate) => candidate.id === phase.id);
+
+    assertEqual(movedPhase.blocks[0].id, newBlockId);
+});
+
+test("protocol-model", "preserves block data when moving a block", () => {
+    const model = createProtocolModel();
+
+    const initial = model.getSnapshot();
+    const phase = initial.phases.find((candidate) => candidate.blocks.length > 0);
+
+    const blockId = phase.blocks[0].id;
+
+    model.addBlock(phase.id, phase.blocks[0]);
+
+    const before = model.getSnapshot();
+
+    const block = before.phases
+        .flatMap((candidate) => candidate.blocks)
+        .find((candidate) => candidate.id === blockId);
+
+    const containingPhase = before.phases.find((candidate) =>
+        candidate.blocks.some((candidateBlock) => candidateBlock.id === blockId),
+    );
+
+    model.moveBlock(blockId, containingPhase.blocks.length - 1);
+
+    const after = model.getSnapshot();
+
+    const movedBlock = after.phases
+        .flatMap((candidate) => candidate.blocks)
+        .find((candidate) => candidate.id === blockId);
+
+    assertDeepEqual(movedBlock, block);
+});
+
+test("protocol-model", "block move to its current index is a no-op", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+
+    const phase = before.phases.find((candidate) => candidate.blocks.length > 0);
+
+    const blockId = phase.blocks[0].id;
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    model.moveBlock(blockId, 0);
+
+    assertDeepEqual(model.getSnapshot(), before);
+
+    assertEqual(notificationCount, 0);
+});
+
+test("protocol-model", "rejects moving an unknown block", () => {
+    const model = createProtocolModel();
+
+    assertThrows(() => {
+        model.moveBlock("missing-block", 0);
+    });
+});
+
+test("protocol-model", "rejects a non-integer block move index", () => {
+    const model = createProtocolModel();
+
+    const phase = model.getSnapshot().phases.find((candidate) => candidate.blocks.length > 0);
+
+    assertThrows(() => {
+        model.moveBlock(phase.blocks[0].id, 0.5);
+    });
+});
+
+test("protocol-model", "rejects an out-of-range block move index", () => {
+    const model = createProtocolModel();
+
+    const phase = model.getSnapshot().phases.find((candidate) => candidate.blocks.length > 0);
+
+    assertThrows(() => {
+        model.moveBlock(phase.blocks[0].id, phase.blocks.length);
+    });
+});
+
+test("protocol-model", "failed block move leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+
+    const phase = before.phases.find((candidate) => candidate.blocks.length > 0);
+
+    assertThrows(() => {
+        model.moveBlock(phase.blocks[0].id, phase.blocks.length);
+    });
+
+    assertDeepEqual(model.getSnapshot(), before);
+});
+
+test("protocol-model", "successful moves notify subscribers once", () => {
+    const model = createProtocolModel();
+
+    model.addPhase("Second Phase");
+
+    const phaseId = model.getSnapshot().phases[0].id;
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    model.movePhase(phaseId, 1);
+
+    assertEqual(notificationCount, 1);
+});
