@@ -144,8 +144,13 @@ export function restoreProtocolStructuralFocus(protocolTree, focusContext) {
             protocolTree.querySelectorAll('[data-structural-item="phase"]'),
         ).find((element) => element.dataset.phaseId === focusContext.phaseId);
 
-        phaseElement?.focus();
-        return;
+        if (phaseElement === undefined) {
+            return false;
+        }
+
+        phaseElement.focus();
+
+        return true;
     }
 
     if (focusContext.type === "block") {
@@ -153,8 +158,13 @@ export function restoreProtocolStructuralFocus(protocolTree, focusContext) {
             protocolTree.querySelectorAll('[data-structural-item="block"]'),
         ).find((element) => element.dataset.blockId === focusContext.blockId);
 
-        blockElement?.focus();
-        return;
+        if (blockElement === undefined) {
+            return false;
+        }
+
+        blockElement.focus();
+
+        return true;
     }
 
     throw new Error(`Unsupported structural focus type: "${focusContext.type}".`);

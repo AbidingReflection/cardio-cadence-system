@@ -47,9 +47,10 @@ export function createProtocolModelFake() {
         },
 
         /** Moves a block and records the mutation. */
-        moveBlock(blockId, targetIndex) {
+        moveBlock(blockId, targetPhaseId, targetIndex) {
             calls.moveBlock.push({
                 blockId,
+                targetPhaseId,
                 targetIndex,
             });
         },

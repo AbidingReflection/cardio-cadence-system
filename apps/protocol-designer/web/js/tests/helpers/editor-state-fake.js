@@ -7,15 +7,10 @@ import { deepEqual } from "/packages/utils/deep-equal.js";
 
 /** Creates a lightweight EditorState fake for controller tests. */
 export function createEditorStateFake(activeBlockDraft) {
-    let draft =
-    activeBlockDraft === undefined
-    ? undefined
-    : structuredClone(activeBlockDraft);
+    let draft = activeBlockDraft === undefined ? undefined : structuredClone(activeBlockDraft);
 
     let blockDraftBaseline =
-    activeBlockDraft === undefined
-    ? undefined
-    : structuredClone(activeBlockDraft);
+        activeBlockDraft === undefined ? undefined : structuredClone(activeBlockDraft);
 
     let validationErrors = [
         {
@@ -49,6 +44,7 @@ export function createEditorStateFake(activeBlockDraft) {
         clearInsertionTarget: 0,
         setEditMode: 0,
         clearEditMode: 0,
+        expandPhase: 0,
         expandBlock: 0,
         collapseBlock: 0,
         collapsePhase: 0,
@@ -65,15 +61,10 @@ export function createEditorStateFake(activeBlockDraft) {
         /** Returns the fake editor-state snapshot. */
         getSnapshot() {
             return {
-                activeBlockDraft:
-                draft === undefined
-                ? undefined
-                : structuredClone(draft),
+                activeBlockDraft: draft === undefined ? undefined : structuredClone(draft),
                 validationErrors: structuredClone(validationErrors),
                 insertionTarget:
-                insertionTarget === undefined
-                ? undefined
-                : structuredClone(insertionTarget),
+                    insertionTarget === undefined ? undefined : structuredClone(insertionTarget),
                 editMode,
                 expandedBlockId,
                 expandedPhaseIds: [...expandedPhaseIds],
@@ -84,17 +75,11 @@ export function createEditorStateFake(activeBlockDraft) {
 
         /** Returns whether the active block draft differs from its baseline. */
         isBlockDraftDirty() {
-            if (
-                draft === undefined ||
-                blockDraftBaseline === undefined
-            ) {
+            if (draft === undefined || blockDraftBaseline === undefined) {
                 return false;
             }
 
-            return !deepEqual(
-                draft,
-                blockDraftBaseline,
-            );
+            return !deepEqual(draft, blockDraftBaseline);
         },
 
         /** Replaces the current validation errors. */
@@ -112,9 +97,7 @@ export function createEditorStateFake(activeBlockDraft) {
         /** Updates the active block draft. */
         updateBlockDraft(updates) {
             if (draft === undefined) {
-                throw new Error(
-                    "Cannot update a missing block draft.",
-                );
+                throw new Error("Cannot update a missing block draft.");
             }
 
             draft = {
@@ -155,7 +138,7 @@ export function createEditorStateFake(activeBlockDraft) {
             calls.openBlockCreateDraft.push({
                 blockId,
                 draft: structuredClone(newDraft),
-                                            insertionTarget: structuredClone(target),
+                insertionTarget: structuredClone(target),
             });
 
             insertionTarget = structuredClone(target);
@@ -204,9 +187,16 @@ export function createEditorStateFake(activeBlockDraft) {
         /** Collapses a phase by ID. */
         collapsePhase(phaseId) {
             calls.collapsePhase++;
-            expandedPhaseIds = expandedPhaseIds.filter(
-                (id) => id !== phaseId,
-            );
+            expandedPhaseIds = expandedPhaseIds.filter((id) => id !== phaseId);
+        },
+
+        /** Expands a phase by ID. */
+        expandPhase(phaseId) {
+            calls.expandPhase++;
+
+            if (!expandedPhaseIds.includes(phaseId)) {
+                expandedPhaseIds.push(phaseId);
+            }
         },
 
         /** Starts editing a phase name. */

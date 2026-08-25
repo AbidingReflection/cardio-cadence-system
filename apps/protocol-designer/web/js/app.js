@@ -72,7 +72,6 @@ async function main() {
         pendingFieldFocus = undefined;
         pendingToggleFocus = undefined;
         pendingPhaseNameFocus = undefined;
-        pendingStructuralFocus = undefined;
 
         const editorSnapshot = editorState.getSnapshot();
 
@@ -107,9 +106,13 @@ async function main() {
         }
 
         if (structuralFocusContext !== undefined) {
-            restoreProtocolStructuralFocus(protocolTree, structuralFocusContext);
+            const restored = restoreProtocolStructuralFocus(protocolTree, structuralFocusContext);
 
-            return;
+            if (restored) {
+                pendingStructuralFocus = undefined;
+
+                return;
+            }
         }
     };
 

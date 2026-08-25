@@ -214,7 +214,7 @@ function movePhaseByKeyboard(
     }
 }
 
-/** Moves the focused block one position in the requested direction. */
+/** Moves the focused block one position in protocol order. */
 function moveBlockByKeyboard(
     event,
     blockElement,
@@ -229,23 +229,51 @@ function moveBlockByKeyboard(
     }
 
     const blockId = blockElement.dataset.blockId;
-
     const protocolSnapshot = protocolModel.getSnapshot();
 
-    const containingPhase = protocolSnapshot.phases.find((phase) =>
+    const sourcePhaseIndex = protocolSnapshot.phases.findIndex((phase) =>
         phase.blocks.some((block) => block.id === blockId),
     );
 
-    if (!containingPhase) {
+    if (sourcePhaseIndex === -1) {
         return;
     }
 
-    const currentIndex = containingPhase.blocks.findIndex((block) => block.id === blockId);
+    const sourcePhase = protocolSnapshot.phases[sourcePhaseIndex];
 
-    const targetIndex = event.key === "ArrowUp" ? currentIndex - 1 : currentIndex + 1;
+    const sourceIndex = sourcePhase.blocks.findIndex((block) => block.id === blockId);
 
-    if (targetIndex < 0 || targetIndex >= containingPhase.blocks.length) {
-        return;
+    let targetPhaseId;
+    let targetIndex;
+
+    if (event.key === "ArrowUp") {
+        if (sourceIndex > 0) {
+            targetPhaseId = sourcePhase.id;
+            targetIndex = sourceIndex - 1;
+        } else {
+            const previousPhase = protocolSnapshot.phases[sourcePhaseIndex - 1];
+
+            if (previousPhase === undefined) {
+                return;
+            }
+
+            targetPhaseId = previousPhase.id;
+            targetIndex = previousPhase.blocks.length;
+        }
+    } else {
+        if (sourceIndex < sourcePhase.blocks.length - 1) {
+            targetPhaseId = sourcePhase.id;
+            targetIndex = sourceIndex + 1;
+        } else {
+            const nextPhase = protocolSnapshot.phases[sourcePhaseIndex + 1];
+
+            if (nextPhase === undefined) {
+                return;
+            }
+
+            targetPhaseId = nextPhase.id;
+            targetIndex = 0;
+        }
     }
 
     event.preventDefault();
@@ -255,7 +283,13 @@ function moveBlockByKeyboard(
         blockId,
     });
 
-    const result = requestMoveBlock(protocolModel, editorState, blockId, targetIndex);
+    const result = requestMoveBlock(
+        protocolModel,
+        editorState,
+        blockId,
+        targetPhaseId,
+        targetIndex,
+    );
 
     if (result.outcome === "blocked") {
         setPendingStructuralFocus(undefined);

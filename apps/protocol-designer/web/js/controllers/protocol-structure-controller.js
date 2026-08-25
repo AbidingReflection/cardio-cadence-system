@@ -84,9 +84,13 @@ export function requestMovePhase(protocolModel, editorState, phaseId, targetInde
 }
 
 /** Requests moving a block while protecting its active dirty draft. */
-export function requestMoveBlock(protocolModel, editorState, blockId, targetIndex) {
+export function requestMoveBlock(protocolModel, editorState, blockId, targetPhaseId, targetIndex) {
     if (typeof blockId !== "string" || blockId.trim() === "") {
         throw new Error("Block move request requires a block ID.");
+    }
+
+    if (typeof targetPhaseId !== "string" || targetPhaseId.trim() === "") {
+        throw new Error("Block move request requires a target phase ID.");
     }
 
     const editorSnapshot = editorState.getSnapshot();
@@ -99,7 +103,9 @@ export function requestMoveBlock(protocolModel, editorState, blockId, targetInde
         }
     }
 
-    protocolModel.moveBlock(blockId, targetIndex);
+    protocolModel.moveBlock(blockId, targetPhaseId, targetIndex);
+
+    editorState.expandPhase(targetPhaseId);
 
     return {
         outcome: "proceed",

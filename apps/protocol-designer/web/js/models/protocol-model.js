@@ -149,31 +149,49 @@ export class ProtocolModel {
         return block.id;
     }
 
-    /** Moves a block within its current phase to its final zero-based index. */
-    moveBlock(blockId, targetIndex) {
-        const phase = this.#protocol.phases.find((candidate) =>
+    /** Moves a block to its final zero-based index in the target phase. */
+    moveBlock(blockId, targetPhaseId, targetIndex) {
+        const sourcePhase = this.#protocol.phases.find((candidate) =>
             candidate.blocks.some((block) => block.id === blockId),
         );
 
-        if (phase === undefined) {
+        if (sourcePhase === undefined) {
             throw new Error(`Unknown block ID: "${blockId}".`);
         }
 
-        const blockIndex = phase.blocks.findIndex((block) => block.id === blockId);
+        const targetPhase = this.#protocol.phases.find(
+            (candidate) => candidate.id === targetPhaseId,
+        );
 
-        const moveIndex = getMoveIndex(targetIndex, phase.blocks.length, "Block");
+        if (targetPhase === undefined) {
+            throw new Error(`Unknown target phase ID: "${targetPhaseId}".`);
+        }
 
-        if (blockIndex === moveIndex) {
+        const sourceIndex = sourcePhase.blocks.findIndex((block) => block.id === blockId);
+
+        const samePhase = sourcePhase.id === targetPhase.id;
+
+        const moveIndex = samePhase
+            ? getMoveIndex(targetIndex, targetPhase.blocks.length, "Block")
+            : getInsertionIndex(targetIndex, targetPhase.blocks.length, "Block");
+
+        if (samePhase && sourceIndex === moveIndex) {
             return;
         }
 
         const nextProtocol = structuredClone(this.#protocol);
 
-        const nextPhase = nextProtocol.phases.find((candidate) => candidate.id === phase.id);
+        const nextSourcePhase = nextProtocol.phases.find(
+            (candidate) => candidate.id === sourcePhase.id,
+        );
 
-        const [block] = nextPhase.blocks.splice(blockIndex, 1);
+        const nextTargetPhase = nextProtocol.phases.find(
+            (candidate) => candidate.id === targetPhase.id,
+        );
 
-        nextPhase.blocks.splice(moveIndex, 0, block);
+        const [block] = nextSourcePhase.blocks.splice(sourceIndex, 1);
+
+        nextTargetPhase.blocks.splice(moveIndex, 0, block);
 
         const normalized = normalizeProtocol(nextProtocol, this.#activityType);
 

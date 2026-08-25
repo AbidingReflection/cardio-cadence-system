@@ -174,7 +174,7 @@ test(
 
         editorState.openBlockDraft("block-1", createEditDraft());
 
-        const result = requestMoveBlock(protocolModel, editorState, "block-2", 0);
+        const result = requestMoveBlock(protocolModel, editorState, "block-2", "phase-1", 0);
 
         assertDeepEqual(result, {
             outcome: "proceed",
@@ -183,6 +183,7 @@ test(
         assertDeepEqual(protocolModel.calls.moveBlock, [
             {
                 blockId: "block-2",
+                targetPhaseId: "phase-1",
                 targetIndex: 0,
             },
         ]);
@@ -200,7 +201,7 @@ test(
 
         editorState.openBlockDraft("block-1", createEditDraft());
 
-        const result = requestMoveBlock(protocolModel, editorState, "block-1", 1);
+        const result = requestMoveBlock(protocolModel, editorState, "block-1", "phase-1", 1);
 
         assertDeepEqual(result, {
             outcome: "proceed",
@@ -209,6 +210,7 @@ test(
         assertDeepEqual(protocolModel.calls.moveBlock, [
             {
                 blockId: "block-1",
+                targetPhaseId: "phase-1",
                 targetIndex: 1,
             },
         ]);
@@ -232,7 +234,7 @@ test(
             name: "Dirty Block",
         });
 
-        const result = requestMoveBlock(protocolModel, editorState, "block-1", 1);
+        const result = requestMoveBlock(protocolModel, editorState, "block-1", "phase-1", 1);
 
         assertDeepEqual(result, {
             outcome: "blocked",
@@ -250,7 +252,7 @@ test("protocol-structure-controller", "move block throws without a block ID", ()
     const editorState = createEditorStateFake();
 
     assertThrows(() => {
-        requestMoveBlock(protocolModel, editorState, undefined, 0);
+        requestMoveBlock(protocolModel, editorState, undefined, "phase-1", 0);
     });
 });
 
