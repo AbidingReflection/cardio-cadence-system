@@ -89,35 +89,21 @@ export function capturePhaseNameFocus(field) {
     const phaseElement = field.closest("[data-phase-id]");
 
     if (phaseElement === null) {
-        throw new Error(
-            "Phase-name field is missing its phase container.",
-        );
+        throw new Error("Phase-name field is missing its phase container.");
     }
 
     return {
         phaseId: phaseElement.dataset.phaseId,
         target: "editor",
-        selectionStart:
-        typeof field.selectionStart === "number"
-        ? field.selectionStart
-        : undefined,
-        selectionEnd:
-        typeof field.selectionEnd === "number"
-        ? field.selectionEnd
-        : undefined,
+        selectionStart: typeof field.selectionStart === "number" ? field.selectionStart : undefined,
+        selectionEnd: typeof field.selectionEnd === "number" ? field.selectionEnd : undefined,
     };
 }
 
 /** Restores focus to a phase-name editor or its edit action after rendering. */
-export function restorePhaseNameFocus(
-    protocolTree,
-    focusContext,
-) {
-    const phaseElement = Array.from(
-        protocolTree.querySelectorAll("[data-phase-id]"),
-    ).find(
-        (element) =>
-        element.dataset.phaseId === focusContext.phaseId,
+export function restorePhaseNameFocus(protocolTree, focusContext) {
+    const phaseElement = Array.from(protocolTree.querySelectorAll("[data-phase-id]")).find(
+        (element) => element.dataset.phaseId === focusContext.phaseId,
     );
 
     if (phaseElement === undefined) {
@@ -125,22 +111,16 @@ export function restorePhaseNameFocus(
     }
 
     if (focusContext.target === "edit-action") {
-        phaseElement
-        .querySelector('[data-action="edit-phase-name"]')
-        ?.focus();
+        phaseElement.querySelector('[data-action="edit-phase-name"]')?.focus();
 
         return;
     }
 
     if (focusContext.target !== "editor") {
-        throw new Error(
-            `Unsupported phase-name focus target: "${focusContext.target}".`,
-        );
+        throw new Error(`Unsupported phase-name focus target: "${focusContext.target}".`);
     }
 
-    const field = phaseElement.querySelector(
-        "[data-phase-name-field]",
-    );
+    const field = phaseElement.querySelector("[data-phase-name-field]");
 
     if (field === null) {
         return;
@@ -153,9 +133,6 @@ export function restorePhaseNameFocus(
         typeof focusContext.selectionEnd === "number" &&
         typeof field.selectionStart === "number"
     ) {
-        field.setSelectionRange(
-            focusContext.selectionStart,
-            focusContext.selectionEnd,
-        );
+        field.setSelectionRange(focusContext.selectionStart, focusContext.selectionEnd);
     }
 }
