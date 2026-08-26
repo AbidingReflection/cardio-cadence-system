@@ -32,12 +32,14 @@ const MACHINE_VARIABLES = {
         min: 0.5,
         max: 10,
         increment: 0.1,
+        progressionTypes: ["steady", "linear", "stepped"],
     },
     incline: {
         controlMode: "machine-set",
         min: 0,
         max: 10,
         increment: 0.5,
+        progressionTypes: ["steady", "linear", "stepped"],
     },
 };
 

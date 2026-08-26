@@ -1,3 +1,5 @@
+import { isProgressionType } from "/packages/protocol-core/progression-types.js";
+
 const VALID_CONTROL_MODES = new Set(["user-produced", "machine-set"]);
 
 /** Represents an immutable, validated machine profile definition. */
@@ -118,6 +120,8 @@ function validateMachineVariable(variable, variableId) {
         );
     }
 
+    validateProgressionTypes(variable.progressionTypes, variableId);
+
     validateOptionalNumber(variable.min, `MachineProfile variable "${variableId}" min`);
     validateOptionalNumber(variable.max, `MachineProfile variable "${variableId}" max`);
     validateOptionalNumber(variable.increment, `MachineProfile variable "${variableId}" increment`);
@@ -130,6 +134,33 @@ function validateMachineVariable(variable, variableId) {
         throw new Error(
             `MachineProfile variable "${variableId}" increment must be greater than zero.`,
         );
+    }
+}
+
+/** Validates the supported progression types for a machine variable. */
+function validateProgressionTypes(progressionTypes, variableId) {
+    if (!Array.isArray(progressionTypes) || progressionTypes.length === 0) {
+        throw new TypeError(
+            `MachineProfile variable "${variableId}" progressionTypes must be a non-empty array.`,
+        );
+    }
+
+    const seenTypes = new Set();
+
+    for (const type of progressionTypes) {
+        if (!isProgressionType(type)) {
+            throw new Error(
+                `MachineProfile variable "${variableId}" has unknown progression type "${type}".`,
+            );
+        }
+
+        if (seenTypes.has(type)) {
+            throw new Error(
+                `MachineProfile variable "${variableId}" has duplicate progression type "${type}".`,
+            );
+        }
+
+        seenTypes.add(type);
     }
 }
 

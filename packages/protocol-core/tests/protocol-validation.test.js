@@ -26,12 +26,14 @@ const MACHINE_VARIABLES = {
         min: 0.5,
         max: 10,
         increment: 0.1,
+        progressionTypes: ["steady", "linear", "stepped"],
     },
     incline: {
         controlMode: "machine-set",
         min: 0,
         max: 10,
         increment: 0.5,
+        progressionTypes: ["steady", "linear", "stepped"],
     },
 };
 
@@ -41,6 +43,32 @@ const MACHINE_PROFILE = {
 
     getVariable(variableId) {
         return MACHINE_VARIABLES[variableId];
+    },
+};
+
+const STEPPED_ONLY_MACHINE_VARIABLES = {
+    speed: {
+        controlMode: "machine-set",
+        min: 0.5,
+        max: 10,
+        increment: 0.1,
+        progressionTypes: ["steady", "stepped"],
+    },
+    incline: {
+        controlMode: "machine-set",
+        min: 0,
+        max: 10,
+        increment: 0.5,
+        progressionTypes: ["steady", "stepped"],
+    },
+};
+
+const STEPPED_ONLY_MACHINE_PROFILE = {
+    id: "test-treadmill",
+    activityTypeId: "treadmill",
+
+    getVariable(variableId) {
+        return STEPPED_ONLY_MACHINE_VARIABLES[variableId];
     },
 };
 
@@ -360,3 +388,49 @@ test("protocol-validation", "rejects mismatched MachineProfile IDs", () => {
         validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
     });
 });
+
+test("protocol-validation", "accepts a progression type supported by MachineProfile", () => {
+    const protocol = createProtocol();
+
+    protocol.phases[0].blocks[0].variables.speed = {
+        type: "stepped",
+        start: 3.5,
+        end: 5,
+        step: 0.5,
+    };
+
+    validateProtocol(protocol, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
+});
+
+test("protocol-validation", "rejects a progression type unsupported by MachineProfile", () => {
+    const protocol = createProtocol();
+
+    protocol.phases[0].blocks[0].variables.speed = {
+        type: "linear",
+        start: 3.5,
+        end: 5,
+    };
+
+    assertThrows(
+        () => validateProtocol(protocol, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE),
+        /not supported by this MachineProfile/,
+    );
+});
+
+test(
+    "protocol-validation",
+    "allows any recognized progression type without a MachineProfile",
+    () => {
+        const protocol = createProtocol();
+
+        delete protocol.machineProfileId;
+
+        protocol.phases[0].blocks[0].variables.speed = {
+            type: "linear",
+            start: 3.5,
+            end: 5,
+        };
+
+        validateProtocol(protocol, ACTIVITY_TYPE);
+    },
+);

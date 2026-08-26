@@ -34,12 +34,14 @@ const VALID_MACHINE_PROFILE = {
     variables: {
         cadence: {
             controlMode: "user-produced",
+            progressionTypes: ["steady", "linear", "stepped"],
         },
         resistance: {
             controlMode: "machine-set",
             min: 1,
             max: 20,
             increment: 1,
+            progressionTypes: ["steady", "stepped"],
         },
     },
 };
@@ -62,6 +64,7 @@ test("machine-profile", "returns a machine variable by ID", () => {
         min: 1,
         max: 20,
         increment: 1,
+        progressionTypes: ["steady", "stepped"],
     });
 });
 
@@ -209,9 +212,11 @@ test("machine-profile", "allows machine-set variables without numeric constraint
         variables: {
             strokeRate: {
                 controlMode: "user-produced",
+                progressionTypes: ["steady", "linear", "stepped"],
             },
             dragFactor: {
                 controlMode: "machine-set",
+                progressionTypes: ["steady", "stepped"],
             },
         },
     };
@@ -220,5 +225,50 @@ test("machine-profile", "allows machine-set variables without numeric constraint
 
     assertDeepEqual(machineProfile.getVariable("dragFactor"), {
         controlMode: "machine-set",
+        progressionTypes: ["steady", "stepped"],
     });
+});
+
+test("machine-profile", "rejects missing progressionTypes", () => {
+    const data = structuredClone(VALID_MACHINE_PROFILE);
+
+    delete data.variables.resistance.progressionTypes;
+
+    assertThrows(
+        () => new MachineProfile(data, ELLIPTICAL_ACTIVITY_TYPE),
+        /progressionTypes must be a non-empty array/,
+    );
+});
+
+test("machine-profile", "rejects empty progressionTypes", () => {
+    const data = structuredClone(VALID_MACHINE_PROFILE);
+
+    data.variables.resistance.progressionTypes = [];
+
+    assertThrows(
+        () => new MachineProfile(data, ELLIPTICAL_ACTIVITY_TYPE),
+        /progressionTypes must be a non-empty array/,
+    );
+});
+
+test("machine-profile", "rejects unknown progression types", () => {
+    const data = structuredClone(VALID_MACHINE_PROFILE);
+
+    data.variables.resistance.progressionTypes = ["steady", "banana"];
+
+    assertThrows(
+        () => new MachineProfile(data, ELLIPTICAL_ACTIVITY_TYPE),
+        /unknown progression type "banana"/,
+    );
+});
+
+test("machine-profile", "rejects duplicate progression types", () => {
+    const data = structuredClone(VALID_MACHINE_PROFILE);
+
+    data.variables.resistance.progressionTypes = ["steady", "stepped", "steady"];
+
+    assertThrows(
+        () => new MachineProfile(data, ELLIPTICAL_ACTIVITY_TYPE),
+        /duplicate progression type "steady"/,
+    );
 });

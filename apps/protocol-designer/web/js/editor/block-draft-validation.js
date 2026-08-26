@@ -129,6 +129,18 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
         return undefined;
     }
 
+    if (machineVariable !== undefined && !machineVariable.progressionTypes.includes(type)) {
+        errors.push(
+            createError(
+                `${baseField}.type`,
+                `${variable.name} does not support ${type} progression on this machine.`,
+                blockId,
+            ),
+        );
+
+        return undefined;
+    }
+
     const definition = getProgressionDefinition(type);
 
     const progression = {

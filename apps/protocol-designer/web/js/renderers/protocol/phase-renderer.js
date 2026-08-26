@@ -23,7 +23,13 @@ export function createPhaseInsertionTarget(index) {
 }
 
 /** Creates a phase card. */
-export function createPhaseElement(phase, phaseIndex, editorSnapshot, activityType) {
+export function createPhaseElement(
+    phase,
+    phaseIndex,
+    editorSnapshot,
+    activityType,
+    machineProfile,
+) {
     const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
 
     const phaseElement = document.createElement("article");
@@ -45,7 +51,7 @@ export function createPhaseElement(phase, phaseIndex, editorSnapshot, activityTy
     phaseElement.append(createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot));
 
     if (isExpanded) {
-        phaseElement.append(createPhaseBody(phase, editorSnapshot, activityType));
+        phaseElement.append(createPhaseBody(phase, editorSnapshot, activityType, machineProfile));
     }
 
     return phaseElement;
@@ -111,7 +117,7 @@ function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot) {
 }
 
 /** Creates the expanded contents of a phase. */
-function createPhaseBody(phase, editorSnapshot, activityType) {
+function createPhaseBody(phase, editorSnapshot, activityType, machineProfile) {
     const body = document.createElement("div");
     body.className = "phase-body";
 
@@ -134,13 +140,20 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
 
     for (let index = 0; index <= phase.blocks.length; index += 1) {
         if (hasCreateDraftInPhase && insertionTarget.index === index) {
-            blocks.append(createNewBlockElement(editorSnapshot, activityType));
+            blocks.append(createNewBlockElement(editorSnapshot, activityType, machineProfile));
         } else if (blockManageActive && !hasActiveCreateDraft) {
             blocks.append(createBlockInsertionTarget(phase.id, index));
         }
 
         if (index < phase.blocks.length) {
-            blocks.append(createBlockElement(phase.blocks[index], editorSnapshot, activityType));
+            blocks.append(
+                createBlockElement(
+                    phase.blocks[index],
+                    editorSnapshot,
+                    activityType,
+                    machineProfile,
+                ),
+            );
         }
     }
 

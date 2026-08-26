@@ -6,7 +6,13 @@
 import { createPhaseElement, createPhaseInsertionTarget } from "./phase-renderer.js";
 
 /** Renders the complete protocol tree. */
-export function renderProtocolTree(container, protocolSnapshot, editorSnapshot, activityType) {
+export function renderProtocolTree(
+    container,
+    protocolSnapshot,
+    editorSnapshot,
+    activityType,
+    machineProfile,
+) {
     container.replaceChildren();
 
     for (let phaseIndex = 0; phaseIndex <= protocolSnapshot.phases.length; phaseIndex += 1) {
@@ -17,7 +23,9 @@ export function renderProtocolTree(container, protocolSnapshot, editorSnapshot, 
         if (phaseIndex < protocolSnapshot.phases.length) {
             const phase = protocolSnapshot.phases[phaseIndex];
 
-            container.append(createPhaseElement(phase, phaseIndex, editorSnapshot, activityType));
+            container.append(
+                createPhaseElement(phase, phaseIndex, editorSnapshot, activityType, machineProfile),
+            );
         }
     }
 }

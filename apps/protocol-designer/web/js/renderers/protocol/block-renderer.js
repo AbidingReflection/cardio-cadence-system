@@ -7,7 +7,7 @@ import { createExpandedBlock } from "./block-editor-renderer.js";
 import { formatDuration } from "../../../../packages/utils/format-duration.js";
 
 /** Creates a block card. */
-export function createBlockElement(block, editorSnapshot, activityType) {
+export function createBlockElement(block, editorSnapshot, activityType, machineProfile) {
     const isExpanded = editorSnapshot.expandedBlockId === block.id;
 
     const blockElement = document.createElement("article");
@@ -23,7 +23,9 @@ export function createBlockElement(block, editorSnapshot, activityType) {
     }
 
     if (isExpanded) {
-        blockElement.append(createExpandedBlock(block, editorSnapshot, activityType));
+        blockElement.append(
+            createExpandedBlock(block, editorSnapshot, activityType, machineProfile),
+        );
     } else {
         blockElement.append(createCollapsedBlock(block, activityType, editorSnapshot));
     }
@@ -32,7 +34,7 @@ export function createBlockElement(block, editorSnapshot, activityType) {
 }
 
 /** Creates the expanded editor for an uncommitted new block. */
-export function createNewBlockElement(editorSnapshot, activityType) {
+export function createNewBlockElement(editorSnapshot, activityType, machineProfile) {
     const draft = editorSnapshot.activeBlockDraft;
     const blockId = editorSnapshot.expandedBlockId;
 
@@ -48,7 +50,7 @@ export function createNewBlockElement(editorSnapshot, activityType) {
     const blockElement = document.createElement("article");
     blockElement.className = "block-card block-card--expanded";
     blockElement.dataset.blockId = block.id;
-    blockElement.append(createExpandedBlock(block, editorSnapshot, activityType));
+    blockElement.append(createExpandedBlock(block, editorSnapshot, activityType, machineProfile));
 
     return blockElement;
 }

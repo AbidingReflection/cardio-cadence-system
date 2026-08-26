@@ -10,13 +10,21 @@
           "controlMode": "machine-set",
           "min": 0.5,
           "max": 10,
-          "increment": 0.1
+          "increment": 0.1,
+          "progressionTypes": [
+            "steady",
+            "stepped"
+          ]
         },
         "incline": {
           "controlMode": "machine-set",
           "min": 0,
           "max": 10,
-          "increment": 0.5
+          "increment": 0.5,
+          "progressionTypes": [
+            "steady",
+            "stepped"
+          ]
         }
       }
     },
@@ -26,13 +34,22 @@
       "activityTypeId": "elliptical",
       "variables": {
         "cadence": {
-          "controlMode": "user-produced"
+          "controlMode": "user-produced",
+          "progressionTypes": [
+            "steady",
+            "linear",
+            "stepped"
+          ]
         },
         "resistance": {
           "controlMode": "machine-set",
           "min": 1,
           "max": 20,
-          "increment": 1
+          "increment": 1,
+          "progressionTypes": [
+            "steady",
+            "stepped"
+          ]
         }
       }
     },
@@ -42,13 +59,22 @@
       "activityTypeId": "stationary-bike",
       "variables": {
         "cadence": {
-          "controlMode": "user-produced"
+          "controlMode": "user-produced",
+          "progressionTypes": [
+            "steady",
+            "linear",
+            "stepped"
+          ]
         },
         "resistance": {
           "controlMode": "machine-set",
           "min": 1,
           "max": 20,
-          "increment": 1
+          "increment": 1,
+          "progressionTypes": [
+            "steady",
+            "stepped"
+          ]
         }
       }
     },
@@ -58,13 +84,22 @@
       "activityTypeId": "stationary-bike",
       "variables": {
         "cadence": {
-          "controlMode": "user-produced"
+          "controlMode": "user-produced",
+          "progressionTypes": [
+            "steady",
+            "linear",
+            "stepped"
+          ]
         },
         "resistance": {
           "controlMode": "machine-set",
           "min": 1,
           "max": 20,
-          "increment": 1
+          "increment": 1,
+          "progressionTypes": [
+            "steady",
+            "stepped"
+          ]
         }
       }
     }

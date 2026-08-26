@@ -106,6 +106,15 @@ function validateProgression(progression, variableId, blockId, machineVariable) 
         throw new Error(`${description} has unknown type "${progression.type}".`);
     }
 
+    if (
+        machineVariable !== undefined &&
+        !machineVariable.progressionTypes.includes(progression.type)
+    ) {
+        throw new Error(
+            `${description} type "${progression.type}" is not supported by this MachineProfile.`,
+        );
+    }
+
     const definition = getProgressionDefinition(progression.type);
 
     for (const field of definition.requiredFields) {

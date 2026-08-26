@@ -30,12 +30,31 @@ const MACHINE_VARIABLES = {
         min: 0.5,
         max: 10,
         increment: 0.1,
+        progressionTypes: ["steady", "linear", "stepped"],
     },
     incline: {
         controlMode: "machine-set",
         min: 0,
         max: 10,
         increment: 0.5,
+        progressionTypes: ["steady", "linear", "stepped"],
+    },
+};
+
+const STEPPED_ONLY_MACHINE_VARIABLES = {
+    speed: {
+        controlMode: "machine-set",
+        min: 0.5,
+        max: 10,
+        increment: 0.1,
+        progressionTypes: ["steady", "stepped"],
+    },
+    incline: {
+        controlMode: "machine-set",
+        min: 0,
+        max: 10,
+        increment: 0.5,
+        progressionTypes: ["steady", "stepped"],
     },
 };
 
@@ -48,6 +67,14 @@ const MACHINE_PROFILE = {
     },
 };
 
+const STEPPED_ONLY_MACHINE_PROFILE = {
+    id: "stepped-only-test-treadmill",
+    activityTypeId: "treadmill",
+
+    getVariable(variableId) {
+        return STEPPED_ONLY_MACHINE_VARIABLES[variableId];
+    },
+};
 /** Creates a valid block draft for use as a test fixture. */
 function createDraft() {
     return {
@@ -367,4 +394,35 @@ test("block-draft-validation", "includes block ID in variable validation errors"
     const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
 
     assertEqual(result.errors[0].entityId, "block-1");
+});
+
+test("block-draft-validation", "accepts a supported machine progression type", () => {
+    const draft = createDraft();
+
+    draft.variables.speed = {
+        type: "stepped",
+        start: "3.5",
+        end: "5",
+        step: "0.5",
+    };
+
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
+
+    assertEqual(result.isValid, true);
+});
+
+test("block-draft-validation", "rejects an unsupported machine progression type", () => {
+    const draft = createDraft();
+
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
+
+    assertEqual(result.isValid, false);
+    assertDeepEqual(result.errors, [
+        {
+            scope: "block",
+            entityId: "block-1",
+            field: "variables.speed.type",
+            message: "Speed does not support linear progression on this machine.",
+        },
+    ]);
 });

@@ -17,7 +17,7 @@ import {
 
 import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
 
-const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-75-minute-session.json";
+const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
 /**
  * Initializes application data, state, rendering, subscriptions, and
@@ -75,7 +75,13 @@ async function main() {
 
         const editorSnapshot = editorState.getSnapshot();
 
-        renderProtocolTree(protocolTree, protocolModel.getSnapshot(), editorSnapshot, activityType);
+        renderProtocolTree(
+            protocolTree,
+            protocolModel.getSnapshot(),
+            editorSnapshot,
+            activityType,
+            machineProfile,
+        );
 
         const phaseEditActive = editorSnapshot.editMode === "phase";
 

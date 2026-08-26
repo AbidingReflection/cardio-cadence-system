@@ -1,10 +1,12 @@
+import { getProgressionTypes } from "/packages/protocol-core/progression-types.js";
+
 /**
  * Renders the expanded block editor, including editable fields, progression
  * controls, validation feedback, and apply/cancel actions.
  */
 
 /** Creates the expanded block editor. */
-export function createExpandedBlock(block, editorSnapshot, activityType) {
+export function createExpandedBlock(block, editorSnapshot, activityType, machineProfile) {
     const draft = editorSnapshot.activeBlockDraft;
 
     if (draft === undefined) {
@@ -24,7 +26,13 @@ export function createExpandedBlock(block, editorSnapshot, activityType) {
     form.id = `${block.id}-editor`;
     form.append(
         createBlockEditorHeader(block, draft),
-        createBlockEditorBody(block, draft, activityType, editorSnapshot.validationErrors),
+        createBlockEditorBody(
+            block,
+            draft,
+            activityType,
+            editorSnapshot.validationErrors,
+            machineProfile,
+        ),
     );
 
     return form;
@@ -67,7 +75,7 @@ function createBlockEditorHeader(block, draft) {
 }
 
 /** Creates the editable block body. */
-function createBlockEditorBody(block, draft, activityType, validationErrors) {
+function createBlockEditorBody(block, draft, activityType, validationErrors, machineProfile) {
     const body = document.createElement("div");
     body.className = "block-editor__body";
 
@@ -79,7 +87,7 @@ function createBlockEditorBody(block, draft, activityType, validationErrors) {
 
     body.append(
         createBlockProperties(block, draft),
-        createVariableEditors(block, draft, activityType),
+        createVariableEditors(block, draft, activityType, machineProfile),
         createBlockFooter(blockErrors),
     );
 
@@ -133,20 +141,22 @@ function createBlockProperties(block, draft) {
 }
 
 /** Creates editors for all ActivityType variables. */
-function createVariableEditors(block, draft, activityType) {
+function createVariableEditors(block, draft, activityType, machineProfile) {
     const variables = document.createElement("div");
 
     variables.className = "block-editor__variables";
 
     for (const variable of activityType.variables) {
-        variables.append(createVariableEditor(block, draft, variable));
+        const machineVariable = machineProfile?.getVariable(variable.id);
+
+        variables.append(createVariableEditor(block, draft, variable, machineVariable));
     }
 
     return variables;
 }
 
 /** Creates one variable editor fieldset. */
-function createVariableEditor(block, draft, variable) {
+function createVariableEditor(block, draft, variable, machineVariable) {
     const progression = draft.variables[variable.id];
 
     const fieldset = document.createElement("fieldset");
@@ -164,8 +174,11 @@ function createVariableEditor(block, draft, variable) {
 
     const fields = document.createElement("div");
     fields.className = "variable-editor__fields";
+
+    const progressionTypes = machineVariable?.progressionTypes ?? getProgressionTypes();
+
     fields.append(
-        createProgressionTypeField(block, variable, progression),
+        createProgressionTypeField(block, variable, progression, progressionTypes),
         createVariableValueField(block, variable, progression, "start", "Start"),
     );
 
@@ -183,7 +196,7 @@ function createVariableEditor(block, draft, variable) {
 }
 
 /** Creates a progression-type selector. */
-function createProgressionTypeField(block, variable, progression) {
+function createProgressionTypeField(block, variable, progression, progressionTypes) {
     const field = document.createElement("div");
     field.className = "block-editor__field";
 
@@ -198,7 +211,7 @@ function createProgressionTypeField(block, variable, progression) {
     select.name = `${variable.id}-type`;
     select.dataset.field = `variables.${variable.id}.type`;
 
-    for (const type of ["steady", "linear", "stepped"]) {
+    for (const type of progressionTypes) {
         const option = document.createElement("option");
         option.value = type;
         option.textContent = type[0].toUpperCase() + type.slice(1);
