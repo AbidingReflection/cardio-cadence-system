@@ -718,10 +718,7 @@ test("editor-state", "sets a phase insertion target", () => {
 
     state.setInsertionTarget(insertion);
 
-    assertDeepEqual(
-        state.getSnapshot().insertionTarget,
-        insertion,
-    );
+    assertDeepEqual(state.getSnapshot().insertionTarget, insertion);
 });
 
 test("editor-state", "sets a block insertion target", () => {
@@ -735,10 +732,7 @@ test("editor-state", "sets a block insertion target", () => {
 
     state.setInsertionTarget(insertion);
 
-    assertDeepEqual(
-        state.getSnapshot().insertionTarget,
-        insertion,
-    );
+    assertDeepEqual(state.getSnapshot().insertionTarget, insertion);
 });
 
 test("editor-state", "isolates insertion target from source data", () => {
@@ -754,10 +748,7 @@ test("editor-state", "isolates insertion target from source data", () => {
 
     insertion.index = 99;
 
-    assertEqual(
-        state.getSnapshot().insertionTarget.index,
-                2,
-    );
+    assertEqual(state.getSnapshot().insertionTarget.index, 2);
 });
 
 test("editor-state", "returns independent insertion target snapshots", () => {
@@ -773,10 +764,7 @@ test("editor-state", "returns independent insertion target snapshots", () => {
 
     snapshot.insertionTarget.index = 99;
 
-    assertEqual(
-        state.getSnapshot().insertionTarget.index,
-                2,
-    );
+    assertEqual(state.getSnapshot().insertionTarget.index, 2);
 });
 
 test("editor-state", "emits when pending insertion changes", () => {
@@ -883,10 +871,7 @@ test("editor-state", "updates the active phase-name draft", () => {
     state.startPhaseNameEdit("phase-1", "Warm-up");
     state.updatePhaseNameDraft("Extended Warm-up");
 
-    assertEqual(
-        state.getSnapshot().phaseNameDraft,
-                "Extended Warm-up",
-    );
+    assertEqual(state.getSnapshot().phaseNameDraft, "Extended Warm-up");
 });
 
 test("editor-state", "closes phase-name editing", () => {
@@ -901,27 +886,20 @@ test("editor-state", "closes phase-name editing", () => {
     assertEqual(snapshot.phaseNameDraft, undefined);
 });
 
-test(
-    "editor-state",
-     "rejects phase-name updates without an active edit",
-     () => {
-         const state = new EditorState();
+test("editor-state", "rejects phase-name updates without an active edit", () => {
+    const state = new EditorState();
 
-         assertThrows(() => {
-             state.updatePhaseNameDraft("Warm-up");
-         });
-     },
-);
+    assertThrows(() => {
+        state.updatePhaseNameDraft("Warm-up");
+    });
+});
 
 test("editor-state", "sets block edit mode", () => {
     const state = new EditorState();
 
     state.setEditMode("block");
 
-    assertEqual(
-        state.getSnapshot().editMode,
-                "block",
-    );
+    assertEqual(state.getSnapshot().editMode, "block");
 });
 
 test("editor-state", "sets phase edit mode", () => {
@@ -929,10 +907,7 @@ test("editor-state", "sets phase edit mode", () => {
 
     state.setEditMode("phase");
 
-    assertEqual(
-        state.getSnapshot().editMode,
-                "phase",
-    );
+    assertEqual(state.getSnapshot().editMode, "phase");
 });
 
 test("editor-state", "clears edit mode", () => {
@@ -941,10 +916,7 @@ test("editor-state", "clears edit mode", () => {
     state.setEditMode("block");
     state.clearEditMode();
 
-    assertEqual(
-        state.getSnapshot().editMode,
-                undefined,
-    );
+    assertEqual(state.getSnapshot().editMode, undefined);
 });
 
 test("editor-state", "rejects unsupported edit modes", () => {
@@ -979,38 +951,19 @@ test("editor-state", "opens a block create draft atomically without clearing edi
         index: 2,
     };
 
-    state.openBlockCreateDraft(
-        "__new-block-draft__",
-        draft,
-        insertionTarget,
-    );
+    state.openBlockCreateDraft("__new-block-draft__", draft, insertionTarget);
 
     const snapshot = state.getSnapshot();
 
-    assertEqual(
-        snapshot.editMode,
-        "block",
-    );
+    assertEqual(snapshot.editMode, "block");
 
-    assertDeepEqual(
-        snapshot.insertionTarget,
-        insertionTarget,
-    );
+    assertDeepEqual(snapshot.insertionTarget, insertionTarget);
 
-    assertEqual(
-        snapshot.expandedBlockId,
-        "__new-block-draft__",
-    );
+    assertEqual(snapshot.expandedBlockId, "__new-block-draft__");
 
-    assertDeepEqual(
-        snapshot.activeBlockDraft,
-        draft,
-    );
+    assertDeepEqual(snapshot.activeBlockDraft, draft);
 
-    assertDeepEqual(
-        snapshot.validationErrors,
-        [],
-    );
+    assertDeepEqual(snapshot.validationErrors, []);
 });
 
 test("editor-state", "isolates block create draft inputs from source data", () => {
@@ -1035,11 +988,7 @@ test("editor-state", "isolates block create draft inputs from source data", () =
         index: 2,
     };
 
-    state.openBlockCreateDraft(
-        "__new-block-draft__",
-        draft,
-        insertionTarget,
-    );
+    state.openBlockCreateDraft("__new-block-draft__", draft, insertionTarget);
 
     draft.name = "Mutated";
     draft.variables.speed.start = "99";
@@ -1047,20 +996,11 @@ test("editor-state", "isolates block create draft inputs from source data", () =
 
     const snapshot = state.getSnapshot();
 
-    assertEqual(
-        snapshot.activeBlockDraft.name,
-        "",
-    );
+    assertEqual(snapshot.activeBlockDraft.name, "");
 
-    assertEqual(
-        snapshot.activeBlockDraft.variables.speed.start,
-        "",
-    );
+    assertEqual(snapshot.activeBlockDraft.variables.speed.start, "");
 
-    assertEqual(
-        snapshot.insertionTarget.index,
-        2,
-    );
+    assertEqual(snapshot.insertionTarget.index, 2);
 });
 
 test("editor-state", "opening a block create draft emits once", () => {
@@ -1090,8 +1030,5 @@ test("editor-state", "opening a block create draft emits once", () => {
         },
     );
 
-    assertEqual(
-        emitCount,
-        1,
-    );
+    assertEqual(emitCount, 1);
 });

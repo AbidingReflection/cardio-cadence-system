@@ -28,16 +28,16 @@ export class EditorState {
             phaseNameDraft: this.#phaseNameDraft,
 
             activeBlockDraft:
-            this.#activeBlockDraft === undefined
-            ? undefined
-            : structuredClone(this.#activeBlockDraft),
+                this.#activeBlockDraft === undefined
+                    ? undefined
+                    : structuredClone(this.#activeBlockDraft),
 
             validationErrors: structuredClone(this.#validationErrors),
 
             insertionTarget:
                 this.#insertionTarget === undefined
-                ? undefined
-                : structuredClone(this.#insertionTarget),
+                    ? undefined
+                    : structuredClone(this.#insertionTarget),
 
             editMode: this.#editMode,
         };
@@ -113,9 +113,7 @@ export class EditorState {
     /** Updates the active phase-name draft. */
     updatePhaseNameDraft(name) {
         if (this.#editingPhaseId === undefined) {
-            throw new Error(
-                "Cannot update phase name because no phase-name edit is active.",
-            );
+            throw new Error("Cannot update phase name because no phase-name edit is active.");
         }
 
         if (this.#phaseNameDraft === name) {
@@ -224,14 +222,8 @@ export class EditorState {
 
     /** Sets the active structural edit mode. */
     setEditMode(mode) {
-        if (
-            mode !== undefined &&
-            mode !== "phase" &&
-            mode !== "block"
-        ) {
-            throw new Error(
-                `Unsupported edit mode: "${mode}".`,
-            );
+        if (mode !== undefined && mode !== "phase" && mode !== "block") {
+            throw new Error(`Unsupported edit mode: "${mode}".`);
         }
 
         if (this.#editMode === mode) {
