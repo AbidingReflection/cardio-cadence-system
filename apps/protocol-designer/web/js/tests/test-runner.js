@@ -7,6 +7,8 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+
+await import("/packages/protocol-core/tests/stepped-targets.test.js");
 await import("./suites/protocol-structure-controller.test.js");
 await import("./suites/block-editor-controller.test.js");
 await import("./suites/block-draft-validation.test.js");
