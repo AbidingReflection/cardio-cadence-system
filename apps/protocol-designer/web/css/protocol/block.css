@@ -253,6 +253,16 @@
     transform: translateY(-1px);
 }
 
+.block-card[draggable="true"] {
+    cursor: grab;
+}
+
+.block-card.is-dragging {
+    opacity: 0.55;
+    cursor: grabbing;
+    transform: none;
+}
+
 .block-summary {
     align-items: center;
 
@@ -319,6 +329,13 @@
 
 .block-insertion-target:active {
     transform: translateY(1px);
+}
+
+.block-insertion-target.is-drop-target {
+    border-color: var(--color-accent);
+    background: var(--color-block-background);
+    color: var(--color-text);
+    transform: translateY(-1px);
 }
 
 

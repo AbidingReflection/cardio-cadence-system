@@ -10,9 +10,11 @@ import { formatDuration } from "../../../../../packages/utils/format-duration.js
 /** Creates a selectable insertion target between phases. */
 export function createPhaseInsertionTarget(index) {
     const target = document.createElement("button");
+
     target.type = "button";
     target.className = "phase-insertion-target";
     target.dataset.action = "insert-phase";
+    target.dataset.dropTarget = "phase";
     target.dataset.insertionIndex = String(index);
     target.setAttribute("aria-label", `Insert phase at position ${index + 1}`);
     target.textContent = "+ Add phase here";
@@ -32,8 +34,12 @@ export function createPhaseElement(phase, phaseIndex, editorSnapshot, activityTy
 
     if (editorSnapshot.editMode === "phase") {
         phaseElement.dataset.structuralItem = "phase";
-
         phaseElement.tabIndex = 0;
+        phaseElement.draggable = true;
+    }
+
+    if (editorSnapshot.editMode === "block" && !isExpanded) {
+        phaseElement.dataset.blockDropPhaseId = phase.id;
     }
 
     phaseElement.append(createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot));
@@ -147,9 +153,11 @@ function createPhaseBody(phase, editorSnapshot, activityType) {
 /** Creates a selectable insertion target between blocks. */
 function createBlockInsertionTarget(phaseId, index) {
     const target = document.createElement("button");
+
     target.type = "button";
     target.className = "block-insertion-target";
     target.dataset.action = "insert-block";
+    target.dataset.dropTarget = "block";
     target.dataset.phaseId = phaseId;
     target.dataset.insertionIndex = String(index);
     target.setAttribute("aria-label", `Insert block at position ${index + 1}`);

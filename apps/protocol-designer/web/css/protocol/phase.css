@@ -19,6 +19,24 @@
     border-color: var(--color-accent);
 }
 
+.phase-card[draggable="true"] {
+    cursor: grab;
+}
+
+.phase-card.is-dragging {
+    opacity: 0.55;
+    cursor: grabbing;
+}
+
+.phase-card[data-block-drop-phase-id] {
+    cursor: pointer;
+}
+
+.phase-card[data-block-drop-phase-id].is-drop-target {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent);
+}
+
 .phase-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -74,6 +92,13 @@
 
 .phase-insertion-target:active {
     transform: translateY(1px);
+}
+
+.phase-insertion-target.is-drop-target {
+    border-color: var(--color-accent);
+    background: var(--color-phase-background);
+    color: var(--color-text);
+    transform: translateY(-1px);
 }
 
 /* --------------------------------------------------------------------------

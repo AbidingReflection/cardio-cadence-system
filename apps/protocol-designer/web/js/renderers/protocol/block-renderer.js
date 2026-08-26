@@ -18,8 +18,8 @@ export function createBlockElement(block, editorSnapshot, activityType) {
 
     if (editorSnapshot.editMode === "block") {
         blockElement.dataset.structuralItem = "block";
-
         blockElement.tabIndex = 0;
+        blockElement.draggable = true;
     }
 
     if (isExpanded) {
