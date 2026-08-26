@@ -349,6 +349,11 @@
     box-shadow: 0 0 0 2px rgb(41 121 255 / 16%);
 }
 
+.phase-card[data-structural-item="phase"]:focus,
+.block-card[data-structural-item="block"]:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
 
 
 /* ============================================================

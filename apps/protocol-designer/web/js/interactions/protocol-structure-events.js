@@ -24,6 +24,16 @@ export function wireProtocolStructureEvents({
     let dragContext;
 
     protocolTree.addEventListener("click", (event) => {
+        const structuralItem = event.target.closest("[data-structural-item]");
+
+        if (structuralItem !== null) {
+            const interactiveElement = event.target.closest("button, input, select, textarea, a");
+
+            if (interactiveElement === null) {
+                structuralItem.focus();
+            }
+        }
+
         const actionElement = event.target.closest("[data-action]");
 
         if (actionElement === null) {
