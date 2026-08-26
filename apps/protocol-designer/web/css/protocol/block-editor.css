@@ -19,7 +19,7 @@
 
 
 /* ============================================================
- *  Expanded Block Top Row
+ *  Expanded Block Header
  *  ============================================================ */
 
 .block-row--editing {
@@ -51,11 +51,6 @@
 
 .block-name-editor__label {
     white-space: nowrap;
-}
-
-.block-name-editor__input {
-    width: 100%;
-    min-width: 0;
 }
 
 
@@ -128,7 +123,7 @@
 
 
 /* ============================================================
- *  Block Editor Fields
+ *  Editor Fields
  *  ============================================================ */
 
 .block-editor__field {
@@ -138,14 +133,80 @@
     gap: 12px;
 }
 
+.block-name-editor__label,
+.block-editor__field label {
+    color: var(--color-text);
+
+    font-weight: 600;
+}
+
 .block-editor__field label {
     white-space: nowrap;
 }
 
+
+/* ============================================================
+ *  Editor Controls
+ *  ============================================================ */
+
+.block-name-editor__input,
 .block-editor__field input,
 .block-editor__field select {
     width: 100%;
     min-width: 0;
+    height: 34px;
+    padding: 6px 10px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+
+    background: rgb(255 255 255 / 80%);
+    color: var(--color-text);
+
+    font: inherit;
+    font-size: 0.82rem;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.block-name-editor__input:hover,
+.block-editor__field input:hover,
+.block-editor__field select:hover {
+    border-color: var(--color-accent);
+
+    background: rgb(255 255 255 / 95%);
+}
+
+.block-name-editor__input:focus,
+.block-editor__field input:focus,
+.block-editor__field select:focus {
+    border-color: var(--color-accent);
+    outline: none;
+
+    background: #fff;
+    box-shadow: 0 0 0 2px rgb(0 0 0 / 8%);
+}
+
+.block-editor__field select {
+    appearance: none;
+
+    padding-right: 30px;
+
+    background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+    background-position:
+    calc(100% - 15px) 14px,
+    calc(100% - 10px) 14px;
+    background-size:
+    5px 5px,
+    5px 5px;
+    background-repeat: no-repeat;
+
+    cursor: pointer;
 }
 
 
@@ -167,7 +228,7 @@
 
 
 /* ============================================================
- *  Block Editor Feedback
+ *  Validation Feedback
  *  ============================================================ */
 
 .block-editor__feedback {
@@ -200,9 +261,15 @@
     text-decoration: underline;
 }
 
+.block-name-editor__input,
+.block-editor__control--invalid {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+}
+
 
 /* ============================================================
- *  Block Editor Actions
+ *  Editor Actions
  *  ============================================================ */
 
 .block-editor__action-area {
@@ -215,14 +282,51 @@
     gap: 8px;
 }
 
+.block-editor__cancel,
+.block-editor__apply {
+    min-width: 72px;
+    height: 34px;
+    padding: 6px 14px;
 
-/* ============================================================
- *  Block Editor Validation
- *  ============================================================ */
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
 
-.block-editor__control--invalid {
-    outline: 2px solid currentColor;
-    outline-offset: 1px;
+    background: rgb(255 255 255 / 75%);
+    color: var(--color-text);
+
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.block-editor__cancel:hover,
+.block-editor__apply:hover {
+    border-color: var(--color-accent);
+
+    background: rgb(255 255 255 / 95%);
+}
+
+.block-editor__cancel:focus-visible,
+.block-editor__apply:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.block-editor__cancel:active,
+.block-editor__apply:active {
+    transform: translateY(1px);
+}
+
+.block-editor__apply {
+    border-color: var(--color-accent);
 }
 
 
