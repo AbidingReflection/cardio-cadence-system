@@ -4,7 +4,7 @@
 
 import { wireProtocolBlockEvents } from "./protocol-block-events.js";
 import { wireProtocolPhaseEvents } from "./protocol-phase-events.js";
-import { wireProtocolStructureEvents } from "./protocol-structure-events.js";
+import { wireProtocolStructureEvents } from "./structure/events.js";
 
 /** Registers all delegated protocol-tree interactions. */
 export function wireProtocolTreeEvents({
