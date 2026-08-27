@@ -1,8 +1,8 @@
 {
     "schemaVersion": 1,
     "protocol": {
-        "id": "true-elliptical-75-minute-session",
-        "name": "True Elliptical 75-Minute Session",
+        "id": "true-elliptical-80-minute-session",
+        "name": "True Elliptical 80-Minute Session",
         "activityTypeId": "elliptical",
         "machineProfileId": "true-elliptical-aquatic-center",
         "phases": [
