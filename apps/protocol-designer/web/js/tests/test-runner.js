@@ -7,7 +7,8 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
-
+await import("/packages/protocol-core/tests/progression-mapping.test.js");
+await import("/packages/protocol-expander/tests/protocol-expander.test.js");
 await import("/packages/protocol-core/tests/stepped-targets.test.js");
 await import("./suites/protocol-structure-controller.test.js");
 await import("./suites/block-editor-controller.test.js");
