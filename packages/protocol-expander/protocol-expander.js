@@ -127,6 +127,56 @@ export class ProtocolExpander {
         return boundaries;
     }
 
+    /** Returns the next structural or progression boundary after an absolute workout time. */
+    nextBoundaryAfter(variableId, timeMs) {
+        ProtocolExpander.#validateTime(timeMs);
+
+        if (timeMs >= this.#durationMs) {
+            return undefined;
+        }
+
+        for (const { block, range } of this.#orderedBlocks) {
+            if (range.endTimeMs <= timeMs) {
+                continue;
+            }
+
+            const progression = block.variables[variableId];
+
+            if (progression === undefined) {
+                continue;
+            }
+
+            if (
+                range.startTimeMs > timeMs &&
+                range.startTimeMs > 0
+            ) {
+                return range.startTimeMs;
+            }
+
+            const mapping = createProgressionMapping(progression);
+            const blockDurationMs = range.endTimeMs - range.startTimeMs;
+
+            for (const fraction of mapping.getBoundaryFractions()) {
+                const boundaryTimeMs =
+                range.startTimeMs +
+                fraction * blockDurationMs;
+
+                if (boundaryTimeMs > timeMs) {
+                    return boundaryTimeMs;
+                }
+            }
+
+            if (
+                range.endTimeMs > timeMs &&
+                range.endTimeMs < this.#durationMs
+            ) {
+                return range.endTimeMs;
+            }
+        }
+
+        return undefined;
+    }
+
     /** Returns the block that owns an absolute workout time. */
     #findBlockAtTime(timeMs) {
         if (timeMs < 0 || timeMs >= this.#durationMs) {

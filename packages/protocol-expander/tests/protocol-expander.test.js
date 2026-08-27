@@ -524,3 +524,81 @@ test("protocol-expander", "rejects invalid boundary query time values", () => {
         /finite number/,
     );
 });
+
+test("protocol-expander", "returns the next progression boundary after a time", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", 110_000),
+                    125_000,
+    );
+});
+
+test("protocol-expander", "returns the next block boundary after a time", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", 90_000),
+                    100_000,
+    );
+});
+
+test("protocol-expander", "skips a boundary at the exact requested time", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", 125_000),
+                    150_000,
+    );
+});
+
+test("protocol-expander", "returns the first boundary after a negative time", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", -1),
+                    100_000,
+    );
+});
+
+test("protocol-expander", "returns undefined when no later boundary exists", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", 200_000),
+                    undefined,
+    );
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("cadence", expander.durationMs),
+                    undefined,
+    );
+});
+
+test("protocol-expander", "returns undefined for an unknown variable boundary", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertDeepEqual(
+        expander.nextBoundaryAfter("missing-variable", 0),
+                    undefined,
+    );
+});
+
+test("protocol-expander", "rejects invalid next-boundary time values", () => {
+    const expander = new ProtocolExpander(createBoundaryProtocol());
+
+    assertThrows(
+        () => expander.nextBoundaryAfter("cadence", "1000"),
+                 /finite number/,
+    );
+
+    assertThrows(
+        () => expander.nextBoundaryAfter("cadence", NaN),
+                 /finite number/,
+    );
+
+    assertThrows(
+        () => expander.nextBoundaryAfter("cadence", Infinity),
+                 /finite number/,
+    );
+});
