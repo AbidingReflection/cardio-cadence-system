@@ -19,6 +19,8 @@ import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
+import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
+
 /**
  * Initializes application data, state, rendering, subscriptions, and
  * protocol-tree interactions.
@@ -46,6 +48,7 @@ async function main() {
     const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
 
     window.protocolModel = protocolModel;
+    await loadGraphSvgs();
 
     const editorState = new EditorState();
 

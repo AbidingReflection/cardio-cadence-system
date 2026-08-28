@@ -80,28 +80,48 @@
                     ></div>
                 </div>
             </section>
+<style>
+.graph-pane__content {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+}
 
-            <div class="graph-stack">
-                <section class="pane graph-pane graph-pane--cumulative-calories">
-                    <header class="pane__header">
-                        Cumulative Calorie Graph
-                    </header>
+.graph-pane__content svg {
+    position: absolute;
+    inset: 0;
 
-                    <div class="pane__content" id="cumulative-graph">
-                        <p>Cumulative SVG Graph will go here.</p>
-                    </div>
-                </section>
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+</style>
 
-                <section class="pane graph-pane graph-pane--instantaneous-calories">
-                    <header class="pane__header">
-                        Instantaneous Calorie Graph
-                    </header>
+<div class="graph-stack">
+    <section class="pane graph-pane graph-pane--cadence">
+        <header class="pane__header">
+            Cadence
+        </header>
 
-                    <div class="pane__content" id="instantaneous-graph">
-                        <p>Instantaneous SVG Graph will go here.</p>
-                    </div>
-                </section>
-            </div>
+        <div
+            class="pane__content graph-pane__content"
+            id="cadence-graph"
+            data-svg-src="/protocol-designer/assets/graphs/dev-80-minute-cadence.svg"
+        ></div>
+    </section>
+
+    <section class="pane graph-pane graph-pane--load">
+        <header class="pane__header">
+            Load
+        </header>
+
+        <div
+            class="pane__content graph-pane__content"
+            id="load-graph"
+            data-svg-src="/protocol-designer/assets/graphs/dev-80-minute-load.svg"
+        ></div>
+    </section>
+</div>
         </section>
     </main>
 
