@@ -207,3 +207,88 @@ test("progression-mapping", "rejects an unknown progression type", () => {
         /Unknown progression type/,
     );
 });
+
+test("progression-mapping", "returns steady values immediately before normalized fractions", () => {
+    const mapping = createProgressionMapping({
+        type: "steady",
+        start: 60,
+    });
+
+    assertDeepEqual(mapping.valueBeforeFraction(0.5), 60);
+    assertDeepEqual(mapping.valueBeforeFraction(1), 60);
+});
+
+test("progression-mapping", "returns linear values immediately before normalized fractions", () => {
+    const mapping = createProgressionMapping({
+        type: "linear",
+        start: 40,
+        end: 60,
+    });
+
+    assertDeepEqual(mapping.valueBeforeFraction(0.5), 50);
+    assertDeepEqual(mapping.valueBeforeFraction(1), 60);
+});
+
+test("progression-mapping", "uses exact left-side ownership at stepped boundaries", () => {
+    const mapping = createProgressionMapping({
+        type: "stepped",
+        start: 40,
+        end: 55,
+        step: 5,
+    });
+
+    const [firstBoundary, secondBoundary, thirdBoundary] = mapping.getBoundaryFractions();
+
+    assertDeepEqual(mapping.valueBeforeFraction(firstBoundary), 40);
+    assertDeepEqual(mapping.valueAtFraction(firstBoundary), 45);
+
+    assertDeepEqual(mapping.valueBeforeFraction(secondBoundary), 45);
+    assertDeepEqual(mapping.valueAtFraction(secondBoundary), 50);
+
+    assertDeepEqual(mapping.valueBeforeFraction(thirdBoundary), 50);
+    assertDeepEqual(mapping.valueAtFraction(thirdBoundary), 55);
+});
+
+test(
+    "progression-mapping",
+    "returns the final stepped target immediately before fraction one",
+    () => {
+        const mapping = createProgressionMapping({
+            type: "stepped",
+            start: 40,
+            end: 55,
+            step: 5,
+        });
+
+        assertDeepEqual(mapping.valueBeforeFraction(1), 55);
+    },
+);
+
+test(
+    "progression-mapping",
+    "returns undefined for value-before fractions outside the left-open normalized range",
+    () => {
+        const mapping = createProgressionMapping({
+            type: "linear",
+            start: 40,
+            end: 60,
+        });
+
+        assertDeepEqual(mapping.valueBeforeFraction(-0.1), undefined);
+        assertDeepEqual(mapping.valueBeforeFraction(0), undefined);
+        assertDeepEqual(mapping.valueBeforeFraction(1.1), undefined);
+    },
+);
+
+test("progression-mapping", "rejects invalid value-before fraction values", () => {
+    const mapping = createProgressionMapping({
+        type: "steady",
+        start: 60,
+    });
+
+    assertThrows(() => mapping.valueBeforeFraction("0.5"), /finite number/);
+
+    assertThrows(() => mapping.valueBeforeFraction(NaN), /finite number/);
+
+    assertThrows(() => mapping.valueBeforeFraction(Infinity), /finite number/);
+});

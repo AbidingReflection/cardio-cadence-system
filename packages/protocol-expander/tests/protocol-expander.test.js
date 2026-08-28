@@ -128,6 +128,51 @@ function createBoundaryProtocol() {
     };
 }
 
+/** Creates a protocol fixture for left-side value and ordered-range tests. */
+function createValueBeforeProtocol() {
+    return {
+        phases: [
+            {
+                id: "phase-1",
+                blocks: [
+                    {
+                        id: "block-1",
+                        durationSeconds: 12,
+                        variables: {
+                            cadence: {
+                                type: "stepped",
+                                start: 40,
+                                end: 50,
+                                step: 5,
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                id: "phase-empty",
+                blocks: [],
+            },
+            {
+                id: "phase-2",
+                blocks: [
+                    {
+                        id: "block-2",
+                        durationSeconds: 8,
+                        variables: {
+                            cadence: {
+                                type: "linear",
+                                start: 60,
+                                end: 70,
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
 test("protocol-expander", "computes total protocol duration", () => {
     const expander = new ProtocolExpander(createProtocol());
 
@@ -364,13 +409,7 @@ test("protocol-expander", "returns structural and progression boundaries", () =>
 
     assertDeepEqual(
         expander.boundariesBetween("cadence", 0, 300_000),
-                    [
-                        100_000,
-                    125_000,
-                    150_000,
-                    175_000,
-                    200_000,
-                    ],
+        [100_000, 125_000, 150_000, 175_000, 200_000],
     );
 });
 
@@ -379,24 +418,14 @@ test("protocol-expander", "does not include arbitrary query endpoints as boundar
 
     assertDeepEqual(
         expander.boundariesBetween("cadence", 110_000, 190_000),
-                    [
-                        125_000,
-                    150_000,
-                    175_000,
-                    ],
+        [125_000, 150_000, 175_000],
     );
 });
 
 test("protocol-expander", "uses half-open range semantics for boundary queries", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 125_000, 175_000),
-                    [
-                        125_000,
-                    150_000,
-                    ],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 125_000, 175_000), [125_000, 150_000]);
 });
 
 test("protocol-expander", "includes block boundaries even when mappings are continuous", () => {
@@ -430,63 +459,40 @@ test("protocol-expander", "includes block boundaries even when mappings are cont
         ],
     });
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 0, 200_000),
-                    [100_000],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 0, 200_000), [100_000]);
 });
 
 test("protocol-expander", "returns no internal boundaries for steady and linear mappings", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 0, 100_000),
-                    [],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 0, 100_000), []);
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 200_001, 300_000),
-                    [],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 200_001, 300_000), []);
 });
 
 test("protocol-expander", "returns an empty boundary list for an unknown variable", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.boundariesBetween("missing-variable", 0, 300_000),
-                    [],
-    );
+    assertDeepEqual(expander.boundariesBetween("missing-variable", 0, 300_000), []);
 });
 
 test("protocol-expander", "returns an empty boundary list for an empty interval", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 150_000, 150_000),
-                    [],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 150_000, 150_000), []);
 });
 
 test("protocol-expander", "returns an empty boundary list when no boundaries intersect", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.boundariesBetween("cadence", 10_000, 20_000),
-                    [],
-    );
+    assertDeepEqual(expander.boundariesBetween("cadence", 10_000, 20_000), []);
 });
 
 test("protocol-expander", "rejects reversed boundary query ranges", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
     assertThrows(
-        () =>
-        expander.boundariesBetween(
-            "cadence",
-            200_000,
-            100_000,
-        ),
+        () => expander.boundariesBetween("cadence", 200_000, 100_000),
         /must not be greater/,
     );
 });
@@ -494,111 +500,239 @@ test("protocol-expander", "rejects reversed boundary query ranges", () => {
 test("protocol-expander", "rejects invalid boundary query time values", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertThrows(
-        () =>
-        expander.boundariesBetween(
-            "cadence",
-            "0",
-            100_000,
-        ),
-        /finite number/,
-    );
+    assertThrows(() => expander.boundariesBetween("cadence", "0", 100_000), /finite number/);
 
-    assertThrows(
-        () =>
-        expander.boundariesBetween(
-            "cadence",
-            0,
-            NaN,
-        ),
-        /finite number/,
-    );
+    assertThrows(() => expander.boundariesBetween("cadence", 0, NaN), /finite number/);
 
-    assertThrows(
-        () =>
-        expander.boundariesBetween(
-            "cadence",
-            0,
-            Infinity,
-        ),
-        /finite number/,
-    );
+    assertThrows(() => expander.boundariesBetween("cadence", 0, Infinity), /finite number/);
 });
 
 test("protocol-expander", "returns the next progression boundary after a time", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", 110_000),
-                    125_000,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", 110_000), 125_000);
 });
 
 test("protocol-expander", "returns the next block boundary after a time", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", 90_000),
-                    100_000,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", 90_000), 100_000);
 });
 
 test("protocol-expander", "skips a boundary at the exact requested time", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", 125_000),
-                    150_000,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", 125_000), 150_000);
 });
 
 test("protocol-expander", "returns the first boundary after a negative time", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", -1),
-                    100_000,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", -1), 100_000);
 });
 
 test("protocol-expander", "returns undefined when no later boundary exists", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", 200_000),
-                    undefined,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", 200_000), undefined);
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("cadence", expander.durationMs),
-                    undefined,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("cadence", expander.durationMs), undefined);
 });
 
 test("protocol-expander", "returns undefined for an unknown variable boundary", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertDeepEqual(
-        expander.nextBoundaryAfter("missing-variable", 0),
-                    undefined,
-    );
+    assertDeepEqual(expander.nextBoundaryAfter("missing-variable", 0), undefined);
 });
 
 test("protocol-expander", "rejects invalid next-boundary time values", () => {
     const expander = new ProtocolExpander(createBoundaryProtocol());
 
-    assertThrows(
-        () => expander.nextBoundaryAfter("cadence", "1000"),
-                 /finite number/,
-    );
+    assertThrows(() => expander.nextBoundaryAfter("cadence", "1000"), /finite number/);
 
-    assertThrows(
-        () => expander.nextBoundaryAfter("cadence", NaN),
-                 /finite number/,
-    );
+    assertThrows(() => expander.nextBoundaryAfter("cadence", NaN), /finite number/);
 
-    assertThrows(
-        () => expander.nextBoundaryAfter("cadence", Infinity),
-                 /finite number/,
-    );
+    assertThrows(() => expander.nextBoundaryAfter("cadence", Infinity), /finite number/);
+});
+
+test("protocol-expander", "returns all phase ranges in workout order", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    assertDeepEqual(expander.getPhaseRanges(), [
+        {
+            id: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 12000,
+        },
+        {
+            id: "phase-empty",
+            startTimeMs: 12000,
+            endTimeMs: 12000,
+        },
+        {
+            id: "phase-2",
+            startTimeMs: 12000,
+            endTimeMs: 20000,
+        },
+    ]);
+});
+
+test("protocol-expander", "returns all block ranges in workout order", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    assertDeepEqual(expander.getBlockRanges(), [
+        {
+            id: "block-1",
+            phaseId: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 12000,
+        },
+        {
+            id: "block-2",
+            phaseId: "phase-2",
+            startTimeMs: 12000,
+            endTimeMs: 20000,
+        },
+    ]);
+});
+
+test("protocol-expander", "returns empty ordered ranges for an empty protocol", () => {
+    const expander = new ProtocolExpander({
+        phases: [],
+    });
+
+    assertDeepEqual(expander.getPhaseRanges(), []);
+    assertDeepEqual(expander.getBlockRanges(), []);
+});
+
+test("protocol-expander", "protects returned ordered ranges from mutation", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    const phaseRanges = expander.getPhaseRanges();
+    const blockRanges = expander.getBlockRanges();
+
+    phaseRanges[0].startTimeMs = 999;
+    phaseRanges.push({
+        id: "fake-phase",
+        startTimeMs: 0,
+        endTimeMs: 0,
+    });
+
+    blockRanges[0].startTimeMs = 999;
+    blockRanges.push({
+        id: "fake-block",
+        phaseId: "fake-phase",
+        startTimeMs: 0,
+        endTimeMs: 0,
+    });
+
+    assertDeepEqual(expander.getPhaseRanges(), [
+        {
+            id: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 12000,
+        },
+        {
+            id: "phase-empty",
+            startTimeMs: 12000,
+            endTimeMs: 12000,
+        },
+        {
+            id: "phase-2",
+            startTimeMs: 12000,
+            endTimeMs: 20000,
+        },
+    ]);
+
+    assertDeepEqual(expander.getBlockRanges(), [
+        {
+            id: "block-1",
+            phaseId: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 12000,
+        },
+        {
+            id: "block-2",
+            phaseId: "phase-2",
+            startTimeMs: 12000,
+            endTimeMs: 20000,
+        },
+    ]);
+});
+
+test("protocol-expander", "returns values immediately before ordinary workout times", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    assertDeepEqual(expander.valueBefore("cadence", 6000), 45);
+    assertDeepEqual(expander.valueBefore("cadence", 16000), 65);
+});
+
+test(
+    "protocol-expander",
+    "uses previous stepped target immediately before exact progression boundaries",
+    () => {
+        const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+        assertDeepEqual(expander.valueBefore("cadence", 4000), 40);
+        assertDeepEqual(expander.valueAt("cadence", 4000), 45);
+
+        assertDeepEqual(expander.valueBefore("cadence", 8000), 45);
+        assertDeepEqual(expander.valueAt("cadence", 8000), 50);
+    },
+);
+
+test(
+    "protocol-expander",
+    "uses previous block ownership immediately before exact block boundaries",
+    () => {
+        const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+        assertDeepEqual(expander.valueBefore("cadence", 12000), 50);
+        assertDeepEqual(expander.valueAt("cadence", 12000), 60);
+    },
+);
+
+test(
+    "protocol-expander",
+    "returns the final progression endpoint immediately before workout end",
+    () => {
+        const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+        assertDeepEqual(expander.valueBefore("cadence", expander.durationMs), 70);
+        assertDeepEqual(expander.valueAt("cadence", expander.durationMs), undefined);
+    },
+);
+
+test(
+    "protocol-expander",
+    "returns undefined for valueBefore() outside its valid workout side",
+    () => {
+        const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+        assertDeepEqual(expander.valueBefore("cadence", -1), undefined);
+        assertDeepEqual(expander.valueBefore("cadence", 0), undefined);
+        assertDeepEqual(expander.valueBefore("cadence", expander.durationMs + 1), undefined);
+    },
+);
+
+test("protocol-expander", "returns undefined for valueBefore() on an unknown variable", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    assertDeepEqual(expander.valueBefore("unknown-variable", 4000), undefined);
+});
+
+test("protocol-expander", "returns undefined for valueBefore() on an empty protocol", () => {
+    const expander = new ProtocolExpander({
+        phases: [],
+    });
+
+    assertDeepEqual(expander.valueBefore("cadence", 1000), undefined);
+});
+
+test("protocol-expander", "rejects invalid valueBefore() workout times", () => {
+    const expander = new ProtocolExpander(createValueBeforeProtocol());
+
+    assertThrows(() => expander.valueBefore("cadence", "1000"), /finite numbers/);
+    assertThrows(() => expander.valueBefore("cadence", NaN), /finite numbers/);
+    assertThrows(() => expander.valueBefore("cadence", Infinity), /finite numbers/);
 });

@@ -3,10 +3,11 @@ import { getSteppedTargets } from "./stepped-targets.js";
 /** Maps normalized progression position to a target value. */
 export class ProgressionMapping {
     #valueEvaluator;
+    #valueBeforeEvaluator;
     #boundaryFractions;
 
     /** Creates an immutable normalized progression mapping. */
-    constructor(valueEvaluator, boundaryFractions = []) {
+    constructor(valueEvaluator, boundaryFractions = [], valueBeforeEvaluator = valueEvaluator) {
         if (typeof valueEvaluator !== "function") {
             throw new TypeError("ProgressionMapping requires a value evaluator function.");
         }
@@ -15,7 +16,12 @@ export class ProgressionMapping {
             throw new TypeError("ProgressionMapping boundaryFractions must be an array.");
         }
 
+        if (typeof valueBeforeEvaluator !== "function") {
+            throw new TypeError("ProgressionMapping requires a value-before evaluator function.");
+        }
+
         this.#valueEvaluator = valueEvaluator;
+        this.#valueBeforeEvaluator = valueBeforeEvaluator;
         this.#boundaryFractions = [...boundaryFractions];
     }
 
@@ -30,6 +36,19 @@ export class ProgressionMapping {
         }
 
         return this.#valueEvaluator(fraction);
+    }
+
+    /** Returns the exact target value immediately before a normalized fraction. */
+    valueBeforeFraction(fraction) {
+        if (typeof fraction !== "number" || !Number.isFinite(fraction)) {
+            throw new TypeError("ProgressionMapping fraction must be a finite number.");
+        }
+
+        if (fraction <= 0 || fraction > 1) {
+            return undefined;
+        }
+
+        return this.#valueBeforeEvaluator(fraction);
     }
 
     /** Returns interior structural boundaries in normalized progression. */
@@ -87,7 +106,24 @@ function createSteppedMapping(progression) {
     return new ProgressionMapping(
         (fraction) => getSteppedValueAtFraction(targets, weights, totalWeight, fraction),
         boundaryFractions,
+        (fraction) => getSteppedValueBeforeFraction(targets, weights, totalWeight, fraction),
     );
+}
+
+/** Returns the stepped target immediately preceding a normalized fraction. */
+function getSteppedValueBeforeFraction(targets, weights, totalWeight, fraction) {
+    const position = fraction * totalWeight;
+    let cumulativeWeight = 0;
+
+    for (let index = 0; index < targets.length; index += 1) {
+        cumulativeWeight += weights[index];
+
+        if (position <= cumulativeWeight) {
+            return targets[index];
+        }
+    }
+
+    return targets[targets.length - 1];
 }
 
 /** Returns proportional dwell weights for stepped targets. */

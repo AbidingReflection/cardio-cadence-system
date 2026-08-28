@@ -33,11 +33,21 @@ export class ProtocolExpander {
         return range === undefined ? undefined : structuredClone(range);
     }
 
+    /** Returns all absolute phase ranges in workout order. */
+    getPhaseRanges() {
+        return structuredClone([...this.#phaseRanges.values()]);
+    }
+
     /** Returns the absolute timeline range for a block by ID. */
     getBlockRange(blockId) {
         const range = this.#blockRanges.get(blockId);
 
         return range === undefined ? undefined : structuredClone(range);
+    }
+
+    /** Returns all absolute block ranges in workout order. */
+    getBlockRanges() {
+        return structuredClone([...this.#blockRanges.values()]);
     }
 
     /** Returns a variable target at an absolute workout time. */
@@ -58,13 +68,36 @@ export class ProtocolExpander {
 
         const { startTimeMs, endTimeMs } = blockEntry.range;
 
-        const fraction =
-        (timeMs - startTimeMs) /
-        (endTimeMs - startTimeMs);
+        const fraction = (timeMs - startTimeMs) / (endTimeMs - startTimeMs);
 
         const mapping = createProgressionMapping(progression);
 
         return mapping.valueAtFraction(fraction);
+    }
+
+    /** Returns a variable target immediately before an absolute workout time. */
+    valueBefore(variableId, timeMs) {
+        ProtocolExpander.#validateTime(timeMs);
+
+        const blockEntry = this.#findBlockBeforeTime(timeMs);
+
+        if (blockEntry === undefined) {
+            return undefined;
+        }
+
+        const progression = blockEntry.block.variables[variableId];
+
+        if (progression === undefined) {
+            return undefined;
+        }
+
+        const { startTimeMs, endTimeMs } = blockEntry.range;
+
+        const fraction = (timeMs - startTimeMs) / (endTimeMs - startTimeMs);
+
+        const mapping = createProgressionMapping(progression);
+
+        return mapping.valueBeforeFraction(fraction);
     }
 
     /** Returns structural and progression boundaries within an absolute time range. */
@@ -111,14 +144,9 @@ export class ProtocolExpander {
             const blockDurationMs = range.endTimeMs - range.startTimeMs;
 
             for (const fraction of mapping.getBoundaryFractions()) {
-                const boundaryTimeMs =
-                range.startTimeMs +
-                fraction * blockDurationMs;
+                const boundaryTimeMs = range.startTimeMs + fraction * blockDurationMs;
 
-                if (
-                    boundaryTimeMs >= startTimeMs &&
-                    boundaryTimeMs < endTimeMs
-                ) {
+                if (boundaryTimeMs >= startTimeMs && boundaryTimeMs < endTimeMs) {
                     boundaries.push(boundaryTimeMs);
                 }
             }
@@ -146,10 +174,7 @@ export class ProtocolExpander {
                 continue;
             }
 
-            if (
-                range.startTimeMs > timeMs &&
-                range.startTimeMs > 0
-            ) {
+            if (range.startTimeMs > timeMs && range.startTimeMs > 0) {
                 return range.startTimeMs;
             }
 
@@ -157,19 +182,14 @@ export class ProtocolExpander {
             const blockDurationMs = range.endTimeMs - range.startTimeMs;
 
             for (const fraction of mapping.getBoundaryFractions()) {
-                const boundaryTimeMs =
-                range.startTimeMs +
-                fraction * blockDurationMs;
+                const boundaryTimeMs = range.startTimeMs + fraction * blockDurationMs;
 
                 if (boundaryTimeMs > timeMs) {
                     return boundaryTimeMs;
                 }
             }
 
-            if (
-                range.endTimeMs > timeMs &&
-                range.endTimeMs < this.#durationMs
-            ) {
+            if (range.endTimeMs > timeMs && range.endTimeMs < this.#durationMs) {
                 return range.endTimeMs;
             }
         }
@@ -188,12 +208,21 @@ export class ProtocolExpander {
         );
     }
 
+    /** Returns the block that owns the time immediately before an absolute workout time. */
+    #findBlockBeforeTime(timeMs) {
+        if (timeMs <= 0 || timeMs > this.#durationMs) {
+            return undefined;
+        }
+
+        return this.#orderedBlocks.find(
+            ({ range }) => timeMs > range.startTimeMs && timeMs <= range.endTimeMs,
+        );
+    }
+
     /** Requires an absolute workout time to be a finite number. */
     static #validateTime(timeMs) {
         if (typeof timeMs !== "number" || !Number.isFinite(timeMs)) {
-            throw new TypeError(
-                "ProtocolExpander time values must be finite numbers.",
-            );
+            throw new TypeError("ProtocolExpander time values must be finite numbers.");
         }
     }
 
