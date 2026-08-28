@@ -1,0 +1,19 @@
+/*
+ * Graph responsibilities:
+ * - Style reusable graph SVG presentation.
+ * - Keep graph geometry and data semantics out of CSS.
+ * - Provide baseline styling for rendered series and plot layers.
+ */
+
+.graph-renderer {
+    pointer-events: none;
+}
+
+.graph-series__line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
