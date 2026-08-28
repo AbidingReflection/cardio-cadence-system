@@ -6,6 +6,8 @@
 import { loadDomainData } from "./domain-data.js";
 import { ProtocolModel } from "./models/protocol-model.js";
 import { EditorState } from "./state/editor-state.js";
+import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
+import { ProtocolGraphRenderer } from "./renderers/protocol-graph-renderer.js";
 import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
 
 import {
@@ -18,8 +20,6 @@ import {
 import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
-
-import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
 
 /**
  * Initializes application data, state, rendering, subscriptions, and
@@ -55,10 +55,30 @@ async function main() {
     const protocolTree = document.querySelector("#protocol-tree");
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
+    const cadenceGraph = document.querySelector("#cadence-graph");
 
-    if (protocolTree === null || editPhaseButton === null || editBlockButton === null) {
-        throw new Error("Required protocol editor controls were not found.");
+    if (
+        protocolTree === null ||
+        editPhaseButton === null ||
+        editBlockButton === null ||
+        cadenceGraph === null
+    ) {
+        throw new Error("Required Protocol Designer elements were not found.");
     }
+
+    const cadenceGraphRenderer = new ProtocolGraphRenderer({
+        container: cadenceGraph,
+        variableId: "cadence",
+        label: "Cadence",
+        unit: "RPM",
+        valueMin: 30,
+        valueMax: 80,
+    });
+
+    /** Renders protocol-backed graphs from the current committed protocol state. */
+    const renderGraphs = () => {
+        cadenceGraphRenderer.render(protocolModel.getSnapshot());
+    };
 
     let pendingFieldFocus;
     let pendingToggleFocus;
@@ -126,6 +146,7 @@ async function main() {
     };
 
     protocolModel.subscribe(render);
+    protocolModel.subscribe(renderGraphs);
     editorState.subscribe(render);
 
     wireProtocolTreeEvents({
@@ -177,6 +198,7 @@ async function main() {
     });
 
     render();
+    renderGraphs();
 }
 
 /** Loads and returns protocol data from the specified JSON resource. */
