@@ -7,6 +7,7 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("/packages/graph/tests/graph-sampling-resolution.test.js");
 await import("/packages/graph/tests/graph-series-sampler.test.js");
 await import("/packages/protocol-expander/tests/protocol-variable-series.test.js");
 await import("/packages/protocol-core/tests/progression-mapping.test.js");
