@@ -16,6 +16,7 @@ function createProtocol() {
         phases: [
             {
                 id: "phase-1",
+                name: "Warm-up",
                 blocks: [
                     {
                         id: "block-1",
@@ -134,19 +135,6 @@ test("protocol-graph-renderer", "uses current container dimensions for the viewB
     assertEqual(svg.getAttribute("viewBox"), "0 0 900 300");
 });
 
-test("protocol-graph-renderer", "clears rendered paths for an empty protocol", () => {
-    const container = createContainer();
-    const renderer = createRenderer(container);
-
-    renderer.render(createProtocol());
-
-    assertEqual(container.querySelectorAll(".graph-series__line").length, 1);
-
-    renderer.render(createEmptyProtocol());
-
-    assertEqual(container.querySelectorAll(".graph-series__line").length, 0);
-});
-
 test("protocol-graph-renderer", "does not render when container width is zero", () => {
     const container = createContainer(0, 240);
     const renderer = createRenderer(container);
@@ -215,4 +203,40 @@ test("protocol-graph-renderer", "renders protocol graph axis titles", () => {
     assertEqual(container.querySelector(".graph-axis__title--x").textContent, "Time");
 
     assertEqual(container.querySelector(".graph-axis__title--y").textContent, "Cadence (RPM)");
+});
+
+test("protocol-graph-renderer", "renders protocol phase labels", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createProtocol());
+
+    const labels = container.querySelectorAll(".graph-phase-label");
+
+    assertEqual(labels.length, 1);
+    assertEqual(labels[0].textContent, "Warm-up");
+});
+
+test("protocol-graph-renderer", "renders one phase region and band per protocol phase", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createProtocol());
+
+    assertEqual(container.querySelectorAll(".graph-phase-region").length, 1);
+    assertEqual(container.querySelectorAll(".graph-phase-band").length, 1);
+});
+
+test("protocol-graph-renderer", "clears rendered graph content for an empty protocol", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createProtocol());
+    renderer.render(createEmptyProtocol());
+
+    assertEqual(container.querySelectorAll(".graph-series__line").length, 0);
+    assertEqual(container.querySelectorAll(".graph-phase-region").length, 0);
+    assertEqual(container.querySelectorAll(".graph-phase-band").length, 0);
+    assertEqual(container.querySelectorAll(".graph-phase-label").length, 0);
+    assertEqual(container.querySelectorAll(".graph-phase-boundary").length, 0);
 });

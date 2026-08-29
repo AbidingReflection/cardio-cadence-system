@@ -26,7 +26,7 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 /** Resolves graph margins for the current presentation dimensions. */
 function getGraphMargins(widthPx, heightPx) {
     return {
-        top: Math.min(20, Math.max(8, heightPx * 0.08)),
+        top: Math.min(44, Math.max(32, heightPx * 0.14)),
         right: Math.min(20, Math.max(8, widthPx * 0.03)),
         bottom: Math.min(56, Math.max(44, heightPx * 0.18)),
         left: Math.min(72, Math.max(56, widthPx * 0.08)),
@@ -134,7 +134,7 @@ export class ProtocolGraphRenderer {
 
             this.#structureRenderer.render({
                 layout,
-                phaseRanges: [],
+                phases: [],
             });
 
             this.#svgRenderer.render({ points: [] });
@@ -185,7 +185,7 @@ export class ProtocolGraphRenderer {
             targetCount: 6,
         });
 
-        const phaseRanges = graphContext.getPhaseRanges();
+        const phases = this.#getGraphPhases(graphContext);
 
         this.#renderAxes({
             layout,
@@ -195,7 +195,7 @@ export class ProtocolGraphRenderer {
 
         this.#structureRenderer.render({
             layout,
-            phaseRanges,
+            phases,
         });
 
         this.#svgRenderer.render({ points });
@@ -211,6 +211,28 @@ export class ProtocolGraphRenderer {
             widthPx,
             heightPx,
             padding: margins,
+        });
+    }
+
+    /** Builds presentation-ready phase structure from protocol phase ranges. */
+    #getGraphPhases(graphContext) {
+        const phaseRangesById = new Map(
+            graphContext.getPhaseRanges().map((range) => [range.id, range]),
+        );
+
+        return this.#lastProtocol.phases.map((phase) => {
+            const range = phaseRangesById.get(phase.id);
+
+            if (range === undefined) {
+                throw new Error(`Protocol graph phase range "${phase.id}" was not found.`);
+            }
+
+            return {
+                id: phase.id,
+                label: phase.name,
+                startTimeMs: range.startTimeMs,
+                endTimeMs: range.endTimeMs,
+            };
         });
     }
 

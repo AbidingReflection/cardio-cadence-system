@@ -1,4 +1,5 @@
-import { assertEqual, test } from "../../js-testing/framework/test-framework.js";
+import { assertEqual, assertThrows, test } from "../../js-testing/framework/test-framework.js";
+
 import { GraphLayout } from "../graph-layout.js";
 import { SvgGraphStructureRenderer } from "../svg-graph-structure-renderer.js";
 
@@ -17,12 +18,36 @@ function createLayout() {
         widthPx: 800,
         heightPx: 240,
         padding: {
-            top: 20,
+            top: 40,
             right: 20,
             bottom: 40,
             left: 60,
         },
     });
+}
+
+/** Creates the default three-phase structure used by renderer tests. */
+function createPhases() {
+    return [
+        {
+            id: "warmup",
+            label: "Warm-up",
+            startTimeMs: 0,
+            endTimeMs: 15_000,
+        },
+        {
+            id: "work",
+            label: "Work",
+            startTimeMs: 15_000,
+            endTimeMs: 45_000,
+        },
+        {
+            id: "cooldown",
+            label: "Cooldown",
+            startTimeMs: 45_000,
+            endTimeMs: 60_000,
+        },
+    ];
 }
 
 test("svg-graph-structure-renderer", "creates one renderer-owned structure group", () => {
@@ -39,23 +64,7 @@ test("svg-graph-structure-renderer", "renders internal phase boundaries", () => 
 
     renderer.render({
         layout: createLayout(),
-        phaseRanges: [
-            {
-                id: "warmup",
-                startTimeMs: 0,
-                endTimeMs: 15_000,
-            },
-            {
-                id: "work",
-                startTimeMs: 15_000,
-                endTimeMs: 45_000,
-            },
-            {
-                id: "cooldown",
-                startTimeMs: 45_000,
-                endTimeMs: 60_000,
-            },
-        ],
+        phases: createPhases(),
     });
 
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 2);
@@ -68,25 +77,16 @@ test("svg-graph-structure-renderer", "maps phase boundaries through the graph la
 
     renderer.render({
         layout,
-        phaseRanges: [
-            {
-                id: "warmup",
-                startTimeMs: 0,
-                endTimeMs: 15_000,
-            },
-            {
-                id: "work",
-                startTimeMs: 15_000,
-                endTimeMs: 45_000,
-            },
-        ],
+        phases: createPhases(),
     });
 
-    const boundary = svg.querySelector(".graph-phase-boundary");
-    const expectedX = layout.xAtTime(15_000);
+    const boundaries = svg.querySelectorAll(".graph-phase-boundary");
 
-    assertEqual(Number(boundary.getAttribute("x1")), expectedX);
-    assertEqual(Number(boundary.getAttribute("x2")), expectedX);
+    assertEqual(Number(boundaries[0].getAttribute("x1")), layout.xAtTime(15_000));
+    assertEqual(Number(boundaries[0].getAttribute("x2")), layout.xAtTime(15_000));
+
+    assertEqual(Number(boundaries[1].getAttribute("x1")), layout.xAtTime(45_000));
+    assertEqual(Number(boundaries[1].getAttribute("x2")), layout.xAtTime(45_000));
 });
 
 test("svg-graph-structure-renderer", "renders phase boundaries across the plot height", () => {
@@ -96,18 +96,7 @@ test("svg-graph-structure-renderer", "renders phase boundaries across the plot h
 
     renderer.render({
         layout,
-        phaseRanges: [
-            {
-                id: "warmup",
-                startTimeMs: 0,
-                endTimeMs: 15_000,
-            },
-            {
-                id: "work",
-                startTimeMs: 15_000,
-                endTimeMs: 45_000,
-            },
-        ],
+        phases: createPhases(),
     });
 
     const boundary = svg.querySelector(".graph-phase-boundary");
@@ -123,9 +112,10 @@ test("svg-graph-structure-renderer", "renders no boundaries for one phase", () =
 
     renderer.render({
         layout: createLayout(),
-        phaseRanges: [
+        phases: [
             {
                 id: "only-phase",
+                label: "Only Phase",
                 startTimeMs: 0,
                 endTimeMs: 60_000,
             },
@@ -135,28 +125,204 @@ test("svg-graph-structure-renderer", "renders no boundaries for one phase", () =
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
 });
 
+test("svg-graph-structure-renderer", "renders one phase region per phase", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-phase-region").length, 3);
+});
+
+test("svg-graph-structure-renderer", "renders one phase band per phase", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-phase-band").length, 3);
+});
+
+test("svg-graph-structure-renderer", "renders one phase label per phase", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+    });
+
+    const labels = svg.querySelectorAll(".graph-phase-label");
+
+    assertEqual(labels.length, 3);
+    assertEqual(labels[0].textContent, "Warm-up");
+    assertEqual(labels[1].textContent, "Work");
+    assertEqual(labels[2].textContent, "Cooldown");
+});
+
+test("svg-graph-structure-renderer", "maps phase region spans through the graph layout", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [
+            {
+                id: "work",
+                label: "Work",
+                startTimeMs: 15_000,
+                endTimeMs: 45_000,
+            },
+        ],
+    });
+
+    const region = svg.querySelector(".graph-phase-region");
+    const expectedStart = layout.xAtTime(15_000);
+    const expectedEnd = layout.xAtTime(45_000);
+
+    assertEqual(Number(region.getAttribute("x")), expectedStart);
+    assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
+});
+
+test("svg-graph-structure-renderer", "renders phase regions across the plot height", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [
+            {
+                id: "work",
+                label: "Work",
+                startTimeMs: 15_000,
+                endTimeMs: 45_000,
+            },
+        ],
+    });
+
+    const region = svg.querySelector(".graph-phase-region");
+    const plot = layout.plot;
+
+    assertEqual(Number(region.getAttribute("y")), plot.top);
+    assertEqual(Number(region.getAttribute("height")), plot.bottom - plot.top);
+});
+
+test("svg-graph-structure-renderer", "maps phase bands through the graph layout", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [
+            {
+                id: "work",
+                label: "Work",
+                startTimeMs: 15_000,
+                endTimeMs: 45_000,
+            },
+        ],
+    });
+
+    const band = svg.querySelector(".graph-phase-band");
+    const expectedStart = layout.xAtTime(15_000);
+    const expectedEnd = layout.xAtTime(45_000);
+
+    assertEqual(Number(band.getAttribute("x")), expectedStart);
+    assertEqual(Number(band.getAttribute("width")), expectedEnd - expectedStart);
+});
+
+test("svg-graph-structure-renderer", "centers phase labels within their phase spans", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [
+            {
+                id: "work",
+                label: "Work",
+                startTimeMs: 15_000,
+                endTimeMs: 45_000,
+            },
+        ],
+    });
+
+    const label = svg.querySelector(".graph-phase-label");
+
+    const expectedStart = layout.xAtTime(15_000);
+    const expectedEnd = layout.xAtTime(45_000);
+
+    assertEqual(Number(label.getAttribute("x")), (expectedStart + expectedEnd) / 2);
+});
+
+test("svg-graph-structure-renderer", "renders indexed phase presentation classes", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-phase-region--0").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-region--1").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-region--2").length, 1);
+
+    assertEqual(svg.querySelectorAll(".graph-phase-band--0").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-band--1").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-band--2").length, 1);
+});
+
+test("svg-graph-structure-renderer", "renders no phase structure for an empty phase list", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-phase-region").length, 0);
+    assertEqual(svg.querySelectorAll(".graph-phase-band").length, 0);
+    assertEqual(svg.querySelectorAll(".graph-phase-label").length, 0);
+    assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
+});
+
 test("svg-graph-structure-renderer", "replaces previous structure content on rerender", () => {
     const svg = createSvg();
     const renderer = new SvgGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
-        phaseRanges: [
-            { id: "a", startTimeMs: 0, endTimeMs: 20_000 },
-            { id: "b", startTimeMs: 20_000, endTimeMs: 40_000 },
-            { id: "c", startTimeMs: 40_000, endTimeMs: 60_000 },
-        ],
+        phases: createPhases(),
     });
 
     renderer.render({
         layout: createLayout(),
-        phaseRanges: [
-            { id: "a", startTimeMs: 0, endTimeMs: 30_000 },
-            { id: "b", startTimeMs: 30_000, endTimeMs: 60_000 },
+        phases: [
+            {
+                id: "single",
+                label: "Single",
+                startTimeMs: 0,
+                endTimeMs: 60_000,
+            },
         ],
     });
 
-    assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-region").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-band").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-label").length, 1);
+    assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
 });
 
 test("svg-graph-structure-renderer", "places structure before series content", () => {
@@ -172,4 +338,18 @@ test("svg-graph-structure-renderer", "places structure before series content", (
     const structureGroup = svg.querySelector(".graph-structure");
 
     assertEqual(structureGroup.nextElementSibling === seriesGroup, true);
+});
+
+test("svg-graph-structure-renderer", "rejects non-array phases", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    assertThrows(
+        () =>
+            renderer.render({
+                layout: createLayout(),
+                phases: null,
+            }),
+        /phases must be an array/,
+    );
 });
