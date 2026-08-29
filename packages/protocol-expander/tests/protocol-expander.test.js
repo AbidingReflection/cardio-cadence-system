@@ -736,3 +736,39 @@ test("protocol-expander", "rejects invalid valueBefore() workout times", () => {
     assertThrows(() => expander.valueBefore("cadence", NaN), /finite numbers/);
     assertThrows(() => expander.valueBefore("cadence", Infinity), /finite numbers/);
 });
+
+test(
+    "protocol-expander",
+    "preserves stepped boundary semantics after absolute time translation",
+    () => {
+        const baseExpander = new ProtocolExpander(baseProtocol);
+        const shiftedExpander = new ProtocolExpander(shiftedProtocol);
+
+        const baseBoundaries = baseExpander.boundariesBetween("resistance", baseStart, baseEnd);
+
+        const shiftedBoundaries = shiftedExpander.boundariesBetween(
+            "resistance",
+            shiftedStart,
+            shiftedEnd,
+        );
+
+        assertEqual(baseBoundaries.length, shiftedBoundaries.length);
+
+        for (let index = 0; index < baseBoundaries.length; index += 1) {
+            const baseTime = baseBoundaries[index];
+            const shiftedTime = shiftedBoundaries[index];
+
+            assertEqual(baseTime - baseStart, shiftedTime - shiftedStart);
+
+            assertEqual(
+                baseExpander.valueBefore("resistance", baseTime),
+                shiftedExpander.valueBefore("resistance", shiftedTime),
+            );
+
+            assertEqual(
+                baseExpander.valueAt("resistance", baseTime),
+                shiftedExpander.valueAt("resistance", shiftedTime),
+            );
+        }
+    },
+);

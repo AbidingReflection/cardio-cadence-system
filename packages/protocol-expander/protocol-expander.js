@@ -66,11 +66,12 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        const { startTimeMs, endTimeMs } = blockEntry.range;
-
-        const fraction = (timeMs - startTimeMs) / (endTimeMs - startTimeMs);
-
         const mapping = createProgressionMapping(progression);
+        const fraction = ProtocolExpander.#getProgressionFraction(
+            mapping,
+            blockEntry.range,
+            timeMs,
+        );
 
         return mapping.valueAtFraction(fraction);
     }
@@ -91,11 +92,12 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        const { startTimeMs, endTimeMs } = blockEntry.range;
-
-        const fraction = (timeMs - startTimeMs) / (endTimeMs - startTimeMs);
-
         const mapping = createProgressionMapping(progression);
+        const fraction = ProtocolExpander.#getProgressionFraction(
+            mapping,
+            blockEntry.range,
+            timeMs,
+        );
 
         return mapping.valueBeforeFraction(fraction);
     }
@@ -217,6 +219,21 @@ export class ProtocolExpander {
         return this.#orderedBlocks.find(
             ({ range }) => timeMs > range.startTimeMs && timeMs <= range.endTimeMs,
         );
+    }
+
+    /** Returns the canonical progression fraction for an absolute block time. */
+    static #getProgressionFraction(mapping, range, timeMs) {
+        const blockDurationMs = range.endTimeMs - range.startTimeMs;
+
+        for (const boundaryFraction of mapping.getBoundaryFractions()) {
+            const boundaryTimeMs = range.startTimeMs + boundaryFraction * blockDurationMs;
+
+            if (timeMs === boundaryTimeMs) {
+                return boundaryFraction;
+            }
+        }
+
+        return (timeMs - range.startTimeMs) / blockDurationMs;
     }
 
     /** Requires an absolute workout time to be a finite number. */
