@@ -165,28 +165,20 @@ test("protocol-graph-renderer", "does not render when container height is zero",
     assertEqual(container.querySelectorAll(".graph-series__line").length, 0);
 });
 
-test("protocol-graph-renderer", "does not render when padding leaves no drawable width", () => {
-    const container = createContainer(100, 240);
+test(
+    "protocol-graph-renderer",
+    "does not render when resolved margins leave no drawable height",
+    () => {
+        const container = createContainer(800, 16);
+        const renderer = createRenderer(container);
 
-    const renderer = new ProtocolGraphRenderer({
-        container,
-        variableId: "cadence",
-        label: "Cadence",
-        unit: "RPM",
-        valueMin: 30,
-        valueMax: 80,
-        padding: {
-            top: 40,
-            right: 60,
-            bottom: 50,
-            left: 60,
-        },
-    });
+        renderer.render(createProtocol());
 
-    renderer.render(createProtocol());
+        assertEqual(container.querySelectorAll(".graph-series__line").length, 0);
 
-    assertEqual(container.querySelectorAll(".graph-series__line").length, 0);
-});
+        renderer.destroy();
+    },
+);
 
 test("protocol-graph-renderer", "replaces previous rendered geometry on rerender", () => {
     const container = createContainer();

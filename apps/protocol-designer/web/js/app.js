@@ -56,12 +56,14 @@ async function main() {
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
     const cadenceGraph = document.querySelector("#cadence-graph");
+    const loadGraph = document.querySelector("#load-graph");
 
     if (
         protocolTree === null ||
         editPhaseButton === null ||
         editBlockButton === null ||
-        cadenceGraph === null
+        cadenceGraph === null ||
+        loadGraph === null
     ) {
         throw new Error("Required Protocol Designer elements were not found.");
     }
@@ -75,9 +77,21 @@ async function main() {
         valueMax: 80,
     });
 
+    const loadGraphRenderer = new ProtocolGraphRenderer({
+        container: loadGraph,
+        variableId: "resistance",
+        label: "Resistance",
+        unit: "Level",
+        valueMin: 0,
+        valueMax: 20,
+    });
+
     /** Renders protocol-backed graphs from the current committed protocol state. */
     const renderGraphs = () => {
-        cadenceGraphRenderer.render(protocolModel.getSnapshot());
+        const protocol = protocolModel.getSnapshot();
+
+        cadenceGraphRenderer.render(protocol);
+        loadGraphRenderer.render(protocol);
     };
 
     let pendingFieldFocus;

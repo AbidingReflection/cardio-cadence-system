@@ -2,7 +2,9 @@
  * ProtocolGraphRenderer responsibilities:
  * - Compose protocol data through the generic graph pipeline.
  * - Own the SVG used to render one Protocol Designer graph.
- * - Apply Protocol Designer graph dimensions, padding, and value-domain configuration.
+ * - Resolve presentation margins from the current graph dimensions.
+ * - Apply Protocol Designer value-domain configuration.
+ * - Rerender automatically when the graph container changes size.
  * - Keep protocol graph orchestration out of app.js and generic graph packages.
  */
 
@@ -15,12 +17,15 @@ import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-var
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-const DEFAULT_PADDING = {
-    top: 40,
-    right: 60,
-    bottom: 50,
-    left: 60,
-};
+/** Resolves graph margins for the current presentation dimensions. */
+function getGraphMargins(widthPx, heightPx) {
+    return {
+        top: Math.min(20, Math.max(8, heightPx * 0.08)),
+        left: Math.min(20, Math.max(8, widthPx * 0.03)),
+        right: Math.min(20, Math.max(8, widthPx * 0.03)),
+        bottom: Math.min(20, Math.max(8, heightPx * 0.08)),
+    };
+}
 
 /** Renders one protocol variable through the generic graph pipeline. */
 export class ProtocolGraphRenderer {
@@ -31,9 +36,10 @@ export class ProtocolGraphRenderer {
     #unit;
     #valueMin;
     #valueMax;
-    #padding;
     #svg;
     #svgRenderer;
+    #lastProtocol;
+    #resizeObserver;
 
     /** Creates a renderer for one protocol-backed graph series. */
     constructor({
@@ -44,7 +50,6 @@ export class ProtocolGraphRenderer {
         unit = null,
         valueMin,
         valueMax,
-        padding = DEFAULT_PADDING,
     }) {
         this.#container = container;
         this.#variableId = variableId;
@@ -53,16 +58,36 @@ export class ProtocolGraphRenderer {
         this.#unit = unit;
         this.#valueMin = valueMin;
         this.#valueMax = valueMax;
-        this.#padding = { ...padding };
 
         this.#svg = document.createElementNS(SVG_NAMESPACE, "svg");
         this.#container.replaceChildren(this.#svg);
 
         this.#svgRenderer = new SvgGraphRenderer(this.#svg);
+
+        this.#resizeObserver = new ResizeObserver(() => {
+            this.#renderCurrent();
+        });
+
+        this.#resizeObserver.observe(this.#container);
     }
 
-    /** Renders a protocol snapshot using the container's current dimensions. */
+    /** Stores and renders the latest protocol snapshot. */
     render(protocol) {
+        this.#lastProtocol = protocol;
+        this.#renderCurrent();
+    }
+
+    /** Stops observing the graph container for size changes. */
+    destroy() {
+        this.#resizeObserver.disconnect();
+    }
+
+    /** Renders the current protocol using the container's current dimensions. */
+    #renderCurrent() {
+        if (this.#lastProtocol === undefined) {
+            return;
+        }
+
         const widthPx = this.#container.clientWidth;
         const heightPx = this.#container.clientHeight;
 
@@ -70,7 +95,16 @@ export class ProtocolGraphRenderer {
             return;
         }
 
-        const expander = new ProtocolExpander(protocol);
+        const margins = getGraphMargins(widthPx, heightPx);
+
+        const plotWidthPx = widthPx - margins.left - margins.right;
+        const plotHeightPx = heightPx - margins.top - margins.bottom;
+
+        if (plotWidthPx <= 0 || plotHeightPx <= 0) {
+            return;
+        }
+
+        const expander = new ProtocolExpander(this.#lastProtocol);
 
         if (expander.durationMs <= 0) {
             this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
@@ -83,12 +117,6 @@ export class ProtocolGraphRenderer {
             label: this.#label,
             unit: this.#unit,
         });
-
-        const plotWidthPx = widthPx - this.#padding.left - this.#padding.right;
-
-        if (plotWidthPx <= 0) {
-            return;
-        }
 
         const sampleIntervalMs = getGraphSampleIntervalMs({
             startTimeMs: 0,
@@ -111,7 +139,7 @@ export class ProtocolGraphRenderer {
             valueMax: this.#valueMax,
             widthPx,
             heightPx,
-            padding: this.#padding,
+            padding: margins,
         });
 
         const points = layout.layoutSamples(samples);
