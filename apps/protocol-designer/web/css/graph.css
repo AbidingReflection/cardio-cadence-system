@@ -49,3 +49,11 @@
 .graph-axis__title {
     font-size: 0.8rem;
 }
+
+.graph-phase-boundary {
+    stroke: currentColor;
+    stroke-opacity: 0.25;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    vector-effect: non-scaling-stroke;
+}

@@ -4,7 +4,7 @@
  * - Own the SVG used to render one Protocol Designer graph.
  * - Resolve presentation margins from the current graph dimensions.
  * - Apply Protocol Designer value-domain configuration.
- * - Render graph axes and series presentation.
+ * - Render graph axes, protocol structure, and series presentation.
  * - Rerender automatically when the graph container changes size.
  * - Keep protocol graph orchestration out of app.js and generic graph packages.
  */
@@ -15,7 +15,9 @@ import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
 import { getLinearTicks, getTimeTicks } from "/packages/graph/graph-ticks.js";
 import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
 import { SvgGraphRenderer } from "/packages/graph/svg-graph-renderer.js";
+import { SvgGraphStructureRenderer } from "/packages/graph/svg-graph-structure-renderer.js";
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
+import { ProtocolGraphContext } from "/packages/protocol-expander/protocol-graph-context.js";
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
 import { formatDuration } from "/packages/utils/format-duration.js";
 
@@ -43,6 +45,7 @@ export class ProtocolGraphRenderer {
     #svg;
     #svgRenderer;
     #axesRenderer;
+    #structureRenderer;
     #lastProtocol;
     #resizeObserver;
 
@@ -69,6 +72,7 @@ export class ProtocolGraphRenderer {
 
         this.#svgRenderer = new SvgGraphRenderer(this.#svg);
         this.#axesRenderer = new SvgGraphAxesRenderer(this.#svg);
+        this.#structureRenderer = new SvgGraphStructureRenderer(this.#svg);
 
         this.#resizeObserver = new ResizeObserver(() => {
             this.#renderCurrent();
@@ -128,9 +132,16 @@ export class ProtocolGraphRenderer {
                 yTicks: [],
             });
 
+            this.#structureRenderer.render({
+                layout,
+                phaseRanges: [],
+            });
+
             this.#svgRenderer.render({ points: [] });
             return;
         }
+
+        const graphContext = new ProtocolGraphContext(expander);
 
         const series = new ProtocolVariableSeries(expander, this.#variableId, {
             id: this.#seriesId,
@@ -174,10 +185,17 @@ export class ProtocolGraphRenderer {
             targetCount: 6,
         });
 
+        const phaseRanges = graphContext.getPhaseRanges();
+
         this.#renderAxes({
             layout,
             xTicks,
             yTicks,
+        });
+
+        this.#structureRenderer.render({
+            layout,
+            phaseRanges,
         });
 
         this.#svgRenderer.render({ points });
