@@ -19,10 +19,18 @@ export class SvgGraphAxesRenderer {
         this.#rootGroup = this.#createRootGroup();
     }
 
-    /** Renders y-axis ticks and horizontal grid lines for a graph layout. */
-    render({ layout, yTicks, formatYTick = String }) {
+    /** Renders graph axes, ticks, labels, and horizontal grid lines. */
+    render({ layout, xTicks = [], yTicks, formatXTick = String, formatYTick = String }) {
+        if (!Array.isArray(xTicks)) {
+            throw new TypeError("SvgGraphAxesRenderer xTicks must be an array.");
+        }
+
         if (!Array.isArray(yTicks)) {
             throw new TypeError("SvgGraphAxesRenderer yTicks must be an array.");
+        }
+
+        if (typeof formatXTick !== "function") {
+            throw new TypeError("SvgGraphAxesRenderer formatXTick must be a function.");
         }
 
         if (typeof formatYTick !== "function") {
@@ -34,6 +42,15 @@ export class SvgGraphAxesRenderer {
         const plot = layout.plot;
 
         this.#rootGroup.append(this.#createYAxisLine(plot), this.#createXAxisLine(plot));
+
+        for (const timeMs of xTicks) {
+            const x = layout.xAtTime(timeMs);
+
+            this.#rootGroup.append(
+                this.#createXTickMark(plot, x),
+                this.#createXTickLabel(plot, x, formatXTick(timeMs)),
+            );
+        }
 
         for (const value of yTicks) {
             const y = layout.yAtValue(value);
@@ -98,6 +115,33 @@ export class SvgGraphAxesRenderer {
         line.setAttribute("y2", String(y));
 
         return line;
+    }
+
+    /** Creates one x-axis tick mark at the bottom edge of the plot. */
+    #createXTickMark(plot, x) {
+        const line = document.createElementNS(SVG_NAMESPACE, "line");
+
+        line.setAttribute("class", "graph-axis__tick graph-axis__tick--x");
+        line.setAttribute("x1", String(x));
+        line.setAttribute("x2", String(x));
+        line.setAttribute("y1", String(plot.bottom));
+        line.setAttribute("y2", String(plot.bottom + 4));
+
+        return line;
+    }
+
+    /** Creates one x-axis tick label beneath the plot. */
+    #createXTickLabel(plot, x, label) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        text.setAttribute("class", "graph-axis__label graph-axis__label--x");
+        text.setAttribute("x", String(x));
+        text.setAttribute("y", String(plot.bottom + 8));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "hanging");
+        text.textContent = String(label);
+
+        return text;
     }
 
     /** Creates one y-axis tick mark at the left edge of the plot. */

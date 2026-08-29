@@ -12,11 +12,12 @@
 import { GraphLayout } from "/packages/graph/graph-layout.js";
 import { getGraphSampleIntervalMs } from "/packages/graph/graph-sampling-resolution.js";
 import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
-import { getLinearTicks } from "/packages/graph/graph-ticks.js";
+import { getLinearTicks, getTimeTicks } from "/packages/graph/graph-ticks.js";
 import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
 import { SvgGraphRenderer } from "/packages/graph/svg-graph-renderer.js";
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
+import { formatDuration } from "/packages/utils/format-duration.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
@@ -25,7 +26,7 @@ function getGraphMargins(widthPx, heightPx) {
     return {
         top: Math.min(20, Math.max(8, heightPx * 0.08)),
         right: Math.min(20, Math.max(8, widthPx * 0.03)),
-        bottom: Math.min(20, Math.max(8, heightPx * 0.08)),
+        bottom: Math.min(40, Math.max(28, heightPx * 0.14)),
         left: Math.min(48, Math.max(32, widthPx * 0.06)),
     };
 }
@@ -124,6 +125,7 @@ export class ProtocolGraphRenderer {
                     heightPx,
                     padding: margins,
                 }),
+                xTicks: [],
                 yTicks: [],
             });
 
@@ -163,6 +165,12 @@ export class ProtocolGraphRenderer {
 
         const points = layout.layoutSamples(samples);
 
+        const xTicks = getTimeTicks({
+            startTimeMs: 0,
+            endTimeMs: expander.durationMs,
+            targetCount: 9,
+        });
+
         const yTicks = getLinearTicks({
             min: this.#valueMin,
             max: this.#valueMax,
@@ -173,7 +181,9 @@ export class ProtocolGraphRenderer {
 
         this.#axesRenderer.render({
             layout,
+            xTicks,
             yTicks,
+            formatXTick: (timeMs) => formatDuration(Math.round(timeMs / 1000)),
         });
 
         this.#svgRenderer.render({ points });

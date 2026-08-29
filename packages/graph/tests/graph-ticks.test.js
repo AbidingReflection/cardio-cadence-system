@@ -8,7 +8,7 @@
 
 import { assertDeepEqual, assertThrows, test } from "../../js-testing/framework/test-framework.js";
 
-import { getLinearTicks } from "../graph-ticks.js";
+import { getLinearTicks, getTimeTicks } from "../graph-ticks.js";
 
 test("graph-ticks", "generates cadence-style ticks", () => {
     const ticks = getLinearTicks({
@@ -149,5 +149,89 @@ test("graph-ticks", "rejects fractional target counts", () => {
                 targetCount: 4.5,
             }),
         /integer/,
+    );
+});
+
+test("graph-ticks", "generates ten-minute ticks for an eighty-minute domain", () => {
+    const ticks = getTimeTicks({
+        startTimeMs: 0,
+        endTimeMs: 80 * 60 * 1000,
+        targetCount: 9,
+    });
+
+    assertDeepEqual(
+        ticks,
+        [0, 600_000, 1_200_000, 1_800_000, 2_400_000, 3_000_000, 3_600_000, 4_200_000, 4_800_000],
+    );
+});
+
+test("graph-ticks", "aligns elapsed-time ticks within a shifted domain", () => {
+    const ticks = getTimeTicks({
+        startTimeMs: 5 * 60 * 1000,
+        endTimeMs: 35 * 60 * 1000,
+        targetCount: 4,
+    });
+
+    assertDeepEqual(ticks, [10 * 60 * 1000, 20 * 60 * 1000, 30 * 60 * 1000]);
+});
+
+test("graph-ticks", "chooses readable sub-minute time intervals", () => {
+    const ticks = getTimeTicks({
+        startTimeMs: 0,
+        endTimeMs: 60_000,
+        targetCount: 5,
+    });
+
+    assertDeepEqual(ticks, [0, 15_000, 30_000, 45_000, 60_000]);
+});
+
+test("graph-ticks", "chooses readable multi-hour time intervals", () => {
+    const ticks = getTimeTicks({
+        startTimeMs: 0,
+        endTimeMs: 6 * 60 * 60 * 1000,
+        targetCount: 4,
+    });
+
+    assertDeepEqual(ticks, [0, 2 * 60 * 60 * 1000, 4 * 60 * 60 * 1000, 6 * 60 * 60 * 1000]);
+});
+
+test("graph-ticks", "allows time target count to differ from returned tick count", () => {
+    const ticks = getTimeTicks({
+        startTimeMs: 0,
+        endTimeMs: 50 * 60 * 1000,
+        targetCount: 6,
+    });
+
+    assertDeepEqual(ticks, [
+        0,
+        10 * 60 * 1000,
+        20 * 60 * 1000,
+        30 * 60 * 1000,
+        40 * 60 * 1000,
+        50 * 60 * 1000,
+    ]);
+});
+
+test("graph-ticks", "rejects invalid elapsed-time domains", () => {
+    assertThrows(
+        () =>
+            getTimeTicks({
+                startTimeMs: 60_000,
+                endTimeMs: 60_000,
+                targetCount: 5,
+            }),
+        /greater than minimum/,
+    );
+});
+
+test("graph-ticks", "rejects invalid elapsed-time target counts", () => {
+    assertThrows(
+        () =>
+            getTimeTicks({
+                startTimeMs: 0,
+                endTimeMs: 60_000,
+                targetCount: 1,
+            }),
+        /at least 2/,
     );
 });
