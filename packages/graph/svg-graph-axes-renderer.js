@@ -6,7 +6,10 @@
  * - Keep tick generation and graph-domain policy outside SVG rendering.
  */
 
+import { roundSvgCoordinate } from "/packages/graph/svg-point-precision.js";
+
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const SVG_COORDINATE_PRECISION = 2;
 
 /** Renders graph axes, grid lines, tick labels, and axis titles into an existing SVG element. */
 export class SvgGraphAxesRenderer {
@@ -68,7 +71,7 @@ export class SvgGraphAxesRenderer {
         }
 
         for (const timeMs of xTicks) {
-            const x = layout.xAtTime(timeMs);
+            const x = roundSvgCoordinate(layout.xAtTime(timeMs), SVG_COORDINATE_PRECISION);
 
             this.#rootGroup.append(
                 this.#createXTickMark(plot, x),
@@ -77,7 +80,7 @@ export class SvgGraphAxesRenderer {
         }
 
         for (const value of yTicks) {
-            const y = layout.yAtValue(value);
+            const y = roundSvgCoordinate(layout.yAtValue(value), SVG_COORDINATE_PRECISION);
 
             this.#rootGroup.append(
                 this.#createHorizontalGridLine(plot, y),

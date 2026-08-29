@@ -6,7 +6,12 @@
  * - Keep protocol semantics and structure-selection policy outside SVG rendering.
  */
 
+import { roundSvgCoordinate } from "/packages/graph/svg-point-precision.js";
+
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const SVG_COORDINATE_PRECISION = 2;
+const PHASE_BAND_HEIGHT = 20;
+const PHASE_BAND_GAP = 4;
 
 /** Renders graph structure overlays into an existing SVG element. */
 export class SvgGraphStructureRenderer {
@@ -32,8 +37,15 @@ export class SvgGraphStructureRenderer {
         for (let index = 0; index < phases.length; index += 1) {
             const phase = phases[index];
 
-            const xStart = layout.xAtTime(phase.startTimeMs);
-            const xEnd = layout.xAtTime(phase.endTimeMs);
+            const xStart = roundSvgCoordinate(
+                layout.xAtTime(phase.startTimeMs),
+                SVG_COORDINATE_PRECISION,
+            );
+
+            const xEnd = roundSvgCoordinate(
+                layout.xAtTime(phase.endTimeMs),
+                SVG_COORDINATE_PRECISION,
+            );
 
             this.#rootGroup.append(
                 this.#createPhaseRegion(plot, index, xStart, xEnd),
@@ -44,7 +56,8 @@ export class SvgGraphStructureRenderer {
 
         for (let index = 1; index < phases.length; index += 1) {
             const boundaryTimeMs = phases[index].startTimeMs;
-            const x = layout.xAtTime(boundaryTimeMs);
+
+            const x = roundSvgCoordinate(layout.xAtTime(boundaryTimeMs), SVG_COORDINATE_PRECISION);
 
             this.#rootGroup.append(this.#createPhaseBoundary(plot, x));
         }
@@ -79,8 +92,8 @@ export class SvgGraphStructureRenderer {
         line.setAttribute("class", "graph-phase-boundary");
         line.setAttribute("x1", String(x));
         line.setAttribute("x2", String(x));
-        line.setAttribute("y1", String(plot.top));
-        line.setAttribute("y2", String(plot.bottom));
+        line.setAttribute("y1", String(roundSvgCoordinate(plot.top, SVG_COORDINATE_PRECISION)));
+        line.setAttribute("y2", String(roundSvgCoordinate(plot.bottom, SVG_COORDINATE_PRECISION)));
 
         return line;
     }
@@ -88,12 +101,18 @@ export class SvgGraphStructureRenderer {
     /** Creates one phase-colored background region inside the plot. */
     #createPhaseRegion(plot, index, xStart, xEnd) {
         const rect = document.createElementNS(SVG_NAMESPACE, "rect");
+        const width = roundSvgCoordinate(Math.max(0, xEnd - xStart), SVG_COORDINATE_PRECISION);
 
         rect.setAttribute("class", `graph-phase-region graph-phase-region--${index}`);
         rect.setAttribute("x", String(xStart));
-        rect.setAttribute("y", String(plot.top));
-        rect.setAttribute("width", String(xEnd - xStart));
-        rect.setAttribute("height", String(plot.bottom - plot.top));
+        rect.setAttribute("y", String(roundSvgCoordinate(plot.top, SVG_COORDINATE_PRECISION)));
+        rect.setAttribute("width", String(width));
+        rect.setAttribute(
+            "height",
+            String(
+                roundSvgCoordinate(Math.max(0, plot.bottom - plot.top), SVG_COORDINATE_PRECISION),
+            ),
+        );
 
         return rect;
     }
@@ -101,15 +120,18 @@ export class SvgGraphStructureRenderer {
     /** Creates one phase band above the plot. */
     #createPhaseBand(plot, index, xStart, xEnd) {
         const rect = document.createElementNS(SVG_NAMESPACE, "rect");
-
-        const bandHeight = 20;
-        const bandBottom = plot.top - 4;
+        const bandBottom = plot.top - PHASE_BAND_GAP;
+        const bandTop = bandBottom - PHASE_BAND_HEIGHT;
+        const width = roundSvgCoordinate(Math.max(0, xEnd - xStart), SVG_COORDINATE_PRECISION);
 
         rect.setAttribute("class", `graph-phase-band graph-phase-band--${index}`);
         rect.setAttribute("x", String(xStart));
-        rect.setAttribute("y", String(bandBottom - bandHeight));
-        rect.setAttribute("width", String(xEnd - xStart));
-        rect.setAttribute("height", String(bandHeight));
+        rect.setAttribute("y", String(roundSvgCoordinate(bandTop, SVG_COORDINATE_PRECISION)));
+        rect.setAttribute("width", String(width));
+        rect.setAttribute(
+            "height",
+            String(roundSvgCoordinate(PHASE_BAND_HEIGHT, SVG_COORDINATE_PRECISION)),
+        );
 
         return rect;
     }
@@ -117,13 +139,16 @@ export class SvgGraphStructureRenderer {
     /** Creates one centered phase label inside its band. */
     #createPhaseLabel(plot, label, xStart, xEnd) {
         const text = document.createElementNS(SVG_NAMESPACE, "text");
-
-        const bandHeight = 20;
-        const bandBottom = plot.top - 4;
+        const bandBottom = plot.top - PHASE_BAND_GAP;
+        const centerX = roundSvgCoordinate((xStart + xEnd) / 2, SVG_COORDINATE_PRECISION);
+        const centerY = roundSvgCoordinate(
+            bandBottom - PHASE_BAND_HEIGHT / 2,
+            SVG_COORDINATE_PRECISION,
+        );
 
         text.setAttribute("class", "graph-phase-label");
-        text.setAttribute("x", String((xStart + xEnd) / 2));
-        text.setAttribute("y", String(bandBottom - bandHeight / 2));
+        text.setAttribute("x", String(centerX));
+        text.setAttribute("y", String(centerY));
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
         text.textContent = String(label);

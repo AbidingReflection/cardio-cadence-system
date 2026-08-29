@@ -20,8 +20,10 @@ import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.
 import { ProtocolGraphContext } from "/packages/protocol-expander/protocol-graph-context.js";
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
 import { formatDuration } from "/packages/utils/format-duration.js";
+import { roundSvgPoints } from "/packages/graph/svg-point-precision.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const SVG_POINT_PRECISION = 1;
 
 /** Resolves graph margins for the current presentation dimensions. */
 function getGraphMargins(widthPx, heightPx) {
@@ -171,7 +173,7 @@ export class ProtocolGraphRenderer {
             margins,
         });
 
-        const points = layout.layoutSamples(samples);
+        const points = roundSvgPoints(layout.layoutSamples(samples), SVG_POINT_PRECISION);
 
         const xTicks = getTimeTicks({
             startTimeMs: 0,
