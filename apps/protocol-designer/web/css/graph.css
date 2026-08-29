@@ -17,3 +17,31 @@
     stroke-linejoin: round;
     vector-effect: non-scaling-stroke;
 }
+
+.graph-axes {
+    pointer-events: none;
+}
+
+.graph-grid__line {
+    stroke: currentColor;
+    stroke-opacity: 0.12;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.graph-axis__tick {
+    stroke: currentColor;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.graph-axis__label {
+    fill: currentColor;
+    font-size: 11px;
+}
+
+.graph-axis__line {
+    stroke: currentColor;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}

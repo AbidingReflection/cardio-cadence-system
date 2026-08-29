@@ -7,6 +7,8 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("/packages/graph/tests/svg-graph-axes-renderer.test.js");
+await import("/packages/graph/tests/graph-ticks.test.js");
 await import("./suites/protocol-graph-renderer.test.js");
 await import("/packages/graph/tests/svg-graph-renderer.test.js");
 await import("/packages/graph/tests/graph-layout.test.js");

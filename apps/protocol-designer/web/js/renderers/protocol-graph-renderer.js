@@ -4,6 +4,7 @@
  * - Own the SVG used to render one Protocol Designer graph.
  * - Resolve presentation margins from the current graph dimensions.
  * - Apply Protocol Designer value-domain configuration.
+ * - Render graph axes and series presentation.
  * - Rerender automatically when the graph container changes size.
  * - Keep protocol graph orchestration out of app.js and generic graph packages.
  */
@@ -11,6 +12,8 @@
 import { GraphLayout } from "/packages/graph/graph-layout.js";
 import { getGraphSampleIntervalMs } from "/packages/graph/graph-sampling-resolution.js";
 import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
+import { getLinearTicks } from "/packages/graph/graph-ticks.js";
+import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
 import { SvgGraphRenderer } from "/packages/graph/svg-graph-renderer.js";
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
@@ -21,9 +24,9 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 function getGraphMargins(widthPx, heightPx) {
     return {
         top: Math.min(20, Math.max(8, heightPx * 0.08)),
-        left: Math.min(20, Math.max(8, widthPx * 0.03)),
         right: Math.min(20, Math.max(8, widthPx * 0.03)),
         bottom: Math.min(20, Math.max(8, heightPx * 0.08)),
+        left: Math.min(48, Math.max(32, widthPx * 0.06)),
     };
 }
 
@@ -38,6 +41,7 @@ export class ProtocolGraphRenderer {
     #valueMax;
     #svg;
     #svgRenderer;
+    #axesRenderer;
     #lastProtocol;
     #resizeObserver;
 
@@ -63,6 +67,7 @@ export class ProtocolGraphRenderer {
         this.#container.replaceChildren(this.#svg);
 
         this.#svgRenderer = new SvgGraphRenderer(this.#svg);
+        this.#axesRenderer = new SvgGraphAxesRenderer(this.#svg);
 
         this.#resizeObserver = new ResizeObserver(() => {
             this.#renderCurrent();
@@ -108,6 +113,20 @@ export class ProtocolGraphRenderer {
 
         if (expander.durationMs <= 0) {
             this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
+
+            this.#axesRenderer.render({
+                layout: new GraphLayout({
+                    startTimeMs: 0,
+                    endTimeMs: 1,
+                    valueMin: this.#valueMin,
+                    valueMax: this.#valueMax,
+                    widthPx,
+                    heightPx,
+                    padding: margins,
+                }),
+                yTicks: [],
+            });
+
             this.#svgRenderer.render({ points: [] });
             return;
         }
@@ -144,7 +163,19 @@ export class ProtocolGraphRenderer {
 
         const points = layout.layoutSamples(samples);
 
+        const yTicks = getLinearTicks({
+            min: this.#valueMin,
+            max: this.#valueMax,
+            targetCount: 6,
+        });
+
         this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
+
+        this.#axesRenderer.render({
+            layout,
+            yTicks,
+        });
+
         this.#svgRenderer.render({ points });
     }
 }
