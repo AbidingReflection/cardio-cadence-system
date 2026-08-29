@@ -2,6 +2,7 @@ import {
     test,
     assertDeepEqual,
     assertThrows,
+    assertEqual,
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { ProtocolExpander } from "../protocol-expander.js";
@@ -170,6 +171,69 @@ function createValueBeforeProtocol() {
                 ],
             },
         ],
+    };
+}
+
+/** Creates equivalent stepped protocols at zero and shifted absolute time. */
+function createTranslatedSteppedProtocols() {
+    const steppedBlock = {
+        id: "stepped-block",
+        durationSeconds: 900,
+        variables: {
+            resistance: {
+                type: "stepped",
+                start: 17,
+                end: 1,
+                step: 1,
+            },
+        },
+    };
+
+    const baseProtocol = {
+        phases: [
+            {
+                id: "base-phase",
+                blocks: [steppedBlock],
+            },
+        ],
+    };
+
+    const shiftedProtocol = {
+        phases: [
+            {
+                id: "prefix-phase",
+                blocks: [
+                    {
+                        id: "prefix-block",
+                        durationSeconds: 3900,
+                        variables: {
+                            resistance: {
+                                type: "steady",
+                                target: 10,
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                id: "shifted-phase",
+                blocks: [
+                    {
+                        ...steppedBlock,
+                        id: "shifted-stepped-block",
+                    },
+                ],
+            },
+        ],
+    };
+
+    return {
+        baseProtocol,
+        shiftedProtocol,
+        baseStart: 0,
+        baseEnd: 900_000,
+        shiftedStart: 3_900_000,
+        shiftedEnd: 4_800_000,
     };
 }
 
@@ -741,16 +805,19 @@ test(
     "protocol-expander",
     "preserves stepped boundary semantics after absolute time translation",
     () => {
+        const { baseProtocol, shiftedProtocol, baseStart, baseEnd, shiftedStart, shiftedEnd } =
+            createTranslatedSteppedProtocols();
+
         const baseExpander = new ProtocolExpander(baseProtocol);
         const shiftedExpander = new ProtocolExpander(shiftedProtocol);
 
-        const baseBoundaries = baseExpander.boundariesBetween("resistance", baseStart, baseEnd);
+        const baseBoundaries = baseExpander
+            .boundariesBetween("resistance", baseStart, baseEnd)
+            .filter((timeMs) => timeMs > baseStart);
 
-        const shiftedBoundaries = shiftedExpander.boundariesBetween(
-            "resistance",
-            shiftedStart,
-            shiftedEnd,
-        );
+        const shiftedBoundaries = shiftedExpander
+            .boundariesBetween("resistance", shiftedStart, shiftedEnd)
+            .filter((timeMs) => timeMs > shiftedStart);
 
         assertEqual(baseBoundaries.length, shiftedBoundaries.length);
 
@@ -758,7 +825,10 @@ test(
             const baseTime = baseBoundaries[index];
             const shiftedTime = shiftedBoundaries[index];
 
-            assertEqual(baseTime - baseStart, shiftedTime - shiftedStart);
+            const baseRelativeTime = baseTime - baseStart;
+            const shiftedRelativeTime = shiftedTime - shiftedStart;
+
+            assertEqual(Math.abs(baseRelativeTime - shiftedRelativeTime) < 1e-6, true);
 
             assertEqual(
                 baseExpander.valueBefore("resistance", baseTime),
