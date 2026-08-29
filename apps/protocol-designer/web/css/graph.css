@@ -45,3 +45,7 @@
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
 }
+
+.graph-axis__title {
+    font-size: 0.8rem;
+}

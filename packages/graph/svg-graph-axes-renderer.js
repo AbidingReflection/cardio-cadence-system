@@ -8,7 +8,7 @@
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-/** Renders graph axes, grid lines, and tick labels into an existing SVG element. */
+/** Renders graph axes, grid lines, tick labels, and axis titles into an existing SVG element. */
 export class SvgGraphAxesRenderer {
     #svg;
     #rootGroup;
@@ -19,8 +19,16 @@ export class SvgGraphAxesRenderer {
         this.#rootGroup = this.#createRootGroup();
     }
 
-    /** Renders graph axes, ticks, labels, and horizontal grid lines. */
-    render({ layout, xTicks = [], yTicks, formatXTick = String, formatYTick = String }) {
+    /** Renders graph axes, ticks, labels, titles, and horizontal grid lines. */
+    render({
+        layout,
+        xTicks = [],
+        yTicks,
+        xAxisLabel = null,
+        yAxisLabel = null,
+        formatXTick = String,
+        formatYTick = String,
+    }) {
         if (!Array.isArray(xTicks)) {
             throw new TypeError("SvgGraphAxesRenderer xTicks must be an array.");
         }
@@ -37,11 +45,27 @@ export class SvgGraphAxesRenderer {
             throw new TypeError("SvgGraphAxesRenderer formatYTick must be a function.");
         }
 
+        if (xAxisLabel !== null && typeof xAxisLabel !== "string") {
+            throw new TypeError("SvgGraphAxesRenderer xAxisLabel must be a string or null.");
+        }
+
+        if (yAxisLabel !== null && typeof yAxisLabel !== "string") {
+            throw new TypeError("SvgGraphAxesRenderer yAxisLabel must be a string or null.");
+        }
+
         this.#clearRootGroup();
 
         const plot = layout.plot;
 
         this.#rootGroup.append(this.#createYAxisLine(plot), this.#createXAxisLine(plot));
+
+        if (xAxisLabel !== null) {
+            this.#rootGroup.append(this.#createXAxisTitle(plot, xAxisLabel));
+        }
+
+        if (yAxisLabel !== null) {
+            this.#rootGroup.append(this.#createYAxisTitle(plot, yAxisLabel));
+        }
 
         for (const timeMs of xTicks) {
             const x = layout.xAtTime(timeMs);
@@ -87,6 +111,38 @@ export class SvgGraphAxesRenderer {
         line.setAttribute("y2", String(plot.bottom));
 
         return line;
+    }
+
+    /** Creates the centered x-axis title beneath the plot. */
+    #createXAxisTitle(plot, label) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        text.setAttribute("class", "graph-axis__title graph-axis__title--x");
+        text.setAttribute("x", String((plot.left + plot.right) / 2));
+        text.setAttribute("y", String(plot.bottom + 30));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "hanging");
+        text.textContent = String(label);
+
+        return text;
+    }
+
+    /** Creates the rotated y-axis title beside the plot. */
+    #createYAxisTitle(plot, label) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        const x = plot.left - 36;
+        const y = (plot.top + plot.bottom) / 2;
+
+        text.setAttribute("class", "graph-axis__title graph-axis__title--y");
+        text.setAttribute("x", String(x));
+        text.setAttribute("y", String(y));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("transform", `rotate(-90 ${x} ${y})`);
+        text.textContent = String(label);
+
+        return text;
     }
 
     /** Creates the renderer-owned SVG group. */

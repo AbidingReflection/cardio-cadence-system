@@ -26,8 +26,8 @@ function getGraphMargins(widthPx, heightPx) {
     return {
         top: Math.min(20, Math.max(8, heightPx * 0.08)),
         right: Math.min(20, Math.max(8, widthPx * 0.03)),
-        bottom: Math.min(40, Math.max(28, heightPx * 0.14)),
-        left: Math.min(48, Math.max(32, widthPx * 0.06)),
+        bottom: Math.min(56, Math.max(44, heightPx * 0.18)),
+        left: Math.min(72, Math.max(56, widthPx * 0.08)),
     };
 }
 
@@ -102,7 +102,6 @@ export class ProtocolGraphRenderer {
         }
 
         const margins = getGraphMargins(widthPx, heightPx);
-
         const plotWidthPx = widthPx - margins.left - margins.right;
         const plotHeightPx = heightPx - margins.top - margins.bottom;
 
@@ -112,19 +111,19 @@ export class ProtocolGraphRenderer {
 
         const expander = new ProtocolExpander(this.#lastProtocol);
 
-        if (expander.durationMs <= 0) {
-            this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
+        this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
 
-            this.#axesRenderer.render({
-                layout: new GraphLayout({
-                    startTimeMs: 0,
-                    endTimeMs: 1,
-                    valueMin: this.#valueMin,
-                    valueMax: this.#valueMax,
-                    widthPx,
-                    heightPx,
-                    padding: margins,
-                }),
+        if (expander.durationMs <= 0) {
+            const layout = this.#createLayout({
+                startTimeMs: 0,
+                endTimeMs: 1,
+                widthPx,
+                heightPx,
+                margins,
+            });
+
+            this.#renderAxes({
+                layout,
                 xTicks: [],
                 yTicks: [],
             });
@@ -153,14 +152,12 @@ export class ProtocolGraphRenderer {
             sampleIntervalMs,
         });
 
-        const layout = new GraphLayout({
+        const layout = this.#createLayout({
             startTimeMs: 0,
             endTimeMs: expander.durationMs,
-            valueMin: this.#valueMin,
-            valueMax: this.#valueMax,
             widthPx,
             heightPx,
-            padding: margins,
+            margins,
         });
 
         const points = layout.layoutSamples(samples);
@@ -177,15 +174,46 @@ export class ProtocolGraphRenderer {
             targetCount: 6,
         });
 
-        this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
+        this.#renderAxes({
+            layout,
+            xTicks,
+            yTicks,
+        });
 
+        this.#svgRenderer.render({ points });
+    }
+
+    /** Creates graph layout geometry for the current value domain. */
+    #createLayout({ startTimeMs, endTimeMs, widthPx, heightPx, margins }) {
+        return new GraphLayout({
+            startTimeMs,
+            endTimeMs,
+            valueMin: this.#valueMin,
+            valueMax: this.#valueMax,
+            widthPx,
+            heightPx,
+            padding: margins,
+        });
+    }
+
+    /** Renders axes using the presentation configuration for this graph. */
+    #renderAxes({ layout, xTicks, yTicks }) {
         this.#axesRenderer.render({
             layout,
             xTicks,
             yTicks,
+            xAxisLabel: "Time",
+            yAxisLabel: this.#getYAxisLabel(),
             formatXTick: (timeMs) => formatDuration(Math.round(timeMs / 1000)),
         });
+    }
 
-        this.#svgRenderer.render({ points });
+    /** Returns the presentation label for this graph's value axis. */
+    #getYAxisLabel() {
+        if (this.#unit === null) {
+            return this.#label;
+        }
+
+        return `${this.#label} (${this.#unit})`;
     }
 }

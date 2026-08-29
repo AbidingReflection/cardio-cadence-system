@@ -205,3 +205,14 @@ test("protocol-graph-renderer", "replaces previous rendered geometry on rerender
     assertEqual(paths.length, 1);
     assertEqual(paths[0].getAttribute("d") === firstPathData, false);
 });
+
+test("protocol-graph-renderer", "renders protocol graph axis titles", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createProtocol());
+
+    assertEqual(container.querySelector(".graph-axis__title--x").textContent, "Time");
+
+    assertEqual(container.querySelector(".graph-axis__title--y").textContent, "Cadence (RPM)");
+});

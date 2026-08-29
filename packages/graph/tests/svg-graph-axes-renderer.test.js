@@ -282,3 +282,138 @@ test("svg-graph-axes-renderer", "renders the x-axis baseline", () => {
     assertEqual(Number(line.getAttribute("y1")), plot.bottom);
     assertEqual(Number(line.getAttribute("y2")), plot.bottom);
 });
+
+test("svg-graph-axes-renderer", "renders one x tick mark per x tick", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [0, 30_000, 60_000],
+        yTicks: [],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-axis__tick--x").length, 3);
+});
+
+test("svg-graph-axes-renderer", "renders one x label per x tick", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [0, 30_000, 60_000],
+        yTicks: [],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-axis__label--x").length, 3);
+});
+
+test("svg-graph-axes-renderer", "maps x tick positions through the graph layout", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout,
+        xTicks: [30_000],
+        yTicks: [],
+    });
+
+    const tick = svg.querySelector(".graph-axis__tick--x");
+    const expectedX = layout.xAtTime(30_000);
+
+    assertEqual(Number(tick.getAttribute("x1")), expectedX);
+    assertEqual(Number(tick.getAttribute("x2")), expectedX);
+});
+
+test("svg-graph-axes-renderer", "uses custom x tick formatting", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [30_000],
+        yTicks: [],
+        formatXTick: () => "0:30",
+    });
+
+    assertEqual(svg.querySelector(".graph-axis__label--x").textContent, "0:30");
+});
+
+test("svg-graph-axes-renderer", "renders axis titles", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [],
+        yTicks: [],
+        xAxisLabel: "Time",
+        yAxisLabel: "Cadence (RPM)",
+    });
+
+    assertEqual(svg.querySelector(".graph-axis__title--x").textContent, "Time");
+    assertEqual(svg.querySelector(".graph-axis__title--y").textContent, "Cadence (RPM)");
+});
+
+test("svg-graph-axes-renderer", "rotates the y-axis title", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [],
+        yTicks: [],
+        yAxisLabel: "Cadence (RPM)",
+    });
+
+    const title = svg.querySelector(".graph-axis__title--y");
+
+    assertEqual(title.getAttribute("transform").startsWith("rotate(-90 "), true);
+});
+
+test("svg-graph-axes-renderer", "omits null axis titles", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        xTicks: [],
+        yTicks: [],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-axis__title").length, 0);
+});
+
+test("svg-graph-axes-renderer", "rejects a non-string x-axis title", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    assertThrows(
+        () =>
+            renderer.render({
+                layout: createLayout(),
+                xTicks: [],
+                yTicks: [],
+                xAxisLabel: 123,
+            }),
+        /string or null/,
+    );
+});
+
+test("svg-graph-axes-renderer", "rejects a non-string y-axis title", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphAxesRenderer(svg);
+
+    assertThrows(
+        () =>
+            renderer.render({
+                layout: createLayout(),
+                xTicks: [],
+                yTicks: [],
+                yAxisLabel: 123,
+            }),
+        /string or null/,
+    );
+});
