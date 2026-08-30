@@ -780,7 +780,7 @@ test(
 
         assertThrows(
             () => requestCollapsePhase(protocolModel, editorState, "phase-1"),
-            'Expanded block not found in protocol: "missing-block".',
+            'Block not found in protocol: "missing-block".',
         );
     },
 );

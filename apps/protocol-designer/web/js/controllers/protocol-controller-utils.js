@@ -8,7 +8,7 @@ export function getBlockPhaseId(protocolModel, blockId) {
         }
     }
 
-    throw new Error(`Expanded block not found in protocol: "${blockId}".`);
+    throw new Error(`Block not found in protocol: "${blockId}".`);
 }
 
 /** Returns the phase containing the active expanded block editor. */

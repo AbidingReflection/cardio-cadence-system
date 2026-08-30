@@ -5,6 +5,7 @@
 import { wireProtocolBlockEvents } from "./protocol-block-events.js";
 import { wireProtocolPhaseEvents } from "./protocol-phase-events.js";
 import { wireProtocolStructureEvents } from "./structure/events.js";
+import { wireProtocolSelectionEvents } from "./protocol-selection-events.js";
 
 /** Registers all delegated protocol-tree interactions. */
 export function wireProtocolTreeEvents({
@@ -18,6 +19,11 @@ export function wireProtocolTreeEvents({
     setPendingPhaseNameFocus,
     setPendingStructuralFocus,
 }) {
+    wireProtocolSelectionEvents({
+        protocolTree,
+        editorState,
+    });
+
     wireProtocolBlockEvents({
         protocolTree,
         protocolModel,

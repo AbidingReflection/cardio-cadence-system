@@ -7,6 +7,10 @@ import { deepEqual } from "/packages/utils/deep-equal.js";
 export class EditorState {
     #expandedPhaseIds = new Set();
     #expandedBlockId;
+
+    #selectedPhaseId;
+    #selectedBlockId;
+
     #listeners = new Set();
 
     #editingPhaseId;
@@ -23,6 +27,9 @@ export class EditorState {
         return {
             expandedPhaseIds: [...this.#expandedPhaseIds],
             expandedBlockId: this.#expandedBlockId,
+
+            selectedPhaseId: this.#selectedPhaseId,
+            selectedBlockId: this.#selectedBlockId,
 
             editingPhaseId: this.#editingPhaseId,
             phaseNameDraft: this.#phaseNameDraft,
@@ -50,6 +57,39 @@ export class EditorState {
         return () => {
             this.#listeners.delete(listener);
         };
+    }
+
+    /** Selects one phase and clears any selected block. */
+    selectPhase(phaseId) {
+        if (this.#selectedPhaseId === phaseId && this.#selectedBlockId === undefined) {
+            return;
+        }
+
+        this.#selectedPhaseId = phaseId;
+        this.#selectedBlockId = undefined;
+        this.#emit();
+    }
+
+    /** Selects one block and clears any selected phase. */
+    selectBlock(blockId) {
+        if (this.#selectedBlockId === blockId && this.#selectedPhaseId === undefined) {
+            return;
+        }
+
+        this.#selectedBlockId = blockId;
+        this.#selectedPhaseId = undefined;
+        this.#emit();
+    }
+
+    /** Clears the current structural selection. */
+    clearSelection() {
+        if (this.#selectedPhaseId === undefined && this.#selectedBlockId === undefined) {
+            return;
+        }
+
+        this.#selectedPhaseId = undefined;
+        this.#selectedBlockId = undefined;
+        this.#emit();
     }
 
     /** Expands a phase by ID. */

@@ -42,10 +42,10 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease,
-    box-shadow 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .protocol-pane__action-button:hover {
@@ -66,7 +66,7 @@
     color: var(--color-surface);
 }
 
-.protocol-pane__action-button:focus-visible {
+/*.protocol-pane__action-button:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
-}
+}*/

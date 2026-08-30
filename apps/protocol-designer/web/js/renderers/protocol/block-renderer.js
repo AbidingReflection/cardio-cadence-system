@@ -9,12 +9,20 @@ import { formatDuration } from "../../../../packages/utils/format-duration.js";
 /** Creates a block card. */
 export function createBlockElement(block, editorSnapshot, activityType, machineProfile) {
     const isExpanded = editorSnapshot.expandedBlockId === block.id;
+    const isSelected = editorSnapshot.selectedBlockId === block.id;
 
     const blockElement = document.createElement("article");
 
-    blockElement.className = isExpanded ? "block-card block-card--expanded" : "block-card";
+    blockElement.className = [
+        "block-card",
+        isExpanded ? "block-card--expanded" : undefined,
+        isSelected ? "block-card--selected" : undefined,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     blockElement.dataset.blockId = block.id;
+    blockElement.setAttribute("aria-selected", String(isSelected));
 
     if (editorSnapshot.editMode === "block") {
         blockElement.dataset.structuralItem = "block";

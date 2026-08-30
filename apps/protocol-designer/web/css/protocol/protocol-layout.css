@@ -17,3 +17,14 @@
     flex-direction: column;
     gap: 14px;
 }
+
+.phase-card--selected,
+.block-card--selected {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.protocol-tree:focus,
+.protocol-tree:focus-visible {
+    outline: none;
+}

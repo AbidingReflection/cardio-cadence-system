@@ -6,6 +6,7 @@ import {
 } from "/packages/js-testing/framework/test-framework.js";
 
 import {
+    requestCollapsePhase,
     requestDeleteBlock,
     requestDeletePhase,
     requestMoveBlock,
@@ -348,3 +349,96 @@ test("protocol-structure-controller", "move phase throws without a phase ID", ()
         requestMovePhase(protocolModel, editorState, undefined, 0);
     });
 });
+
+test(
+    "protocol-structure-controller",
+    "collapsing a phase selects it when its child block is selected",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-1");
+
+        const result = requestCollapsePhase(protocolModel, editorState, "phase-1");
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedPhaseId, "phase-1");
+        assertEqual(snapshot.selectedBlockId, undefined);
+        assertEqual(snapshot.expandedPhaseIds.includes("phase-1"), false);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "collapsing a phase preserves selection in another phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-3");
+
+        requestCollapsePhase(protocolModel, editorState, "phase-1");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedPhaseId, undefined);
+        assertEqual(snapshot.selectedBlockId, "block-3");
+        assertEqual(snapshot.expandedPhaseIds.includes("phase-1"), false);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "blocked phase collapse preserves child block selection",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake(createEditDraft());
+
+        editorState.expandBlock("block-1");
+        editorState.selectBlock("block-1");
+        editorState.updateBlockDraft({
+            name: "Dirty name",
+        });
+
+        const result = requestCollapsePhase(protocolModel, editorState, "phase-1");
+
+        assertDeepEqual(result, {
+            outcome: "blocked",
+            reason: "dirty-draft",
+        });
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedPhaseId, undefined);
+        assertEqual(snapshot.selectedBlockId, "block-1");
+        assertEqual(snapshot.expandedPhaseIds.includes("phase-1"), true);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "collapsing an already-collapsed phase preserves selection",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.collapsePhase("phase-1");
+        editorState.selectBlock("block-1");
+
+        const result = requestCollapsePhase(protocolModel, editorState, "phase-1");
+
+        assertDeepEqual(result, {
+            outcome: "proceed",
+        });
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedPhaseId, undefined);
+        assertEqual(snapshot.selectedBlockId, "block-1");
+    },
+);

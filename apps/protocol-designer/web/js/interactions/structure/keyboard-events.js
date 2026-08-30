@@ -31,7 +31,13 @@ function handleStructuralReorderKeydown(
     editorState,
     setPendingStructuralFocus,
 ) {
-    if (!event.ctrlKey || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) {
+    if (
+        !event.ctrlKey ||
+        event.altKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        (event.key !== "ArrowUp" && event.key !== "ArrowDown")
+    ) {
         return;
     }
 

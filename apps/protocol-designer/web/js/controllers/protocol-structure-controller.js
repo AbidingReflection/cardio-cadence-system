@@ -1,4 +1,4 @@
-import { getActiveBlockPhaseId } from "./protocol-controller-utils.js";
+import { getActiveBlockPhaseId, getBlockPhaseId } from "./protocol-controller-utils.js";
 
 import { checkBlockDraftNavigation } from "./block-editor-controller.js";
 
@@ -106,6 +106,49 @@ export function requestMoveBlock(protocolModel, editorState, blockId, targetPhas
     protocolModel.moveBlock(blockId, targetPhaseId, targetIndex);
 
     editorState.expandPhase(targetPhaseId);
+
+    return {
+        outcome: "proceed",
+    };
+}
+
+/**
+ * Requests collapse of a phase while protecting a draft inside that phase.
+ */
+export function requestCollapsePhase(protocolModel, editorState, phaseId) {
+    if (typeof phaseId !== "string" || phaseId.trim() === "") {
+        throw new Error("Phase collapse requires a phase ID.");
+    }
+
+    const editorSnapshot = editorState.getSnapshot();
+
+    if (!editorSnapshot.expandedPhaseIds.includes(phaseId)) {
+        return {
+            outcome: "proceed",
+        };
+    }
+
+    const activeBlockPhaseId = getActiveBlockPhaseId(protocolModel, editorSnapshot);
+    const phaseContainsExpandedBlock = activeBlockPhaseId === phaseId;
+
+    if (phaseContainsExpandedBlock) {
+        const navigation = checkBlockDraftNavigation(editorState);
+
+        if (navigation.outcome === "blocked") {
+            return navigation;
+        }
+
+        editorState.closeBlockDraft();
+    }
+
+    if (
+        editorSnapshot.selectedBlockId !== undefined &&
+        getBlockPhaseId(protocolModel, editorSnapshot.selectedBlockId) === phaseId
+    ) {
+        editorState.selectPhase(phaseId);
+    }
+
+    editorState.collapsePhase(phaseId);
 
     return {
         outcome: "proceed",

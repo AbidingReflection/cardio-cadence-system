@@ -13,6 +13,8 @@ test("editor-state", "starts with no expanded phases or block", () => {
     assertDeepEqual(state.getSnapshot(), {
         expandedPhaseIds: [],
         expandedBlockId: undefined,
+        selectedPhaseId: undefined,
+        selectedBlockId: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
         insertionTarget: undefined,
@@ -93,6 +95,8 @@ test("editor-state", "notifies subscribers after state changes", () => {
     assertDeepEqual(receivedSnapshot, {
         expandedPhaseIds: ["phase-1"],
         expandedBlockId: undefined,
+        selectedPhaseId: undefined,
+        selectedBlockId: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
         insertionTarget: undefined,
@@ -1031,4 +1035,71 @@ test("editor-state", "opening a block create draft emits once", () => {
     );
 
     assertEqual(emitCount, 1);
+});
+
+test("editor-state", "starts with no structural selection", () => {
+    const state = new EditorState();
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, undefined);
+    assertEqual(snapshot.selectedBlockId, undefined);
+});
+
+test("editor-state", "selects one phase", () => {
+    const state = new EditorState();
+
+    state.selectPhase("phase-1");
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, "phase-1");
+    assertEqual(snapshot.selectedBlockId, undefined);
+});
+
+test("editor-state", "selects one block", () => {
+    const state = new EditorState();
+
+    state.selectBlock("block-1");
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, undefined);
+    assertEqual(snapshot.selectedBlockId, "block-1");
+});
+
+test("editor-state", "selecting a block clears the selected phase", () => {
+    const state = new EditorState();
+
+    state.selectPhase("phase-1");
+    state.selectBlock("block-1");
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, undefined);
+    assertEqual(snapshot.selectedBlockId, "block-1");
+});
+
+test("editor-state", "selecting a phase clears the selected block", () => {
+    const state = new EditorState();
+
+    state.selectBlock("block-1");
+    state.selectPhase("phase-1");
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, "phase-1");
+    assertEqual(snapshot.selectedBlockId, undefined);
+});
+
+test("editor-state", "clears structural selection", () => {
+    const state = new EditorState();
+
+    state.selectBlock("block-1");
+    state.clearSelection();
+
+    const snapshot = state.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, undefined);
+    assertEqual(snapshot.selectedBlockId, undefined);
 });

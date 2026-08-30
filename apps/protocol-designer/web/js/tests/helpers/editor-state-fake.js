@@ -34,6 +34,9 @@ export function createEditorStateFake(activeBlockDraft) {
 
     let editingPhaseId;
 
+    let selectedPhaseId;
+    let selectedBlockId;
+
     let phaseNameDraft;
 
     const calls = {
@@ -53,6 +56,9 @@ export function createEditorStateFake(activeBlockDraft) {
         openBlockCreateDraft: [],
         startPhaseNameEdit: 0,
         closePhaseNameEdit: 0,
+        selectPhase: 0,
+        selectBlock: 0,
+        clearSelection: 0,
     };
 
     return {
@@ -70,6 +76,8 @@ export function createEditorStateFake(activeBlockDraft) {
                 expandedPhaseIds: [...expandedPhaseIds],
                 editingPhaseId,
                 phaseNameDraft,
+                selectedPhaseId,
+                selectedBlockId,
             };
         },
 
@@ -211,6 +219,27 @@ export function createEditorStateFake(activeBlockDraft) {
             calls.closePhaseNameEdit++;
             editingPhaseId = undefined;
             phaseNameDraft = undefined;
+        },
+
+        /** Selects one phase and clears any selected block. */
+        selectPhase(phaseId) {
+            calls.selectPhase++;
+            selectedPhaseId = phaseId;
+            selectedBlockId = undefined;
+        },
+
+        /** Selects one block and clears any selected phase. */
+        selectBlock(blockId) {
+            calls.selectBlock++;
+            selectedBlockId = blockId;
+            selectedPhaseId = undefined;
+        },
+
+        /** Clears structural selection. */
+        clearSelection() {
+            calls.clearSelection++;
+            selectedPhaseId = undefined;
+            selectedBlockId = undefined;
         },
     };
 }

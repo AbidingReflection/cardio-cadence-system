@@ -31,12 +31,20 @@ export function createPhaseElement(
     machineProfile,
 ) {
     const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
+    const isSelected = editorSnapshot.selectedPhaseId === phase.id;
 
     const phaseElement = document.createElement("article");
 
-    phaseElement.className = isExpanded ? "phase-card phase-card--expanded" : "phase-card";
+    phaseElement.className = [
+        "phase-card",
+        isExpanded ? "phase-card--expanded" : undefined,
+        isSelected ? "phase-card--selected" : undefined,
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     phaseElement.dataset.phaseId = phase.id;
+    phaseElement.setAttribute("aria-selected", String(isSelected));
 
     if (editorSnapshot.editMode === "phase") {
         phaseElement.dataset.structuralItem = "phase";
