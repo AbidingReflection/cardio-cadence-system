@@ -282,24 +282,32 @@ test(
     },
 );
 
-test("protocol-selection-events", "Space navigation returns focus to the protocol tree", () => {
-    const { protocolTree, editorState } = createSelectionHarness();
-    const phase = createPhaseCard("phase-1");
+test(
+    "protocol-selection-events",
+    "Space navigation leaves focus on the selected phase toggle",
+    () => {
+        const { protocolTree, editorState } = createSelectionHarness();
+        const phase = createPhaseCard("phase-1");
+        const toggle = appendPhaseToggle(phase);
 
-    appendPhaseToggle(phase);
-    protocolTree.append(phase);
-    document.body.append(protocolTree);
+        protocolTree.append(phase);
+        document.body.append(protocolTree);
 
-    try {
-        editorState.selectPhase("phase-1");
+        try {
+            toggle.addEventListener("click", () => {
+                toggle.focus();
+            });
 
-        dispatchKeydown(protocolTree, " ");
+            editorState.selectPhase("phase-1");
 
-        assertEqual(document.activeElement, protocolTree);
-    } finally {
-        protocolTree.remove();
-    }
-});
+            dispatchKeydown(protocolTree, " ");
+
+            assertEqual(document.activeElement, toggle);
+        } finally {
+            protocolTree.remove();
+        }
+    },
+);
 
 test(
     "protocol-selection-events",

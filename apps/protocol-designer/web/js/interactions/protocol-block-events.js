@@ -48,6 +48,7 @@ export function wireProtocolBlockEvents({
 
             case "cancel-block-edit":
                 cancelBlockEdit(editorState);
+                protocolTree.focus();
                 break;
         }
     });
@@ -97,7 +98,11 @@ export function wireProtocolBlockEvents({
 
         event.preventDefault();
 
-        applyBlockDraft(protocolModel, editorState, activityType, machineProfile);
+        const applied = applyBlockDraft(protocolModel, editorState, activityType, machineProfile);
+
+        if (applied) {
+            protocolTree.focus();
+        }
     });
 }
 

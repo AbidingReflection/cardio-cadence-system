@@ -137,8 +137,6 @@ function toggleSelectedItem(event, protocolTree, editorState) {
     event.preventDefault();
 
     toggle.click();
-
-    protocolTree.focus();
 }
 
 /** Moves structural selection by one visible tree item. */
