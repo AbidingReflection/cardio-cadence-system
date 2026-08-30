@@ -26,11 +26,14 @@ function handleStructuralReorderKeydown(event, protocolTree, protocolModel, edit
         return;
     }
 
-    if (event.target !== protocolTree) {
+    const editorSnapshot = editorState.getSnapshot();
+
+    if (
+        event.target !== protocolTree &&
+        !isSelectedStructuralToggle(event.target, editorSnapshot)
+    ) {
         return;
     }
-
-    const editorSnapshot = editorState.getSnapshot();
 
     if (editorSnapshot.editMode === "phase" && editorSnapshot.selectedPhaseId !== undefined) {
         movePhaseByKeyboard(
@@ -142,4 +145,37 @@ function moveBlockByKeyboard(event, protocolTree, blockId, protocolModel, editor
     if (result.outcome === "proceed") {
         protocolTree.focus();
     }
+}
+
+/** Returns whether a keyboard event came from the selected item's structural toggle. */
+function isSelectedStructuralToggle(target, editorSnapshot) {
+    const actionElement = target.closest("[data-action]");
+
+    if (actionElement === null) {
+        return false;
+    }
+
+    const action = actionElement.dataset.action;
+
+    if (action !== "toggle-phase" && action !== "expand-block" && action !== "collapse-block") {
+        return false;
+    }
+
+    if (editorSnapshot.selectedBlockId !== undefined) {
+        const blockElement = actionElement.closest(".block-card[data-block-id]");
+
+        return (
+            blockElement !== null && blockElement.dataset.blockId === editorSnapshot.selectedBlockId
+        );
+    }
+
+    if (editorSnapshot.selectedPhaseId !== undefined) {
+        const phaseElement = actionElement.closest(".phase-card[data-phase-id]");
+
+        return (
+            phaseElement !== null && phaseElement.dataset.phaseId === editorSnapshot.selectedPhaseId
+        );
+    }
+
+    return false;
 }
