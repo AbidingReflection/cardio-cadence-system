@@ -25,9 +25,13 @@ export class SvgGraphStructureRenderer {
     }
 
     /** Renders protocol structure for a graph layout. */
-    render({ layout, phases = [] }) {
+    render({ layout, phases = [], blocks = [] }) {
         if (!Array.isArray(phases)) {
             throw new TypeError("SvgGraphStructureRenderer phases must be an array.");
+        }
+
+        if (!Array.isArray(blocks)) {
+            throw new TypeError("SvgGraphStructureRenderer blocks must be an array.");
         }
 
         this.#clearRootGroup();
@@ -52,6 +56,14 @@ export class SvgGraphStructureRenderer {
                 this.#createPhaseBand(plot, index, xStart, xEnd),
                 this.#createPhaseLabel(plot, phase.label, xStart, xEnd),
             );
+        }
+
+        for (let index = 1; index < blocks.length; index += 1) {
+            const boundaryTimeMs = blocks[index].startTimeMs;
+
+            const x = roundSvgCoordinate(layout.xAtTime(boundaryTimeMs), SVG_COORDINATE_PRECISION);
+
+            this.#rootGroup.append(this.#createBlockBoundary(plot, x));
         }
 
         for (let index = 1; index < phases.length; index += 1) {
@@ -115,6 +127,19 @@ export class SvgGraphStructureRenderer {
         );
 
         return rect;
+    }
+
+    /** Creates one vertical block boundary across the plot area. */
+    #createBlockBoundary(plot, x) {
+        const line = document.createElementNS(SVG_NAMESPACE, "line");
+
+        line.setAttribute("class", "graph-block-boundary");
+        line.setAttribute("x1", String(x));
+        line.setAttribute("x2", String(x));
+        line.setAttribute("y1", String(roundSvgCoordinate(plot.top, SVG_COORDINATE_PRECISION)));
+        line.setAttribute("y2", String(roundSvgCoordinate(plot.bottom, SVG_COORDINATE_PRECISION)));
+
+        return line;
     }
 
     /** Creates one phase band above the plot. */

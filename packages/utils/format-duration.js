@@ -9,11 +9,9 @@ export function formatDuration(totalSeconds) {
     const seconds = totalSeconds % 60;
 
     if (hours > 0) {
-        return [
-            hours,
-            String(minutes).padStart(2, "0"),
-            String(seconds).padStart(2, "0"),
-        ].join(":");
+        return [hours, String(minutes).padStart(2, "0"), String(seconds).padStart(2, "0")].join(
+            ":",
+        );
     }
 
     return [minutes, String(seconds).padStart(2, "0")].join(":");

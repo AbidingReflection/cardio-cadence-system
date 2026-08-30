@@ -104,3 +104,11 @@
     stroke-dasharray: 4 4;
     vector-effect: non-scaling-stroke;
 }
+
+.graph-block-boundary {
+    stroke: #8a8a8a;
+    stroke-opacity: 0.35;
+    stroke-width: 1;
+    stroke-dasharray: 1 4;
+    vector-effect: non-scaling-stroke;
+}

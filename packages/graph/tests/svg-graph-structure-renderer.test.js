@@ -353,3 +353,140 @@ test("svg-graph-structure-renderer", "rejects non-array phases", () => {
         /phases must be an array/,
     );
 });
+
+test("svg-graph-structure-renderer", "renders internal block boundaries", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+        blocks: [
+            {
+                id: "block-1",
+                phaseId: "phase-1",
+                startTimeMs: 0,
+                endTimeMs: 20_000,
+            },
+            {
+                id: "block-2",
+                phaseId: "phase-1",
+                startTimeMs: 20_000,
+                endTimeMs: 40_000,
+            },
+            {
+                id: "block-3",
+                phaseId: "phase-1",
+                startTimeMs: 40_000,
+                endTimeMs: 60_000,
+            },
+        ],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-block-boundary").length, 2);
+});
+
+test("svg-graph-structure-renderer", "maps block boundaries through the graph layout", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [],
+        blocks: [
+            {
+                id: "block-1",
+                phaseId: "phase-1",
+                startTimeMs: 0,
+                endTimeMs: 20_000,
+            },
+            {
+                id: "block-2",
+                phaseId: "phase-1",
+                startTimeMs: 20_000,
+                endTimeMs: 40_000,
+            },
+            {
+                id: "block-3",
+                phaseId: "phase-1",
+                startTimeMs: 40_000,
+                endTimeMs: 60_000,
+            },
+        ],
+    });
+
+    const boundaries = svg.querySelectorAll(".graph-block-boundary");
+
+    assertEqual(Number(boundaries[0].getAttribute("x1")), layout.xAtTime(20_000));
+    assertEqual(Number(boundaries[0].getAttribute("x2")), layout.xAtTime(20_000));
+
+    assertEqual(Number(boundaries[1].getAttribute("x1")), layout.xAtTime(40_000));
+    assertEqual(Number(boundaries[1].getAttribute("x2")), layout.xAtTime(40_000));
+});
+
+test("svg-graph-structure-renderer", "renders block boundaries across the plot height", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [],
+        blocks: [
+            {
+                id: "block-1",
+                phaseId: "phase-1",
+                startTimeMs: 0,
+                endTimeMs: 30_000,
+            },
+            {
+                id: "block-2",
+                phaseId: "phase-1",
+                startTimeMs: 30_000,
+                endTimeMs: 60_000,
+            },
+        ],
+    });
+
+    const boundary = svg.querySelector(".graph-block-boundary");
+    const plot = layout.plot;
+
+    assertEqual(Number(boundary.getAttribute("y1")), plot.top);
+    assertEqual(Number(boundary.getAttribute("y2")), plot.bottom);
+});
+
+test("svg-graph-structure-renderer", "renders no block boundaries for one block", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+        blocks: [
+            {
+                id: "block-1",
+                phaseId: "phase-1",
+                startTimeMs: 0,
+                endTimeMs: 60_000,
+            },
+        ],
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-block-boundary").length, 0);
+});
+
+test("svg-graph-structure-renderer", "rejects non-array blocks", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    assertThrows(
+        () =>
+            renderer.render({
+                layout: createLayout(),
+                phases: [],
+                blocks: null,
+            }),
+        /blocks must be an array/,
+    );
+});

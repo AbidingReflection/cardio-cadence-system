@@ -36,6 +36,44 @@ function createProtocol() {
     };
 }
 
+/** Creates a two-block protocol for graph structure integration tests. */
+function createTwoBlockProtocol() {
+    return {
+        phases: [
+            {
+                id: "phase-1",
+                name: "Work",
+                blocks: [
+                    {
+                        id: "block-1",
+                        durationSeconds: 6,
+                        variables: {
+                            cadence: {
+                                type: "stepped",
+                                start: 40,
+                                end: 45,
+                                step: 5,
+                            },
+                        },
+                    },
+                    {
+                        id: "block-2",
+                        durationSeconds: 6,
+                        variables: {
+                            cadence: {
+                                type: "stepped",
+                                start: 45,
+                                end: 50,
+                                step: 5,
+                            },
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
 /** Creates an empty protocol fixture. */
 function createEmptyProtocol() {
     return {
@@ -239,4 +277,13 @@ test("protocol-graph-renderer", "clears rendered graph content for an empty prot
     assertEqual(container.querySelectorAll(".graph-phase-band").length, 0);
     assertEqual(container.querySelectorAll(".graph-phase-label").length, 0);
     assertEqual(container.querySelectorAll(".graph-phase-boundary").length, 0);
+});
+
+test("protocol-graph-renderer", "renders protocol block boundaries", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createTwoBlockProtocol());
+
+    assertEqual(container.querySelectorAll(".graph-block-boundary").length, 1);
 });

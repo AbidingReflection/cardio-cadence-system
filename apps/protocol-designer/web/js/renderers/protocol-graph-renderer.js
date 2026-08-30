@@ -137,6 +137,7 @@ export class ProtocolGraphRenderer {
             this.#structureRenderer.render({
                 layout,
                 phases: [],
+                blocks: [],
             });
 
             this.#svgRenderer.render({ points: [] });
@@ -188,6 +189,7 @@ export class ProtocolGraphRenderer {
         });
 
         const phases = this.#getGraphPhases(graphContext);
+        const blocks = graphContext.getBlockRanges();
 
         this.#renderAxes({
             layout,
@@ -198,6 +200,7 @@ export class ProtocolGraphRenderer {
         this.#structureRenderer.render({
             layout,
             phases,
+            blocks,
         });
 
         this.#svgRenderer.render({ points });
