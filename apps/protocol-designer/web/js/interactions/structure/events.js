@@ -63,7 +63,6 @@ export function wireProtocolStructureEvents({
         protocolTree,
         protocolModel,
         editorState,
-        setPendingStructuralFocus,
     });
 
     wireProtocolStructureDragEvents({

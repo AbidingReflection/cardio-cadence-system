@@ -8,29 +8,14 @@ import {
 } from "../../controllers/protocol-structure-controller.js";
 
 /** Registers keyboard protocol reordering interactions. */
-export function wireProtocolStructureKeyboardEvents({
-    protocolTree,
-    protocolModel,
-    editorState,
-    setPendingStructuralFocus,
-}) {
+export function wireProtocolStructureKeyboardEvents({ protocolTree, protocolModel, editorState }) {
     protocolTree.addEventListener("keydown", (event) => {
-        handleStructuralReorderKeydown(
-            event,
-            protocolModel,
-            editorState,
-            setPendingStructuralFocus,
-        );
+        handleStructuralReorderKeydown(event, protocolTree, protocolModel, editorState);
     });
 }
 
-/** Handles keyboard requests to move phases or blocks by one position. */
-function handleStructuralReorderKeydown(
-    event,
-    protocolModel,
-    editorState,
-    setPendingStructuralFocus,
-) {
+/** Handles keyboard requests to move selected phases or blocks by one position. */
+function handleStructuralReorderKeydown(event, protocolTree, protocolModel, editorState) {
     if (
         !event.ctrlKey ||
         event.altKey ||
@@ -41,55 +26,37 @@ function handleStructuralReorderKeydown(
         return;
     }
 
-    const structuralItem = event.target.closest("[data-structural-item]");
-
-    if (!structuralItem) {
+    if (event.target !== protocolTree) {
         return;
     }
 
-    if (event.target !== structuralItem) {
-        return;
-    }
+    const editorSnapshot = editorState.getSnapshot();
 
-    if (structuralItem.dataset.structuralItem === "block") {
-        moveBlockByKeyboard(
+    if (editorSnapshot.editMode === "phase" && editorSnapshot.selectedPhaseId !== undefined) {
+        movePhaseByKeyboard(
             event,
-            structuralItem,
+            protocolTree,
+            editorSnapshot.selectedPhaseId,
             protocolModel,
             editorState,
-            setPendingStructuralFocus,
         );
 
         return;
     }
 
-    if (structuralItem.dataset.structuralItem === "phase") {
-        movePhaseByKeyboard(
+    if (editorSnapshot.editMode === "block" && editorSnapshot.selectedBlockId !== undefined) {
+        moveBlockByKeyboard(
             event,
-            structuralItem,
+            protocolTree,
+            editorSnapshot.selectedBlockId,
             protocolModel,
             editorState,
-            setPendingStructuralFocus,
         );
     }
 }
 
-/** Moves the focused phase one position in the requested direction. */
-function movePhaseByKeyboard(
-    event,
-    phaseElement,
-    protocolModel,
-    editorState,
-    setPendingStructuralFocus,
-) {
-    const editorSnapshot = editorState.getSnapshot();
-
-    if (editorSnapshot.editMode !== "phase") {
-        return;
-    }
-
-    const phaseId = phaseElement.dataset.phaseId;
-
+/** Moves the selected phase one position in the requested direction. */
+function movePhaseByKeyboard(event, protocolTree, phaseId, protocolModel, editorState) {
     const protocolSnapshot = protocolModel.getSnapshot();
 
     const currentIndex = protocolSnapshot.phases.findIndex((phase) => phase.id === phaseId);
@@ -106,33 +73,15 @@ function movePhaseByKeyboard(
 
     event.preventDefault();
 
-    setPendingStructuralFocus({
-        type: "phase",
-        phaseId,
-    });
-
     const result = requestMovePhase(protocolModel, editorState, phaseId, targetIndex);
 
-    if (result.outcome === "blocked") {
-        setPendingStructuralFocus(undefined);
+    if (result.outcome === "proceed") {
+        protocolTree.focus();
     }
 }
 
-/** Moves the focused block one position in protocol order. */
-function moveBlockByKeyboard(
-    event,
-    blockElement,
-    protocolModel,
-    editorState,
-    setPendingStructuralFocus,
-) {
-    const editorSnapshot = editorState.getSnapshot();
-
-    if (editorSnapshot.editMode !== "block") {
-        return;
-    }
-
-    const blockId = blockElement.dataset.blockId;
+/** Moves the selected block one position in protocol order. */
+function moveBlockByKeyboard(event, protocolTree, blockId, protocolModel, editorState) {
     const protocolSnapshot = protocolModel.getSnapshot();
 
     const sourcePhaseIndex = protocolSnapshot.phases.findIndex((phase) =>
@@ -182,11 +131,6 @@ function moveBlockByKeyboard(
 
     event.preventDefault();
 
-    setPendingStructuralFocus({
-        type: "block",
-        blockId,
-    });
-
     const result = requestMoveBlock(
         protocolModel,
         editorState,
@@ -195,7 +139,7 @@ function moveBlockByKeyboard(
         targetIndex,
     );
 
-    if (result.outcome === "blocked") {
-        setPendingStructuralFocus(undefined);
+    if (result.outcome === "proceed") {
+        protocolTree.focus();
     }
 }

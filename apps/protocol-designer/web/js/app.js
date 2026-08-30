@@ -193,10 +193,11 @@ async function main() {
 
         if (editMode === "phase") {
             editorState.clearEditMode();
-            return;
+        } else {
+            editorState.setEditMode("phase");
         }
 
-        editorState.setEditMode("phase");
+        protocolTree.focus();
     });
 
     /** Toggles block structural edit mode. */
@@ -205,10 +206,11 @@ async function main() {
 
         if (editMode === "block") {
             editorState.clearEditMode();
-            return;
+        } else {
+            editorState.setEditMode("block");
         }
 
-        editorState.setEditMode("block");
+        protocolTree.focus();
     });
 
     render();
