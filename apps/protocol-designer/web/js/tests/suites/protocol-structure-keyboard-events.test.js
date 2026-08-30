@@ -46,6 +46,19 @@ function dispatchKeydown(element, key, options = {}) {
     return event;
 }
 
+/** Creates an offscreen focus fixture attached to the document. */
+function createFocusFixture() {
+    const fixture = document.createElement("div");
+
+    fixture.style.position = "fixed";
+    fixture.style.left = "-10000px";
+    fixture.style.top = "0";
+
+    document.body.append(fixture);
+
+    return fixture;
+}
+
 test(
     "protocol-structure-keyboard-events",
     "Ctrl ArrowDown moves the selected phase in phase edit mode",
@@ -229,8 +242,9 @@ test(
     "successful reorder returns focus to the protocol tree",
     () => {
         const { protocolTree, editorState } = createKeyboardHarness();
+        const fixture = createFocusFixture();
 
-        document.body.append(protocolTree);
+        fixture.append(protocolTree);
 
         try {
             editorState.setEditMode("phase");
@@ -244,7 +258,7 @@ test(
 
             assertEqual(document.activeElement, protocolTree);
         } finally {
-            protocolTree.remove();
+            fixture.remove();
         }
     },
 );

@@ -127,6 +127,19 @@ function appendBlockToggle(blockElement, action = "expand-block") {
     return toggle;
 }
 
+/** Creates an offscreen focus fixture attached to the document. */
+function createFocusFixture() {
+    const fixture = document.createElement("div");
+
+    fixture.style.position = "fixed";
+    fixture.style.left = "-10000px";
+    fixture.style.top = "0";
+
+    document.body.append(fixture);
+
+    return fixture;
+}
+
 test("protocol-selection-events", "Space activates the selected phase toggle", () => {
     const { protocolTree, editorState } = createSelectionHarness();
     const phase = createPhaseCard("phase-1");
@@ -289,9 +302,10 @@ test(
         const { protocolTree, editorState } = createSelectionHarness();
         const phase = createPhaseCard("phase-1");
         const toggle = appendPhaseToggle(phase);
+        const fixture = createFocusFixture();
 
         protocolTree.append(phase);
-        document.body.append(protocolTree);
+        fixture.append(protocolTree);
 
         try {
             toggle.addEventListener("click", () => {
@@ -304,7 +318,7 @@ test(
 
             assertEqual(document.activeElement, toggle);
         } finally {
-            protocolTree.remove();
+            fixture.remove();
         }
     },
 );
@@ -576,7 +590,8 @@ test("protocol-selection-events", "arrow navigation does not leave an editable i
 test("protocol-selection-events", "successful arrow navigation focuses the protocol tree", () => {
     const { protocolTree, editorState } = createSelectionHarness();
 
-    document.body.append(protocolTree);
+    const fixture = createFocusFixture();
+    fixture.append(protocolTree);
 
     try {
         protocolTree.append(createPhaseCard("phase-1"), createPhaseCard("phase-2"));
@@ -599,7 +614,8 @@ test(
         const phase = createPhaseCard("phase-1");
 
         protocolTree.append(phase);
-        document.body.append(protocolTree);
+        const fixture = createFocusFixture();
+        fixture.append(protocolTree);
 
         try {
             phase.dispatchEvent(
