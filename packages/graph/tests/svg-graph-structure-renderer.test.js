@@ -50,6 +50,30 @@ function createPhases() {
     ];
 }
 
+/** Creates the default three-block structure used by renderer tests. */
+function createBlocks() {
+    return [
+        {
+            id: "block-1",
+            phaseId: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 20_000,
+        },
+        {
+            id: "block-2",
+            phaseId: "phase-1",
+            startTimeMs: 20_000,
+            endTimeMs: 40_000,
+        },
+        {
+            id: "block-3",
+            phaseId: "phase-2",
+            startTimeMs: 40_000,
+            endTimeMs: 60_000,
+        },
+    ];
+}
+
 test("svg-graph-structure-renderer", "creates one renderer-owned structure group", () => {
     const svg = createSvg();
 
@@ -489,4 +513,79 @@ test("svg-graph-structure-renderer", "rejects non-array blocks", () => {
             }),
         /blocks must be an array/,
     );
+});
+
+test("svg-graph-structure-renderer", "renders one block region per block", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+        blocks: createBlocks(),
+    });
+
+    assertEqual(svg.querySelectorAll(".graph-block-region").length, 3);
+});
+
+test("svg-graph-structure-renderer", "preserves block identity on block regions", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+        blocks: createBlocks(),
+    });
+
+    const regions = svg.querySelectorAll(".graph-block-region");
+
+    assertEqual(regions[0].getAttribute("data-block-id"), "block-1");
+    assertEqual(regions[0].getAttribute("data-phase-id"), "phase-1");
+
+    assertEqual(regions[2].getAttribute("data-block-id"), "block-3");
+    assertEqual(regions[2].getAttribute("data-phase-id"), "phase-2");
+});
+
+test("svg-graph-structure-renderer", "maps block region spans through the graph layout", () => {
+    const svg = createSvg();
+    const layout = createLayout();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout,
+        phases: [],
+        blocks: [
+            {
+                id: "block-1",
+                phaseId: "phase-1",
+                startTimeMs: 20_000,
+                endTimeMs: 40_000,
+            },
+        ],
+    });
+
+    const region = svg.querySelector(".graph-block-region");
+    const expectedStart = layout.xAtTime(20_000);
+    const expectedEnd = layout.xAtTime(40_000);
+
+    assertEqual(Number(region.getAttribute("x")), expectedStart);
+    assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
+});
+
+test("svg-graph-structure-renderer", "preserves phase identity on phase regions", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+        blocks: [],
+    });
+
+    const regions = svg.querySelectorAll(".graph-phase-region");
+
+    assertEqual(regions[0].getAttribute("data-phase-id"), "warmup");
+    assertEqual(regions[1].getAttribute("data-phase-id"), "work");
+    assertEqual(regions[2].getAttribute("data-phase-id"), "cooldown");
 });

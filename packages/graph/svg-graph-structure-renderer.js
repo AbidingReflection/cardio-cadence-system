@@ -52,16 +52,38 @@ export class SvgGraphStructureRenderer {
             );
 
             this.#rootGroup.append(
-                this.#createPhaseRegion(plot, index, xStart, xEnd),
+                this.#createPhaseRegion(plot, phase, index, xStart, xEnd),
                 this.#createPhaseBand(plot, index, xStart, xEnd),
                 this.#createPhaseLabel(plot, phase.label, xStart, xEnd),
             );
         }
 
-        for (let index = 1; index < blocks.length; index += 1) {
-            const boundaryTimeMs = blocks[index].startTimeMs;
+        for (const block of blocks) {
+            const xStart = roundSvgCoordinate(
+                layout.xAtTime(block.startTimeMs),
+                SVG_COORDINATE_PRECISION,
+            );
 
-            const x = roundSvgCoordinate(layout.xAtTime(boundaryTimeMs), SVG_COORDINATE_PRECISION);
+            const xEnd = roundSvgCoordinate(
+                layout.xAtTime(block.endTimeMs),
+                SVG_COORDINATE_PRECISION,
+            );
+
+            this.#rootGroup.append(this.#createBlockRegion(plot, block, xStart, xEnd));
+        }
+
+        for (let index = 1; index < blocks.length; index += 1) {
+            const previousBlock = blocks[index - 1];
+            const block = blocks[index];
+
+            if (block.phaseId !== previousBlock.phaseId) {
+                continue;
+            }
+
+            const x = roundSvgCoordinate(
+                layout.xAtTime(block.startTimeMs),
+                SVG_COORDINATE_PRECISION,
+            );
 
             this.#rootGroup.append(this.#createBlockBoundary(plot, x));
         }
@@ -110,12 +132,34 @@ export class SvgGraphStructureRenderer {
         return line;
     }
 
+    /** Creates one block interaction region inside the plot. */
+    #createBlockRegion(plot, block, xStart, xEnd) {
+        const rect = document.createElementNS(SVG_NAMESPACE, "rect");
+        const width = roundSvgCoordinate(Math.max(0, xEnd - xStart), SVG_COORDINATE_PRECISION);
+
+        rect.setAttribute("class", "graph-block-region");
+        rect.setAttribute("data-block-id", block.id);
+        rect.setAttribute("data-phase-id", block.phaseId);
+        rect.setAttribute("x", String(xStart));
+        rect.setAttribute("y", String(roundSvgCoordinate(plot.top, SVG_COORDINATE_PRECISION)));
+        rect.setAttribute("width", String(width));
+        rect.setAttribute(
+            "height",
+            String(
+                roundSvgCoordinate(Math.max(0, plot.bottom - plot.top), SVG_COORDINATE_PRECISION),
+            ),
+        );
+
+        return rect;
+    }
+
     /** Creates one phase-colored background region inside the plot. */
-    #createPhaseRegion(plot, index, xStart, xEnd) {
+    #createPhaseRegion(plot, phase, index, xStart, xEnd) {
         const rect = document.createElementNS(SVG_NAMESPACE, "rect");
         const width = roundSvgCoordinate(Math.max(0, xEnd - xStart), SVG_COORDINATE_PRECISION);
 
         rect.setAttribute("class", `graph-phase-region graph-phase-region--${index}`);
+        rect.setAttribute("data-phase-id", phase.id);
         rect.setAttribute("x", String(xStart));
         rect.setAttribute("y", String(roundSvgCoordinate(plot.top, SVG_COORDINATE_PRECISION)));
         rect.setAttribute("width", String(width));
