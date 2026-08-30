@@ -49,6 +49,10 @@ export class ProtocolGraphRenderer {
     #axesRenderer;
     #structureRenderer;
     #lastProtocol;
+    #lastSelection = {
+        selectedPhaseId: undefined,
+        selectedBlockId: undefined,
+    };
     #resizeObserver;
 
     /** Creates a renderer for one protocol-backed graph series. */
@@ -83,9 +87,14 @@ export class ProtocolGraphRenderer {
         this.#resizeObserver.observe(this.#container);
     }
 
-    /** Stores and renders the latest protocol snapshot. */
-    render(protocol) {
+    /** Stores and renders the latest protocol snapshot and graph selection. */
+    render(protocol, { selectedPhaseId = undefined, selectedBlockId = undefined } = {}) {
         this.#lastProtocol = protocol;
+        this.#lastSelection = {
+            selectedPhaseId,
+            selectedBlockId,
+        };
+
         this.#renderCurrent();
     }
 
@@ -138,6 +147,8 @@ export class ProtocolGraphRenderer {
                 layout,
                 phases: [],
                 blocks: [],
+                selectedPhaseId: this.#lastSelection.selectedPhaseId,
+                selectedBlockId: this.#lastSelection.selectedBlockId,
             });
 
             this.#svgRenderer.render({ points: [] });
@@ -201,6 +212,8 @@ export class ProtocolGraphRenderer {
             layout,
             phases,
             blocks,
+            selectedPhaseId: this.#lastSelection.selectedPhaseId,
+            selectedBlockId: this.#lastSelection.selectedBlockId,
         });
 
         this.#svgRenderer.render({ points });

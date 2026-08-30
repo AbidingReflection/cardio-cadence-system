@@ -589,3 +589,57 @@ test("svg-graph-structure-renderer", "preserves phase identity on phase regions"
     assertEqual(regions[1].getAttribute("data-phase-id"), "work");
     assertEqual(regions[2].getAttribute("data-phase-id"), "cooldown");
 });
+
+test("svg-graph-structure-renderer", "marks only the selected phase region and band", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+        selectedPhaseId: "work",
+    });
+
+    const selectedRegions = svg.querySelectorAll(".graph-phase-region--selected");
+    const selectedBands = svg.querySelectorAll(".graph-phase-band--selected");
+
+    assertEqual(selectedRegions.length, 1);
+    assertEqual(selectedBands.length, 1);
+    assertEqual(selectedRegions[0].getAttribute("data-phase-id"), "work");
+});
+
+test("svg-graph-structure-renderer", "marks only the selected block region", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [],
+        blocks: createBlocks(),
+        selectedBlockId: "block-2",
+    });
+
+    const selectedRegions = svg.querySelectorAll(".graph-block-region--selected");
+
+    assertEqual(selectedRegions.length, 1);
+    assertEqual(selectedRegions[0].getAttribute("data-block-id"), "block-2");
+});
+
+test(
+    "svg-graph-structure-renderer",
+    "renders no selected structure when selection is omitted",
+    () => {
+        const svg = createSvg();
+        const renderer = new SvgGraphStructureRenderer(svg);
+
+        renderer.render({
+            layout: createLayout(),
+            phases: createPhases(),
+            blocks: createBlocks(),
+        });
+
+        assertEqual(svg.querySelectorAll(".graph-phase-region--selected").length, 0);
+        assertEqual(svg.querySelectorAll(".graph-phase-band--selected").length, 0);
+        assertEqual(svg.querySelectorAll(".graph-block-region--selected").length, 0);
+    },
+);

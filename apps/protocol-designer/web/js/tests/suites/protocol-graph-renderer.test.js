@@ -287,3 +287,29 @@ test("protocol-graph-renderer", "renders protocol block boundaries", () => {
 
     assertEqual(container.querySelectorAll(".graph-block-boundary").length, 1);
 });
+
+test("protocol-graph-renderer", "renders selected protocol phase structure", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createTwoBlockProtocol(), {
+        selectedPhaseId: "phase-1",
+    });
+
+    assertEqual(container.querySelectorAll(".graph-phase-region--selected").length, 1);
+    assertEqual(container.querySelectorAll(".graph-phase-band--selected").length, 1);
+});
+
+test("protocol-graph-renderer", "renders selected protocol block structure", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createTwoBlockProtocol(), {
+        selectedBlockId: "block-2",
+    });
+
+    const selectedRegions = container.querySelectorAll(".graph-block-region--selected");
+
+    assertEqual(selectedRegions.length, 1);
+    assertEqual(selectedRegions[0].getAttribute("data-block-id"), "block-2");
+});

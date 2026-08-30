@@ -117,3 +117,25 @@
     fill: transparent;
     pointer-events: none;
 }
+
+.graph-phase-region--selected {
+    opacity: 0.7;
+    stroke: #f4df7a;
+    stroke-opacity: 0.9;
+    stroke-width: 2;
+}
+
+.graph-phase-band--selected {
+    opacity: 0.7;
+}
+
+.graph-block-region--selected {
+    fill: currentColor;
+    fill-opacity: 0.08;
+
+    stroke: #f4df7a;
+    stroke-opacity: 0.9;
+    stroke-width: 2;
+
+    vector-effect: non-scaling-stroke;
+}

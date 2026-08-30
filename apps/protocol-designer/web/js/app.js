@@ -86,12 +86,18 @@ async function main() {
         valueMax: 20,
     });
 
-    /** Renders protocol-backed graphs from the current committed protocol state. */
+    /** Renders protocol-backed graphs from committed protocol and editor selection state. */
     const renderGraphs = () => {
         const protocol = protocolModel.getSnapshot();
+        const editorSnapshot = editorState.getSnapshot();
 
-        cadenceGraphRenderer.render(protocol);
-        loadGraphRenderer.render(protocol);
+        const selection = {
+            selectedPhaseId: editorSnapshot.selectedPhaseId,
+            selectedBlockId: editorSnapshot.selectedBlockId,
+        };
+
+        cadenceGraphRenderer.render(protocol, selection);
+        loadGraphRenderer.render(protocol, selection);
     };
 
     let pendingFieldFocus;
@@ -162,6 +168,7 @@ async function main() {
     protocolModel.subscribe(render);
     protocolModel.subscribe(renderGraphs);
     editorState.subscribe(render);
+    editorState.subscribe(renderGraphs);
 
     wireProtocolTreeEvents({
         protocolTree,
