@@ -19,6 +19,11 @@ import {
 
 import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
 
+import {
+    toggleProtocolManageMode,
+    wireProtocolManageKeyboardEvents,
+} from "./interactions/protocol-manage-keyboard-events.js";
+
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
 /**
@@ -52,6 +57,7 @@ async function main() {
 
     const editorState = new EditorState();
 
+    const protocolPane = document.querySelector(".protocol-pane");
     const protocolTree = document.querySelector("#protocol-tree");
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
@@ -59,6 +65,7 @@ async function main() {
     const loadGraph = document.querySelector("#load-graph");
 
     if (
+        protocolPane === null ||
         protocolTree === null ||
         editPhaseButton === null ||
         editBlockButton === null ||
@@ -194,29 +201,22 @@ async function main() {
         },
     });
 
+    wireProtocolManageKeyboardEvents({
+        protocolPane,
+        protocolTree,
+        protocolModel,
+        editorState,
+    });
+
     /** Toggles phase structural edit mode. */
     editPhaseButton.addEventListener("click", () => {
-        const { editMode } = editorState.getSnapshot();
-
-        if (editMode === "phase") {
-            editorState.clearEditMode();
-        } else {
-            editorState.setEditMode("phase");
-        }
-
+        toggleProtocolManageMode(editorState, "phase");
         protocolTree.focus();
     });
 
     /** Toggles block structural edit mode. */
     editBlockButton.addEventListener("click", () => {
-        const { editMode } = editorState.getSnapshot();
-
-        if (editMode === "block") {
-            editorState.clearEditMode();
-        } else {
-            editorState.setEditMode("block");
-        }
-
+        toggleProtocolManageMode(editorState, "block");
         protocolTree.focus();
     });
 

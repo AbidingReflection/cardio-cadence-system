@@ -442,3 +442,153 @@ test(
         assertEqual(snapshot.selectedBlockId, "block-1");
     },
 );
+
+test(
+    "protocol-structure-controller",
+    "deleting a selected block selects the following block",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-1");
+
+        const result = requestDeleteBlock(protocolModel, editorState, "block-1");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedBlockId, "block-2");
+        assertEqual(snapshot.selectedPhaseId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting the last selected block selects the preceding block",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-2");
+
+        const result = requestDeleteBlock(protocolModel, editorState, "block-2");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedBlockId, "block-1");
+        assertEqual(snapshot.selectedPhaseId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting the only selected block selects its parent phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-3");
+
+        const result = requestDeleteBlock(protocolModel, editorState, "block-3");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedPhaseId, "phase-2");
+        assertEqual(snapshot.selectedBlockId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting a selected phase selects the following phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectPhase("phase-1");
+
+        const result = requestDeletePhase(protocolModel, editorState, "phase-1");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedPhaseId, "phase-2");
+        assertEqual(snapshot.selectedBlockId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting the last selected phase selects the preceding phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectPhase("phase-2");
+
+        const result = requestDeletePhase(protocolModel, editorState, "phase-2");
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(editorState.getSnapshot().selectedPhaseId, "phase-1");
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting the only remaining selected phase clears selection",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        requestDeletePhase(protocolModel, editorState, "phase-1");
+
+        editorState.selectPhase("phase-2");
+
+        const result = requestDeletePhase(protocolModel, editorState, "phase-2");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedPhaseId, undefined);
+        assertEqual(snapshot.selectedBlockId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting a phase containing the selected block selects a neighboring phase",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-1");
+
+        const result = requestDeletePhase(protocolModel, editorState, "phase-1");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(result.outcome, "proceed");
+        assertEqual(snapshot.selectedPhaseId, "phase-2");
+        assertEqual(snapshot.selectedBlockId, undefined);
+    },
+);
+
+test(
+    "protocol-structure-controller",
+    "deleting unselected structure preserves the current selection",
+    () => {
+        const protocolModel = createProtocolModelFake();
+        const editorState = createEditorStateFake();
+
+        editorState.selectBlock("block-1");
+
+        requestDeleteBlock(protocolModel, editorState, "block-3");
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedBlockId, "block-1");
+        assertEqual(snapshot.selectedPhaseId, undefined);
+    },
+);

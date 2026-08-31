@@ -7,6 +7,7 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("./suites/protocol-manage-keyboard-events.test.js");
 await import("./suites/protocol-structure-renderers.test.js");
 await import("./suites/protocol-structure-keyboard-events.test.js");
 await import("./suites/protocol-selection-events.test.js");

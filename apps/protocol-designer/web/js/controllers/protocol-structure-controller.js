@@ -9,6 +9,7 @@ export function requestDeleteBlock(protocolModel, editorState, blockId) {
     }
 
     const editorSnapshot = editorState.getSnapshot();
+    const replacementSelection = getBlockDeletionSelection(protocolModel, editorSnapshot, blockId);
 
     if (editorSnapshot.expandedBlockId === blockId) {
         const navigation = checkBlockDraftNavigation(editorState);
@@ -22,6 +23,8 @@ export function requestDeleteBlock(protocolModel, editorState, blockId) {
 
     protocolModel.removeBlock(blockId);
 
+    restoreDeletionSelection(editorState, replacementSelection);
+
     return {
         outcome: "proceed",
     };
@@ -34,6 +37,7 @@ export function requestDeletePhase(protocolModel, editorState, phaseId) {
     }
 
     const editorSnapshot = editorState.getSnapshot();
+    const replacementSelection = getPhaseDeletionSelection(protocolModel, editorSnapshot, phaseId);
 
     const activeBlockPhaseId = getActiveBlockPhaseId(protocolModel, editorSnapshot);
 
@@ -53,9 +57,114 @@ export function requestDeletePhase(protocolModel, editorState, phaseId) {
 
     protocolModel.removePhase(phaseId);
 
+    restoreDeletionSelection(editorState, replacementSelection);
+
     return {
         outcome: "proceed",
     };
+}
+
+/** Returns the selection that should replace a deleted selected block. */
+function getBlockDeletionSelection(protocolModel, editorSnapshot, blockId) {
+    if (editorSnapshot.selectedBlockId !== blockId) {
+        return undefined;
+    }
+
+    const protocol = protocolModel.getSnapshot();
+
+    for (const phase of protocol.phases) {
+        const blockIndex = phase.blocks.findIndex((block) => block.id === blockId);
+
+        if (blockIndex === -1) {
+            continue;
+        }
+
+        const nextBlock = phase.blocks[blockIndex + 1];
+
+        if (nextBlock !== undefined) {
+            return {
+                type: "block",
+                id: nextBlock.id,
+            };
+        }
+
+        const previousBlock = phase.blocks[blockIndex - 1];
+
+        if (previousBlock !== undefined) {
+            return {
+                type: "block",
+                id: previousBlock.id,
+            };
+        }
+
+        return {
+            type: "phase",
+            id: phase.id,
+        };
+    }
+
+    throw new Error(`Block not found in protocol: "${blockId}".`);
+}
+
+/** Returns the selection that should replace structure removed with a phase. */
+function getPhaseDeletionSelection(protocolModel, editorSnapshot, phaseId) {
+    const protocol = protocolModel.getSnapshot();
+    const phaseIndex = protocol.phases.findIndex((phase) => phase.id === phaseId);
+
+    if (phaseIndex === -1) {
+        throw new Error(`Phase not found in protocol: "${phaseId}".`);
+    }
+
+    const selectedPhaseWillBeRemoved = editorSnapshot.selectedPhaseId === phaseId;
+
+    const selectedBlockWillBeRemoved =
+        editorSnapshot.selectedBlockId !== undefined &&
+        getBlockPhaseId(protocolModel, editorSnapshot.selectedBlockId) === phaseId;
+
+    if (!selectedPhaseWillBeRemoved && !selectedBlockWillBeRemoved) {
+        return undefined;
+    }
+
+    const nextPhase = protocol.phases[phaseIndex + 1];
+
+    if (nextPhase !== undefined) {
+        return {
+            type: "phase",
+            id: nextPhase.id,
+        };
+    }
+
+    const previousPhase = protocol.phases[phaseIndex - 1];
+
+    if (previousPhase !== undefined) {
+        return {
+            type: "phase",
+            id: previousPhase.id,
+        };
+    }
+
+    return {
+        type: "none",
+    };
+}
+
+/** Restores structural selection after deletion when the selected item was removed. */
+function restoreDeletionSelection(editorState, selection) {
+    if (selection === undefined) {
+        return;
+    }
+
+    if (selection.type === "block") {
+        editorState.selectBlock(selection.id);
+        return;
+    }
+
+    if (selection.type === "phase") {
+        editorState.selectPhase(selection.id);
+        return;
+    }
+
+    editorState.clearSelection();
 }
 
 /** Requests moving a phase while protecting a dirty draft inside it. */
