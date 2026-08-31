@@ -48,7 +48,6 @@ export function createPhaseElement(
 
     if (editorSnapshot.editMode === "phase") {
         phaseElement.dataset.structuralItem = "phase";
-        phaseElement.tabIndex = 0;
         phaseElement.draggable = true;
     }
 
