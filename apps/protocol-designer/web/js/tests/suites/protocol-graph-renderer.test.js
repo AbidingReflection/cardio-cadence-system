@@ -313,3 +313,24 @@ test("protocol-graph-renderer", "renders selected protocol block structure", () 
     assertEqual(selectedRegions.length, 1);
     assertEqual(selectedRegions[0].getAttribute("data-block-id"), "block-2");
 });
+
+test("protocol-graph-renderer", "renders an empty state when the protocol has no blocks", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createEmptyProtocol());
+
+    const emptyState = container.querySelector(".graph-empty-state");
+
+    assertEqual(emptyState.textContent, "Add a block to preview this protocol");
+});
+
+test("protocol-graph-renderer", "removes the empty state when blocks are rendered", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createEmptyProtocol());
+    renderer.render(createProtocol());
+
+    assertEqual(container.querySelector(".graph-empty-state"), null);
+});

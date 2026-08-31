@@ -124,6 +124,8 @@ export class ProtocolGraphRenderer {
             return;
         }
 
+        this.#svg.querySelector(".graph-empty-state")?.remove();
+
         const expander = new ProtocolExpander(this.#lastProtocol);
 
         this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
@@ -152,6 +154,7 @@ export class ProtocolGraphRenderer {
             });
 
             this.#svgRenderer.render({ points: [] });
+            this.#renderEmptyState(layout);
             return;
         }
 
@@ -217,6 +220,20 @@ export class ProtocolGraphRenderer {
         });
 
         this.#svgRenderer.render({ points });
+    }
+
+    /** Renders the no-block graph empty state. */
+    #renderEmptyState(layout) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        text.setAttribute("class", "graph-empty-state");
+        text.setAttribute("x", String((layout.plot.left + layout.plot.right) / 2));
+        text.setAttribute("y", String((layout.plot.top + layout.plot.bottom) / 2));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.textContent = "Add a block to preview this protocol";
+
+        this.#svg.append(text);
     }
 
     /** Creates graph layout geometry for the current value domain. */

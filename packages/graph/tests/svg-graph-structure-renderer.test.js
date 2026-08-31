@@ -643,3 +643,58 @@ test(
         assertEqual(svg.querySelectorAll(".graph-block-region--selected").length, 0);
     },
 );
+
+test("svg-graph-structure-renderer", "does not label zero-width phases", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: [
+            {
+                id: "phase-1",
+                label: "Work",
+                startTimeMs: 0,
+                endTimeMs: 30_000,
+            },
+            {
+                id: "phase-2",
+                label: "Empty",
+                startTimeMs: 30_000,
+                endTimeMs: 30_000,
+            },
+            {
+                id: "phase-3",
+                label: "Cooldown",
+                startTimeMs: 30_000,
+                endTimeMs: 60_000,
+            },
+        ],
+    });
+
+    const labels = svg.querySelectorAll(".graph-phase-label");
+
+    assertEqual(labels.length, 2);
+    assertEqual(labels[0].textContent, "Work");
+    assertEqual(labels[1].textContent, "Cooldown");
+});
+
+test("svg-graph-structure-renderer", "renders phase labels above all phase bands", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+
+    renderer.render({
+        layout: createLayout(),
+        phases: createPhases(),
+    });
+
+    const structure = svg.querySelector(".graph-structure");
+    const children = [...structure.children];
+    const bands = [...structure.querySelectorAll(".graph-phase-band")];
+    const labels = [...structure.querySelectorAll(".graph-phase-label")];
+
+    const lastBandIndex = children.indexOf(bands.at(-1));
+    const firstLabelIndex = children.indexOf(labels[0]);
+
+    assertEqual(firstLabelIndex > lastBandIndex, true);
+});

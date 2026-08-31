@@ -44,6 +44,10 @@ export class SvgGraphStructureRenderer {
 
         const plot = layout.plot;
 
+        const phaseRegions = [];
+        const phaseBands = [];
+        const phaseLabels = [];
+
         for (let index = 0; index < phases.length; index += 1) {
             const phase = phases[index];
             const isSelected = phase.id === selectedPhaseId;
@@ -58,12 +62,18 @@ export class SvgGraphStructureRenderer {
                 SVG_COORDINATE_PRECISION,
             );
 
-            this.#rootGroup.append(
+            phaseRegions.push(
                 this.#createPhaseRegion(plot, phase, index, xStart, xEnd, isSelected),
-                this.#createPhaseBand(plot, index, xStart, xEnd, isSelected),
-                this.#createPhaseLabel(plot, phase.label, xStart, xEnd),
             );
+
+            phaseBands.push(this.#createPhaseBand(plot, index, xStart, xEnd, isSelected));
+
+            if (xEnd > xStart) {
+                phaseLabels.push(this.#createPhaseLabel(plot, phase.label, xStart, xEnd));
+            }
         }
+
+        this.#rootGroup.append(...phaseRegions, ...phaseBands, ...phaseLabels);
 
         for (const block of blocks) {
             const isSelected = block.id === selectedBlockId;
