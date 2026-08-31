@@ -42,10 +42,13 @@ function createPhaseToggle(phaseId = "phase-1") {
 /** Creates a block container with a structural toggle. */
 function createBlockToggle(blockId = "block-1", phaseId = "phase-1") {
     const phase = document.createElement("article");
+    phase.className = "phase-card";
     phase.dataset.phaseId = phaseId;
 
     const block = document.createElement("article");
+    block.className = "block-card";
     block.dataset.blockId = blockId;
+    block.dataset.structuralSelectable = "true";
 
     const toggle = document.createElement("button");
     toggle.dataset.action = "expand-block";
@@ -93,11 +96,22 @@ function createPhaseCard(phaseId) {
     return phase;
 }
 
-/** Creates one visible block card. */
+/** Creates one visible committed block card. */
 function createBlockCard(blockId) {
     const block = document.createElement("article");
 
     block.className = "block-card";
+    block.dataset.blockId = blockId;
+    block.dataset.structuralSelectable = "true";
+
+    return block;
+}
+
+/** Creates one visible uncommitted block draft card. */
+function createBlockDraftCard(blockId) {
+    const block = document.createElement("article");
+
+    block.className = "block-card block-card--expanded";
     block.dataset.blockId = blockId;
 
     return block;
@@ -631,3 +645,66 @@ test(
         }
     },
 );
+
+test(
+    "protocol-selection-events",
+    "focus entering an uncommitted block draft toggle does not establish selection",
+    () => {
+        const { protocolTree, editorState } = createSelectionHarness();
+
+        const draft = createBlockDraftCard("draft-block");
+        const toggle = appendBlockToggle(draft, "collapse-block");
+
+        protocolTree.append(draft);
+
+        dispatchFocusIn(toggle);
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.selectedPhaseId, undefined);
+        assertEqual(snapshot.selectedBlockId, undefined);
+    },
+);
+
+test("protocol-selection-events", "ArrowDown skips an uncommitted block draft", () => {
+    const { protocolTree, editorState } = createSelectionHarness();
+
+    const phase1 = createPhaseCard("phase-1");
+    phase1.append(createBlockCard("block-1"), createBlockDraftCard("draft-block"));
+
+    const phase2 = createPhaseCard("phase-2");
+
+    protocolTree.append(phase1, phase2);
+
+    editorState.selectBlock("block-1");
+
+    dispatchKeydown(protocolTree, "ArrowDown");
+
+    const snapshot = editorState.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, "phase-2");
+    assertEqual(snapshot.selectedBlockId, undefined);
+});
+
+test("protocol-selection-events", "clicking an uncommitted block draft does not select it", () => {
+    const { protocolTree, editorState } = createSelectionHarness();
+
+    const phase = createPhaseCard("phase-1");
+    const draft = createBlockDraftCard("draft-block");
+
+    phase.append(draft);
+    protocolTree.append(phase);
+
+    editorState.selectPhase("phase-1");
+
+    draft.dispatchEvent(
+        new MouseEvent("click", {
+            bubbles: true,
+        }),
+    );
+
+    const snapshot = editorState.getSnapshot();
+
+    assertEqual(snapshot.selectedPhaseId, "phase-1");
+    assertEqual(snapshot.selectedBlockId, undefined);
+});

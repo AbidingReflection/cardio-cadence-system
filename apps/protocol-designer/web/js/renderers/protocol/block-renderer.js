@@ -22,6 +22,7 @@ export function createBlockElement(block, editorSnapshot, activityType, machineP
         .join(" ");
 
     blockElement.dataset.blockId = block.id;
+    blockElement.dataset.structuralSelectable = "true";
     blockElement.setAttribute("aria-selected", String(isSelected));
 
     if (editorSnapshot.editMode === "block") {

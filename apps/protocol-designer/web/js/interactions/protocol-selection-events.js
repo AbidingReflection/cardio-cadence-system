@@ -11,9 +11,13 @@ export function wireProtocolSelectionEvents({ protocolTree, editorState }) {
             return;
         }
 
-        const blockElement = event.target.closest("[data-block-id]");
+        const blockElement = event.target.closest(".block-card[data-block-id]");
 
         if (blockElement !== null) {
+            if (blockElement.dataset.structuralSelectable !== "true") {
+                return;
+            }
+
             editorState.selectBlock(blockElement.dataset.blockId);
             protocolTree.focus();
             return;
@@ -40,9 +44,13 @@ export function wireProtocolSelectionEvents({ protocolTree, editorState }) {
             return;
         }
 
-        const blockElement = actionElement.closest("[data-block-id]");
+        const blockElement = actionElement.closest(".block-card[data-block-id]");
 
         if (blockElement !== null) {
+            if (blockElement.dataset.structuralSelectable !== "true") {
+                return;
+            }
+
             editorState.selectBlock(blockElement.dataset.blockId);
             return;
         }
@@ -91,7 +99,10 @@ function isInteractiveTarget(target) {
 
 /** Finds one rendered structural card by type and ID. */
 function findStructuralItem(protocolTree, type, id) {
-    const selector = type === "block" ? ".block-card[data-block-id]" : ".phase-card[data-phase-id]";
+    const selector =
+        type === "block"
+            ? '.block-card[data-block-id][data-structural-selectable="true"]'
+            : ".phase-card[data-phase-id]";
 
     return [...protocolTree.querySelectorAll(selector)].find((element) => {
         return type === "block" ? element.dataset.blockId === id : element.dataset.phaseId === id;
@@ -184,7 +195,9 @@ function moveStructuralSelection(event, protocolTree, editorState) {
 /** Returns visible phase and block cards in rendered tree order. */
 function getVisibleStructuralItems(protocolTree) {
     return [
-        ...protocolTree.querySelectorAll(".phase-card[data-phase-id], .block-card[data-block-id]"),
+        ...protocolTree.querySelectorAll(
+            '.phase-card[data-phase-id], .block-card[data-block-id][data-structural-selectable="true"]',
+        ),
     ].map((element) => {
         if (element.matches(".block-card[data-block-id]")) {
             return {
