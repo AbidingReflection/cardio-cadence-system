@@ -19,15 +19,33 @@
     <body>
         <header class="top-ribbon">
             <div class="app-brand">
-                <span class="app-brand__title"> Cardio Cadence </span>
-
-                <span class="app-brand__section"> Protocol Designer </span>
+                <span class="app-brand__title">Cardio Cadence</span>
+                <span class="app-brand__section">Protocol Designer</span>
             </div>
 
             <nav class="top-ribbon__menu" aria-label="Application menu">
-                <button type="button" class="menu-button">New</button>
+                <div class="top-ribbon__menu-group">
+                    <button type="button" class="menu-button">
+                        New
+                    </button>
 
-                <button type="button" class="menu-button">Import</button>
+                    <button type="button" class="menu-button menu-button--dropdown">
+                        <span>Open</span>
+                        <span class="menu-button__caret" aria-hidden="true">▾</span>
+                    </button>
+
+                    <button type="button" class="menu-button menu-button--dropdown">
+                        <span>Save</span>
+                        <span class="menu-button__caret" aria-hidden="true">▾</span>
+                    </button>
+                </div>
+
+                <div class="top-ribbon__menu-group top-ribbon__menu-group--setup">
+                    <button type="button" class="menu-button menu-button--setup">
+                        <span class="menu-button__icon" aria-hidden="true">⚙</span>
+                        <span>Protocol Setup</span>
+                    </button>
+                </div>
             </nav>
         </header>
 

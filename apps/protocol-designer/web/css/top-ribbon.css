@@ -39,11 +39,29 @@
 .top-ribbon__menu {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 20px;
+}
+
+.top-ribbon__menu-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-ribbon__menu-group--setup {
+    padding-left: 20px;
+    border-left: 1px solid rgb(255 255 255 / 18%);
 }
 
 .menu-button {
-    padding: 8px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    width: 92px;
+    min-height: 36px;
+    padding: 8px 12px;
 
     border: 1px solid transparent;
     border-radius: 6px;
@@ -53,8 +71,18 @@
 
     font: inherit;
     font-size: 0.9rem;
+    white-space: nowrap;
 
     cursor: pointer;
+}
+
+.menu-button__icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.top-ribbon__menu-group--setup .menu-button {
+    width: 150px;
 }
 
 .menu-button:hover {
@@ -65,4 +93,9 @@
 .menu-button:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+}
+
+.menu-button__caret {
+    font-size: 0.75rem;
+    line-height: 1;
 }
