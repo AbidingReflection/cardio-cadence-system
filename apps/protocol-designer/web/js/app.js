@@ -24,6 +24,8 @@ import {
     wireProtocolManageKeyboardEvents,
 } from "./interactions/protocol-manage-keyboard-events.js";
 
+import { wireProtocolSetupEvents } from "./interactions/protocol-setup-events.js";
+
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
 /**
@@ -63,6 +65,10 @@ async function main() {
     const editBlockButton = document.querySelector("#manage-blocks-button");
     const cadenceGraph = document.querySelector("#cadence-graph");
     const loadGraph = document.querySelector("#load-graph");
+    const protocolSetupButton = document.querySelector("#protocol-setup-button");
+    const protocolSetupDialog = document.querySelector("#protocol-setup-dialog");
+    const protocolSetupCloseButton = document.querySelector("#protocol-setup-close-button");
+    const protocolSetupCancelButton = document.querySelector("#protocol-setup-cancel-button");
 
     if (
         protocolPane === null ||
@@ -70,7 +76,11 @@ async function main() {
         editPhaseButton === null ||
         editBlockButton === null ||
         cadenceGraph === null ||
-        loadGraph === null
+        loadGraph === null ||
+        protocolSetupButton === null ||
+        protocolSetupDialog === null ||
+        protocolSetupCloseButton === null ||
+        protocolSetupCancelButton === null
     ) {
         throw new Error("Required Protocol Designer elements were not found.");
     }
@@ -206,6 +216,13 @@ async function main() {
         protocolTree,
         protocolModel,
         editorState,
+    });
+
+    wireProtocolSetupEvents({
+        setupButton: protocolSetupButton,
+        setupDialog: protocolSetupDialog,
+        closeButton: protocolSetupCloseButton,
+        cancelButton: protocolSetupCancelButton,
     });
 
     /** Toggles phase structural edit mode. */
