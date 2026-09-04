@@ -18,7 +18,6 @@ export function wireProtocolBlockEvents({
     protocolModel,
     editorState,
     activityType,
-    machineProfile,
     setPendingFieldFocus,
     setPendingToggleFocus,
 }) {
@@ -98,7 +97,7 @@ export function wireProtocolBlockEvents({
 
         event.preventDefault();
 
-        const applied = applyBlockDraft(protocolModel, editorState, activityType, machineProfile);
+        const applied = applyBlockDraft(protocolModel, editorState, activityType);
 
         if (applied) {
             protocolTree.focus();

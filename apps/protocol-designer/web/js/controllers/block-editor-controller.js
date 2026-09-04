@@ -7,12 +7,7 @@ const NEW_BLOCK_DRAFT_ID = "__new-block-draft__";
 /**
  * Applies the active block draft to the protocol model.
  */
-export function applyBlockDraft(
-    protocolModel,
-    editorState,
-    activityType,
-    machineProfile = undefined,
-) {
+export function applyBlockDraft(protocolModel, editorState, activityType) {
     const editorSnapshot = editorState.getSnapshot();
     const draft = editorSnapshot.activeBlockDraft;
 
@@ -20,7 +15,7 @@ export function applyBlockDraft(
         throw new Error("Cannot apply block draft: no active block draft.");
     }
 
-    const validationResult = validateBlockDraft(draft, activityType, machineProfile);
+    const validationResult = validateBlockDraft(draft, activityType);
 
     if (!validationResult.isValid) {
         editorState.setValidationErrors(validationResult.errors);
@@ -117,13 +112,7 @@ export function checkBlockDraftNavigation(editorState) {
 /**
  * Resolves a dirty block draft before navigation continues.
  */
-export function resolveBlockDraftNavigation(
-    choice,
-    protocolModel,
-    editorState,
-    activityType,
-    machineProfile = undefined,
-) {
+export function resolveBlockDraftNavigation(choice, protocolModel, editorState, activityType) {
     if (choice !== "apply" && choice !== "discard" && choice !== "stay") {
         throw new Error(`Unknown block draft navigation choice: "${choice}".`);
     }
@@ -142,7 +131,7 @@ export function resolveBlockDraftNavigation(
         };
     }
 
-    const applied = applyBlockDraft(protocolModel, editorState, activityType, machineProfile);
+    const applied = applyBlockDraft(protocolModel, editorState, activityType);
 
     if (!applied) {
         return {

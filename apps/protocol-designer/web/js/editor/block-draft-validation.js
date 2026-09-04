@@ -8,19 +8,13 @@ import {
 } from "/packages/protocol-core/progression-types.js";
 
 /** Validates and converts a block draft into committed block data. */
-export function validateBlockDraft(draft, activityType, machineProfile = undefined) {
+export function validateBlockDraft(draft, activityType) {
     const errors = [];
 
     const name = validateName(draft.name, errors);
     const durationSeconds = validateDuration(draft.duration, errors);
 
-    const variables = validateVariables(
-        draft.variables,
-        activityType,
-        machineProfile,
-        draft.blockId,
-        errors,
-    );
+    const variables = validateVariables(draft.variables, activityType, draft.blockId, errors);
 
     if (errors.length > 0) {
         return {
@@ -78,7 +72,7 @@ function validateDuration(value, errors) {
 }
 
 /** Validates and converts all ActivityType variables. */
-function validateVariables(draftVariables, activityType, machineProfile, blockId, errors) {
+function validateVariables(draftVariables, activityType, blockId, errors) {
     const variables = {};
 
     for (const variable of activityType.variables) {
@@ -96,13 +90,7 @@ function validateVariables(draftVariables, activityType, machineProfile, blockId
             continue;
         }
 
-        const progression = validateProgression(
-            draftProgression,
-            variable,
-            machineProfile?.getVariable(variable.id),
-            blockId,
-            errors,
-        );
+        const progression = validateProgression(draftProgression, variable, blockId, errors);
 
         if (progression !== undefined) {
             variables[variable.id] = progression;
@@ -113,7 +101,7 @@ function validateVariables(draftVariables, activityType, machineProfile, blockId
 }
 
 /** Validates and converts one variable progression. */
-function validateProgression(draftProgression, variable, machineVariable, blockId, errors) {
+function validateProgression(draftProgression, variable, blockId, errors) {
     const { type } = draftProgression;
     const baseField = `variables.${variable.id}`;
 
@@ -122,18 +110,6 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
             createError(
                 `${baseField}.type`,
                 `${variable.name} progression type is required.`,
-                blockId,
-            ),
-        );
-
-        return undefined;
-    }
-
-    if (machineVariable !== undefined && !machineVariable.progressionTypes.includes(type)) {
-        errors.push(
-            createError(
-                `${baseField}.type`,
-                `${variable.name} does not support ${type} progression on this machine.`,
                 blockId,
             ),
         );
@@ -153,7 +129,6 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
         const start = validateTarget(
             draftProgression.start,
             variable,
-            machineVariable,
             `${baseField}.start`,
             "Start",
             blockId,
@@ -171,7 +146,6 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
         const end = validateTarget(
             draftProgression.end,
             variable,
-            machineVariable,
             `${baseField}.end`,
             "End",
             blockId,
@@ -199,7 +173,7 @@ function validateProgression(draftProgression, variable, machineVariable, blockI
 }
 
 /** Validates and converts a variable target value. */
-function validateTarget(value, variable, machineVariable, field, label, blockId, errors) {
+function validateTarget(value, variable, field, label, blockId, errors) {
     const number = parseNumber(value);
 
     if (number === undefined) {
@@ -207,54 +181,6 @@ function validateTarget(value, variable, machineVariable, field, label, blockId,
             createError(
                 field,
                 `${variable.name} ${label.toLowerCase()} is required and must be numeric.`,
-                blockId,
-            ),
-        );
-
-        return undefined;
-    }
-
-    if (machineVariable?.min !== undefined && number < machineVariable.min) {
-        errors.push(
-            createError(
-                field,
-                `${variable.name} must be at least ${formatTarget(
-                    machineVariable.min,
-                    variable.unit,
-                )}.`,
-                blockId,
-            ),
-        );
-
-        return undefined;
-    }
-
-    if (machineVariable?.max !== undefined && number > machineVariable.max) {
-        errors.push(
-            createError(
-                field,
-                `${variable.name} must be at most ${formatTarget(
-                    machineVariable.max,
-                    variable.unit,
-                )}.`,
-                blockId,
-            ),
-        );
-
-        return undefined;
-    }
-
-    if (
-        machineVariable?.increment !== undefined &&
-        !isIncrementAligned(number, machineVariable.increment, machineVariable.min)
-    ) {
-        errors.push(
-            createError(
-                field,
-                `${variable.name} must align to ${formatTarget(
-                    machineVariable.increment,
-                    variable.unit,
-                )} increments.`,
                 blockId,
             ),
         );
@@ -323,19 +249,6 @@ function parseDuration(value) {
     }
 
     return hours * 3600 + minutes * 60 + seconds;
-}
-
-/** Returns whether a value aligns to a machine increment. */
-function isIncrementAligned(value, increment, minimum = 0) {
-    const steps = (value - minimum) / increment;
-    const nearestStep = Math.round(steps);
-
-    return Math.abs(steps - nearestStep) < 1e-9;
-}
-
-/** Formats a machine target for a user-facing validation message. */
-function formatTarget(value, unit) {
-    return unit === null ? `${value}` : `${value} ${unit}`;
 }
 
 /** Creates a structured block validation error. */

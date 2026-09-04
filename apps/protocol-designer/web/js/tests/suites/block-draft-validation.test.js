@@ -58,23 +58,6 @@ const STEPPED_ONLY_MACHINE_VARIABLES = {
     },
 };
 
-const MACHINE_PROFILE = {
-    id: "test-treadmill",
-    activityTypeId: "treadmill",
-
-    getVariable(variableId) {
-        return MACHINE_VARIABLES[variableId];
-    },
-};
-
-const STEPPED_ONLY_MACHINE_PROFILE = {
-    id: "stepped-only-test-treadmill",
-    activityTypeId: "treadmill",
-
-    getVariable(variableId) {
-        return STEPPED_ONLY_MACHINE_VARIABLES[variableId];
-    },
-};
 /** Creates a valid block draft for use as a test fixture. */
 function createDraft() {
     return {
@@ -98,7 +81,7 @@ function createDraft() {
 }
 
 test("block-draft-validation", "converts a valid draft to committed block data", () => {
-    const result = validateBlockDraft(createDraft(), ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(createDraft(), ACTIVITY_TYPE);
 
     assertEqual(result.isValid, true);
 
@@ -125,7 +108,7 @@ test("block-draft-validation", "trims the block name", () => {
     const draft = createDraft();
     draft.name = "  Warmup  ";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.blockData.name, "Warmup");
 });
@@ -134,7 +117,7 @@ test("block-draft-validation", "converts hour duration text to seconds", () => {
     const draft = createDraft();
     draft.duration = "1:05:30";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.blockData.durationSeconds, 3930);
 });
@@ -143,7 +126,7 @@ test("block-draft-validation", "rejects a blank block name", () => {
     const draft = createDraft();
     draft.name = "   ";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
     assertEqual(result.blockData, undefined);
@@ -162,7 +145,7 @@ test("block-draft-validation", "rejects a blank duration", () => {
     const draft = createDraft();
     draft.duration = "";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -173,7 +156,7 @@ test("block-draft-validation", "rejects malformed duration text", () => {
     const draft = createDraft();
     draft.duration = "3 minutes";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -184,7 +167,7 @@ test("block-draft-validation", "rejects duration seconds greater than 59", () =>
     const draft = createDraft();
     draft.duration = "3:75";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 });
@@ -193,7 +176,7 @@ test("block-draft-validation", "rejects zero duration", () => {
     const draft = createDraft();
     draft.duration = "0:00";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -210,7 +193,7 @@ test("block-draft-validation", "ignores stale fields on steady progressions", ()
         step: "1",
     };
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertDeepEqual(result.blockData.variables.incline, {
         type: "steady",
@@ -222,7 +205,7 @@ test("block-draft-validation", "requires an end value for linear progressions", 
     const draft = createDraft();
     draft.variables.speed.end = "";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -239,7 +222,7 @@ test("block-draft-validation", "converts valid stepped progressions", () => {
         step: "1",
     };
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertDeepEqual(result.blockData.variables.incline, {
         type: "stepped",
@@ -259,7 +242,7 @@ test("block-draft-validation", "requires a step size for stepped progressions", 
         step: "",
     };
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -270,7 +253,7 @@ test("block-draft-validation", "rejects unknown progression types", () => {
     const draft = createDraft();
     draft.variables.speed.type = "unknown";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -282,7 +265,7 @@ test("block-draft-validation", "rejects missing ActivityType variables", () => {
 
     delete draft.variables.incline;
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -293,7 +276,7 @@ test("block-draft-validation", "rejects blank numeric targets", () => {
     const draft = createDraft();
     draft.variables.speed.start = "";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -304,33 +287,33 @@ test("block-draft-validation", "rejects non-numeric targets", () => {
     const draft = createDraft();
     draft.variables.speed.start = "fast";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
     assertEqual(result.errors[0].field, "variables.speed.start");
 });
 
-test("block-draft-validation", "rejects targets below machine minimum", () => {
+test("block-draft-validation", "accepts targets below machine minimum", () => {
     const draft = createDraft();
     draft.variables.speed.start = "0.4";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
-    assertEqual(result.isValid, false);
-
-    assertEqual(result.errors[0].field, "variables.speed.start");
+    assertEqual(result.isValid, true);
+    assertEqual(result.blockData.variables.speed.start, 0.4);
+    assertDeepEqual(result.errors, []);
 });
 
-test("block-draft-validation", "rejects targets above machine maximum", () => {
+test("block-draft-validation", "accepts targets above machine maximum", () => {
     const draft = createDraft();
     draft.variables.speed.end = "10.1";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
-    assertEqual(result.isValid, false);
-
-    assertEqual(result.errors[0].field, "variables.speed.end");
+    assertEqual(result.isValid, true);
+    assertEqual(result.blockData.variables.speed.end, 10.1);
+    assertDeepEqual(result.errors, []);
 });
 
 test("block-draft-validation", "accepts decimal machine increments", () => {
@@ -348,20 +331,20 @@ test("block-draft-validation", "accepts decimal machine increments", () => {
         end: "2.5",
     };
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, true);
 });
 
-test("block-draft-validation", "rejects targets not aligned to machine increments", () => {
+test("block-draft-validation", "accepts targets not aligned to machine increments", () => {
     const draft = createDraft();
     draft.variables.incline.start = "0.25";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
-    assertEqual(result.isValid, false);
-
-    assertEqual(result.errors[0].field, "variables.incline.start");
+    assertEqual(result.isValid, true);
+    assertEqual(result.blockData.variables.incline.start, 0.25);
+    assertDeepEqual(result.errors, []);
 });
 
 test("block-draft-validation", "supports drafts without a MachineProfile", () => {
@@ -380,7 +363,7 @@ test("block-draft-validation", "returns all detected validation errors", () => {
     draft.variables.speed.start = "";
     draft.variables.incline.start = "";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, false);
 
@@ -391,7 +374,7 @@ test("block-draft-validation", "includes block ID in variable validation errors"
     const draft = createDraft();
     draft.variables.speed.start = "";
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.errors[0].entityId, "block-1");
 });
@@ -406,23 +389,17 @@ test("block-draft-validation", "accepts a supported machine progression type", (
         step: "0.5",
     };
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
     assertEqual(result.isValid, true);
 });
 
-test("block-draft-validation", "rejects an unsupported machine progression type", () => {
+test("block-draft-validation", "accepts a progression type unsupported by MachineProfile", () => {
     const draft = createDraft();
 
-    const result = validateBlockDraft(draft, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
+    const result = validateBlockDraft(draft, ACTIVITY_TYPE);
 
-    assertEqual(result.isValid, false);
-    assertDeepEqual(result.errors, [
-        {
-            scope: "block",
-            entityId: "block-1",
-            field: "variables.speed.type",
-            message: "Speed does not support linear progression on this machine.",
-        },
-    ]);
+    assertEqual(result.isValid, true);
+    assertEqual(result.blockData.variables.speed.type, "linear");
+    assertDeepEqual(result.errors, []);
 });

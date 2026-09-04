@@ -1,5 +1,6 @@
 /**
- * Validates canonical protocol data against its activity and machine definitions.
+ * Validates canonical protocol data against its activity definition and
+ * optional MachineProfile reference.
  */
 
 import { getProgressionDefinition, isProgressionType } from "./progression-types.js";
@@ -28,12 +29,12 @@ export function validateProtocol(protocol, activityType, machineProfile = undefi
     const blockIds = new Set();
 
     for (const phase of protocol.phases) {
-        validatePhase(phase, activityType, machineProfile, phaseIds, blockIds);
+        validatePhase(phase, activityType, phaseIds, blockIds);
     }
 }
 
 /** Validates a protocol phase. */
-function validatePhase(phase, activityType, machineProfile, phaseIds, blockIds) {
+function validatePhase(phase, activityType, phaseIds, blockIds) {
     requireObject(phase, "Protocol phase");
     requireNonEmptyString(phase.id, "Protocol phase id");
     requireNonEmptyString(phase.name, "Protocol phase name");
@@ -45,12 +46,12 @@ function validatePhase(phase, activityType, machineProfile, phaseIds, blockIds) 
     }
 
     for (const block of phase.blocks) {
-        validateBlock(block, activityType, machineProfile, blockIds);
+        validateBlock(block, activityType, blockIds);
     }
 }
 
 /** Validates a protocol block. */
-function validateBlock(block, activityType, machineProfile, blockIds) {
+function validateBlock(block, activityType, blockIds) {
     requireObject(block, "Protocol block");
     requireNonEmptyString(block.id, "Protocol block id");
     requireNonEmptyString(block.name, "Protocol block name");
@@ -64,11 +65,11 @@ function validateBlock(block, activityType, machineProfile, blockIds) {
 
     requireObject(block.variables, `Protocol block "${block.id}" variables`);
 
-    validateBlockVariables(block, activityType, machineProfile);
+    validateBlockVariables(block, activityType);
 }
 
 /** Validates that a block defines exactly the ActivityType variable set. */
-function validateBlockVariables(block, activityType, machineProfile) {
+function validateBlockVariables(block, activityType) {
     const activityVariables = activityType.variables;
     const expectedIds = new Set(activityVariables.map((variable) => variable.id));
 
@@ -89,14 +90,12 @@ function validateBlockVariables(block, activityType, machineProfile) {
             );
         }
 
-        const machineVariable = machineProfile?.getVariable(variable.id);
-
-        validateProgression(block.variables[variable.id], variable.id, block.id, machineVariable);
+        validateProgression(block.variables[variable.id], variable.id, block.id);
     }
 }
 
-/** Validates a progression and any applicable machine constraints. */
-function validateProgression(progression, variableId, blockId, machineVariable) {
+/** Validates a canonical variable progression. */
+function validateProgression(progression, variableId, blockId) {
     const description = `Protocol block "${blockId}" variable "${variableId}" progression`;
 
     requireObject(progression, description);
@@ -104,15 +103,6 @@ function validateProgression(progression, variableId, blockId, machineVariable) 
 
     if (!isProgressionType(progression.type)) {
         throw new Error(`${description} has unknown type "${progression.type}".`);
-    }
-
-    if (
-        machineVariable !== undefined &&
-        !machineVariable.progressionTypes.includes(progression.type)
-    ) {
-        throw new Error(
-            `${description} type "${progression.type}" is not supported by this MachineProfile.`,
-        );
     }
 
     const definition = getProgressionDefinition(progression.type);
@@ -132,42 +122,6 @@ function validateProgression(progression, variableId, blockId, machineVariable) 
     if (Object.hasOwn(progression, "step")) {
         requirePositiveFiniteNumber(progression.step, `${description} step`);
     }
-
-    if (machineVariable !== undefined) {
-        validateMachineTarget(progression.start, machineVariable, `${description} start`);
-
-        if (Object.hasOwn(progression, "end")) {
-            validateMachineTarget(progression.end, machineVariable, `${description} end`);
-        }
-    }
-}
-
-/** Validates a progression target against machine bounds and increments. */
-function validateMachineTarget(value, machineVariable, description) {
-    if (machineVariable.min !== undefined && value < machineVariable.min) {
-        throw new Error(`${description} must be at least ${machineVariable.min}.`);
-    }
-
-    if (machineVariable.max !== undefined && value > machineVariable.max) {
-        throw new Error(`${description} must be at most ${machineVariable.max}.`);
-    }
-
-    if (
-        machineVariable.increment !== undefined &&
-        !isIncrementAligned(value, machineVariable.increment, machineVariable.min)
-    ) {
-        throw new Error(
-            `${description} must align to increment ` + `${machineVariable.increment}.`,
-        );
-    }
-}
-
-/** Returns whether a value aligns to a machine increment. */
-function isIncrementAligned(value, increment, minimum = 0) {
-    const steps = (value - minimum) / increment;
-    const nearestStep = Math.round(steps);
-
-    return Math.abs(steps - nearestStep) < 1e-9;
 }
 
 /** Validates the optional MachineProfile relationship. */

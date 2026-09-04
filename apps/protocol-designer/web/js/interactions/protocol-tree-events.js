@@ -13,7 +13,6 @@ export function wireProtocolTreeEvents({
     protocolModel,
     editorState,
     activityType,
-    machineProfile,
     setPendingFieldFocus,
     setPendingToggleFocus,
     setPendingPhaseNameFocus,
@@ -29,7 +28,6 @@ export function wireProtocolTreeEvents({
         protocolModel,
         editorState,
         activityType,
-        machineProfile,
         setPendingFieldFocus,
         setPendingToggleFocus,
     });

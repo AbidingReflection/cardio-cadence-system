@@ -192,7 +192,6 @@ async function main() {
         protocolModel,
         editorState,
         activityType,
-        machineProfile,
 
         setPendingFieldFocus: (focusContext) => {
             pendingFieldFocus = focusContext;

@@ -305,24 +305,20 @@ test("protocol-validation", "rejects non-positive step sizes", () => {
     });
 });
 
-test("protocol-validation", "rejects targets below machine minimum", () => {
+test("protocol-validation", "accepts targets below machine minimum", () => {
     const protocol = createProtocol();
 
     protocol.phases[0].blocks[0].variables.speed.start = 0.4;
 
-    assertThrows(() => {
-        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
-    });
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
 
-test("protocol-validation", "rejects targets above machine maximum", () => {
+test("protocol-validation", "accepts targets above machine maximum", () => {
     const protocol = createProtocol();
 
     protocol.phases[0].blocks[0].variables.speed.end = 10.1;
 
-    assertThrows(() => {
-        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
-    });
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
 
 test("protocol-validation", "accepts decimal machine increments", () => {
@@ -343,14 +339,12 @@ test("protocol-validation", "accepts decimal machine increments", () => {
     validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
 
-test("protocol-validation", "rejects targets not aligned to machine increments", () => {
+test("protocol-validation", "accepts targets not aligned to machine increments", () => {
     const protocol = createProtocol();
 
     protocol.phases[0].blocks[0].variables.incline.start = 0.25;
 
-    assertThrows(() => {
-        validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
-    });
+    validateProtocol(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
 });
 
 test("protocol-validation", "allows protocols without a MachineProfile", () => {
@@ -402,7 +396,7 @@ test("protocol-validation", "accepts a progression type supported by MachineProf
     validateProtocol(protocol, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
 });
 
-test("protocol-validation", "rejects a progression type unsupported by MachineProfile", () => {
+test("protocol-validation", "accepts a progression type unsupported by MachineProfile", () => {
     const protocol = createProtocol();
 
     protocol.phases[0].blocks[0].variables.speed = {
@@ -411,10 +405,7 @@ test("protocol-validation", "rejects a progression type unsupported by MachinePr
         end: 5,
     };
 
-    assertThrows(
-        () => validateProtocol(protocol, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE),
-        /not supported by this MachineProfile/,
-    );
+    validateProtocol(protocol, ACTIVITY_TYPE, STEPPED_ONLY_MACHINE_PROFILE);
 });
 
 test(
