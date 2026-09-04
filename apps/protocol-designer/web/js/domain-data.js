@@ -1,16 +1,19 @@
 /** Loads shared domain data, constructs validated domain objects, and resolves their references for application use. */
 
 import { ActivityType } from "./models/activity-type.js";
+import { CalibrationProfile } from "./models/calibration-profile.js";
 import { MachineProfile } from "./models/machine-profile.js";
 
 /** Loads and constructs the shared domain data used by the Protocol Designer. */
 export async function loadDomainData() {
     const activityTypes = await loadActivityTypes();
     const machineProfiles = await loadMachineProfiles(activityTypes);
+    const calibrationProfiles = await loadCalibrationProfiles(machineProfiles);
 
     return {
         activityTypes,
         machineProfiles,
+        calibrationProfiles,
     };
 }
 
@@ -58,6 +61,43 @@ async function loadMachineProfiles(activityTypes) {
     }
 
     return machineProfiles;
+}
+
+/** Loads CalibrationProfile definitions and resolves their MachineProfile references. */
+async function loadCalibrationProfiles(machineProfiles) {
+    const data = await fetchJson("/data/calibration-profiles.json");
+
+    if (!Array.isArray(data.calibrationProfiles)) {
+        throw new TypeError(
+            "CalibrationProfile data must contain a calibrationProfiles array.",
+        );
+    }
+
+    const calibrationProfiles = new Map();
+
+    for (const calibrationProfileData of data.calibrationProfiles) {
+        const machineProfile = machineProfiles.get(calibrationProfileData.machineProfileId);
+
+        if (machineProfile === undefined) {
+            throw new Error(
+                `CalibrationProfile "${calibrationProfileData.id}" references unknown MachineProfile "${calibrationProfileData.machineProfileId}".`,
+            );
+        }
+
+        const calibrationProfile = new CalibrationProfile(
+            calibrationProfileData,
+            machineProfile,
+        );
+
+        addUnique(
+            calibrationProfiles,
+            calibrationProfile.id,
+            calibrationProfile,
+            "CalibrationProfile",
+        );
+    }
+
+    return calibrationProfiles;
 }
 
 /** Fetches and parses a JSON resource. */

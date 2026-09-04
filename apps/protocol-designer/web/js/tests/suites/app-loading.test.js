@@ -6,8 +6,11 @@ test("app-loading", "loads domain data into indexed Maps", async () => {
     const domainData = await loadDomainData();
 
     assert(domainData.activityTypes instanceof Map, "Expected activityTypes to be a Map.");
-
     assert(domainData.machineProfiles instanceof Map, "Expected machineProfiles to be a Map.");
+    assert(
+        domainData.calibrationProfiles instanceof Map,
+        "Expected calibrationProfiles to be a Map.",
+    );
 });
 
 test("app-loading", "loads at least one ActivityType", async () => {
@@ -73,4 +76,69 @@ test("app-loading", "preserves known MachineProfile constraints", async () => {
     assertEqual(resistance.min, 1);
     assertEqual(resistance.max, 20);
     assertEqual(resistance.increment, 1);
+});
+
+test("app-loading", "loads domain data into indexed Maps", async () => {
+    const {
+        activityTypes,
+        machineProfiles,
+        calibrationProfiles,
+    } = await loadDomainData();
+
+    assert(activityTypes instanceof Map);
+    assert(machineProfiles instanceof Map);
+    assert(calibrationProfiles instanceof Map);
+});
+
+test("app-loading", "loads calibration profiles indexed by ID", async () => {
+    const { calibrationProfiles } = await loadDomainData();
+
+    const calibrationProfile = calibrationProfiles.get(
+        "true-elliptical-aquatic-center-default",
+    );
+
+    assert(calibrationProfile !== undefined);
+    assertEqual(
+        calibrationProfile.machineProfileId,
+        "true-elliptical-aquatic-center",
+    );
+});
+
+test("app-loading", "loads at least one CalibrationProfile", async () => {
+    const { calibrationProfiles } = await loadDomainData();
+
+    assert(calibrationProfiles.size > 0);
+});
+
+test("app-loading", "resolves known CalibrationProfile IDs", async () => {
+    const { calibrationProfiles } = await loadDomainData();
+
+    assert(calibrationProfiles.has("true-elliptical-aquatic-center-default"));
+});
+
+test("app-loading", "resolves every CalibrationProfile MachineProfile reference", async () => {
+    const { machineProfiles, calibrationProfiles } = await loadDomainData();
+
+    for (const calibrationProfile of calibrationProfiles.values()) {
+        assert(
+            machineProfiles.has(calibrationProfile.machineProfileId),
+               `CalibrationProfile "${calibrationProfile.id}" references unknown MachineProfile "${calibrationProfile.machineProfileId}".`,
+        );
+    }
+});
+
+test("app-loading", "preserves known CalibrationProfile data", async () => {
+    const { calibrationProfiles } = await loadDomainData();
+
+    const calibration = calibrationProfiles.get(
+        "true-elliptical-aquatic-center-default",
+    );
+
+    assertEqual(
+        calibration.machineProfileId,
+        "true-elliptical-aquatic-center",
+    );
+    assertEqual(calibration.domain.cadence.min, 40);
+    assertEqual(calibration.domain.cadence.max, 70);
+    assertEqual(calibration.model.type, "polynomial");
 });
