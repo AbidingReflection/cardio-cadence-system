@@ -46,13 +46,29 @@ async function main() {
             ? undefined
             : domainData.machineProfiles.get(protocolData.machineProfileId);
 
+    const calibrationProfile =
+        protocolData.calibrationProfileId === undefined
+            ? undefined
+            : domainData.calibrationProfiles.get(protocolData.calibrationProfileId);
+
+    if (protocolData.calibrationProfileId !== undefined && calibrationProfile === undefined) {
+        throw new Error(
+            `Protocol CalibrationProfile "${protocolData.calibrationProfileId}" was not found.`,
+        );
+    }
+
     if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
         throw new Error(
             `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`,
         );
     }
 
-    const protocolModel = new ProtocolModel(protocolData, activityType, machineProfile);
+    const protocolModel = new ProtocolModel(
+        protocolData,
+        activityType,
+        machineProfile,
+        calibrationProfile,
+    );
 
     window.protocolModel = protocolModel;
     await loadGraphSvgs();

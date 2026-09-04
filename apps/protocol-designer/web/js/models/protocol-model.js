@@ -6,17 +6,24 @@ export class ProtocolModel {
     #protocol;
     #activityType;
     #machineProfile;
+    #calibrationProfile;
     #listeners = new Set();
 
     /** Constructs a ProtocolModel from committed protocol data. */
-    constructor(protocol, activityType, machineProfile = undefined) {
+    constructor(
+        protocol,
+        activityType,
+        machineProfile = undefined,
+        calibrationProfile = undefined,
+    ) {
         const normalizedProtocol = normalizeProtocol(protocol);
 
-        validateProtocol(normalizedProtocol, activityType, machineProfile);
+        validateProtocol(normalizedProtocol, activityType, machineProfile, calibrationProfile);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#activityType = activityType;
         this.#machineProfile = machineProfile;
+        this.#calibrationProfile = calibrationProfile;
     }
 
     /** Returns a defensive snapshot of the committed protocol state. */
@@ -40,7 +47,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
 
@@ -69,11 +81,11 @@ export class ProtocolModel {
 
         nextProtocol.phases.splice(moveIndex, 0, phase);
 
-        const normalized = normalizeProtocol(nextProtocol, this.#activityType);
+        const normalizedProtocol = normalizeProtocol(nextProtocol, this.#activityType);
 
-        validateProtocol(normalized, this.#activityType, this.#machineProfile);
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
-        this.#protocol = normalized;
+        this.#protocol = normalizedProtocol;
         this.#emit();
     }
 
@@ -91,7 +103,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -113,7 +130,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -140,7 +162,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
 
@@ -193,11 +220,11 @@ export class ProtocolModel {
 
         nextTargetPhase.blocks.splice(moveIndex, 0, block);
 
-        const normalized = normalizeProtocol(nextProtocol, this.#activityType);
+        const normalizedProtocol = normalizeProtocol(nextProtocol, this.#activityType);
 
-        validateProtocol(normalized, this.#activityType, this.#machineProfile);
+        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
 
-        this.#protocol = normalized;
+        this.#protocol = normalizedProtocol;
         this.#emit();
     }
 
@@ -225,7 +252,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -263,7 +295,12 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        validateProtocol(
+            normalizedProtocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();

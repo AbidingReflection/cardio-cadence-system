@@ -52,6 +52,11 @@ const MACHINE_PROFILE = {
     },
 };
 
+const CALIBRATION_PROFILE = {
+    id: "test-treadmill-calibration",
+    machineProfileId: MACHINE_PROFILE.id,
+};
+
 /** Creates a valid protocol for use as a test fixture. */
 function createProtocol() {
     return {
@@ -1349,4 +1354,70 @@ test("protocol-model", "successful moves notify subscribers once", () => {
     model.movePhase(phaseId, 1);
 
     assertEqual(notificationCount, 1);
+});
+
+test("protocol-model", "supports protocols without a CalibrationProfile", () => {
+    const protocol = createProtocol();
+    delete protocol.calibrationProfileId;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE);
+
+    const snapshot = model.getSnapshot();
+
+    assertEqual(snapshot.calibrationProfileId, undefined);
+});
+
+test("protocol-model", "constructs with a matching CalibrationProfile", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    assertEqual(model.getSnapshot().calibrationProfileId, CALIBRATION_PROFILE.id);
+});
+
+test("protocol-model", "rejects a referenced CalibrationProfile when none is supplied", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    assertThrows(() => new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE));
+});
+
+test("protocol-model", "rejects a mismatched CalibrationProfile", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const otherCalibrationProfile = {
+        id: "other-calibration",
+        machineProfileId: MACHINE_PROFILE.id,
+    };
+
+    assertThrows(
+        () => new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, otherCalibrationProfile),
+    );
+});
+
+test("protocol-model", "preserves calibrationProfileId in snapshots", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    const snapshot = model.getSnapshot();
+
+    assertEqual(snapshot.calibrationProfileId, CALIBRATION_PROFILE.id);
+});
+
+test("protocol-model", "rejects a mismatched CalibrationProfile", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const otherCalibrationProfile = {
+        id: "other-calibration",
+        machineProfileId: MACHINE_PROFILE.id,
+    };
+
+    assertThrows(
+        () => new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, otherCalibrationProfile),
+    );
 });

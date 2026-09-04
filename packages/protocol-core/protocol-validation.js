@@ -6,7 +6,12 @@
 import { getProgressionDefinition, isProgressionType } from "./progression-types.js";
 
 /** Validates a complete canonical protocol. */
-export function validateProtocol(protocol, activityType, machineProfile = undefined) {
+export function validateProtocol(
+    protocol,
+    activityType,
+    machineProfile = undefined,
+    calibrationProfile = undefined,
+) {
     requireObject(protocol, "Protocol");
     validateActivityType(activityType);
 
@@ -20,6 +25,7 @@ export function validateProtocol(protocol, activityType, machineProfile = undefi
     }
 
     validateMachineProfileReference(protocol, activityType, machineProfile);
+    validateCalibrationProfileReference(protocol, machineProfile, calibrationProfile);
 
     if (!Array.isArray(protocol.phases)) {
         throw new TypeError("Protocol phases must be an array.");
@@ -157,6 +163,57 @@ function validateMachineProfileReference(protocol, activityType, machineProfile)
         throw new Error(
             `MachineProfile "${machineProfile.id}" is not compatible ` +
                 `with ActivityType "${activityType.id}".`,
+        );
+    }
+}
+
+/** Validates the optional CalibrationProfile relationship. */
+function validateCalibrationProfileReference(protocol, machineProfile, calibrationProfile) {
+    const hasCalibrationProfileId = Object.hasOwn(protocol, "calibrationProfileId");
+
+    if (!hasCalibrationProfileId) {
+        if (calibrationProfile !== undefined) {
+            throw new Error(
+                "Protocol has no calibrationProfileId, but a CalibrationProfile was supplied.",
+            );
+        }
+
+        return;
+    }
+
+    requireNonEmptyString(protocol.calibrationProfileId, "Protocol calibrationProfileId");
+
+    if (!Object.hasOwn(protocol, "machineProfileId")) {
+        throw new Error(
+            `Protocol references CalibrationProfile ` +
+                `"${protocol.calibrationProfileId}" without a machineProfileId.`,
+        );
+    }
+
+    if (calibrationProfile === undefined) {
+        throw new Error(
+            `Protocol references CalibrationProfile ` +
+                `"${protocol.calibrationProfileId}", but none was supplied.`,
+        );
+    }
+
+    if (protocol.calibrationProfileId !== calibrationProfile.id) {
+        throw new Error(
+            `Protocol references CalibrationProfile ` +
+                `"${protocol.calibrationProfileId}", but ` +
+                `"${calibrationProfile.id}" was supplied.`,
+        );
+    }
+
+    if (machineProfile === undefined) {
+        throw new Error(`CalibrationProfile "${calibrationProfile.id}" requires a MachineProfile.`);
+    }
+
+    if (calibrationProfile.machineProfileId !== machineProfile.id) {
+        throw new Error(
+            `CalibrationProfile "${calibrationProfile.id}" references ` +
+                `MachineProfile "${calibrationProfile.machineProfileId}", but ` +
+                `"${machineProfile.id}" was supplied.`,
         );
     }
 }
