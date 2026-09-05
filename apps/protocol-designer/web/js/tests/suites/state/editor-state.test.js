@@ -5,7 +5,7 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { EditorState } from "../../state/editor-state.js";
+import { EditorState } from "../../../state/editor-state.js";
 
 test("editor-state", "starts with no expanded phases or block", () => {
     const state = new EditorState();

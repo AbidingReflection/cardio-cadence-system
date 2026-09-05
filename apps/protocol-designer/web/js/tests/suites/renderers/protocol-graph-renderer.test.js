@@ -6,9 +6,12 @@
  * - Verify container dimensions drive rendered SVG geometry.
  */
 
-import { assertEqual, test } from "../../../../../packages/js-testing/framework/test-framework.js";
+import {
+    assertEqual,
+    test,
+} from "../../../../../../packages/js-testing/framework/test-framework.js";
 
-import { ProtocolGraphRenderer } from "../../renderers/protocol-graph-renderer.js";
+import { ProtocolGraphRenderer } from "../../../renderers/protocol-graph-renderer.js";
 
 /** Creates a small stepped-cadence protocol for graph rendering tests. */
 function createProtocol() {

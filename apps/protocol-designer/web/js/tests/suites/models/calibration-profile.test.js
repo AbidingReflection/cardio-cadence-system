@@ -6,7 +6,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { CalibrationProfile } from "../../models/calibration-profile.js";
+import { CalibrationProfile } from "../../../models/calibration-profile.js";
 
 const MACHINE_PROFILE = {
     id: "true-elliptical-aquatic-center",
@@ -93,10 +93,7 @@ test("calibration-profile", "defensively copies constructor data", () => {
 });
 
 test("calibration-profile", "returns defensive copies from object getters", () => {
-    const calibrationProfile = new CalibrationProfile(
-        createCalibrationData(),
-                                                      MACHINE_PROFILE,
-    );
+    const calibrationProfile = new CalibrationProfile(createCalibrationData(), MACHINE_PROFILE);
 
     const context = calibrationProfile.context;
     const domain = calibrationProfile.domain;
@@ -117,12 +114,12 @@ test("calibration-profile", "returns defensive copies from object getters", () =
 test("calibration-profile", "rejects non-object calibration data", () => {
     assertThrows(
         () => new CalibrationProfile(undefined, MACHINE_PROFILE),
-                 "CalibrationProfile data must be an object.",
+        "CalibrationProfile data must be an object.",
     );
 
     assertThrows(
         () => new CalibrationProfile([], MACHINE_PROFILE),
-                 "CalibrationProfile data must be an object.",
+        "CalibrationProfile data must be an object.",
     );
 });
 
@@ -132,7 +129,7 @@ test("calibration-profile", "rejects a missing calibration id", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile id must be a non-empty string.",
+        "CalibrationProfile id must be a non-empty string.",
     );
 });
 
@@ -142,7 +139,7 @@ test("calibration-profile", "rejects a missing calibration name", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile name must be a non-empty string.",
+        "CalibrationProfile name must be a non-empty string.",
     );
 });
 
@@ -152,7 +149,7 @@ test("calibration-profile", "rejects a missing machineProfileId", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile machineProfileId must be a non-empty string.",
+        "CalibrationProfile machineProfileId must be a non-empty string.",
     );
 });
 
@@ -161,12 +158,12 @@ test("calibration-profile", "requires a valid MachineProfile", () => {
 
     assertThrows(
         () => new CalibrationProfile(data),
-                 "CalibrationProfile requires a valid MachineProfile.",
+        "CalibrationProfile requires a valid MachineProfile.",
     );
 
     assertThrows(
         () => new CalibrationProfile(data, {}),
-                 "CalibrationProfile requires a valid MachineProfile.",
+        "CalibrationProfile requires a valid MachineProfile.",
     );
 });
 
@@ -183,7 +180,7 @@ test("calibration-profile", "rejects a mismatched MachineProfile", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, otherMachineProfile),
-                 'CalibrationProfile references MachineProfile "true-elliptical-aquatic-center", but received "other-machine".',
+        'CalibrationProfile references MachineProfile "true-elliptical-aquatic-center", but received "other-machine".',
     );
 });
 
@@ -193,7 +190,7 @@ test("calibration-profile", "requires context to be an object", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile context must be an object.",
+        "CalibrationProfile context must be an object.",
     );
 });
 
@@ -203,7 +200,7 @@ test("calibration-profile", "requires domain to be an object", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile domain must be an object.",
+        "CalibrationProfile domain must be an object.",
     );
 });
 
@@ -217,7 +214,7 @@ test("calibration-profile", "rejects an unknown domain variable", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 'CalibrationProfile domain contains unknown MachineProfile variable "unknownVariable".',
+        'CalibrationProfile domain contains unknown MachineProfile variable "unknownVariable".',
     );
 });
 
@@ -227,7 +224,7 @@ test("calibration-profile", "requires each domain range to be an object", () => 
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 'CalibrationProfile domain for variable "cadence" must be an object.',
+        'CalibrationProfile domain for variable "cadence" must be an object.',
     );
 });
 
@@ -237,7 +234,7 @@ test("calibration-profile", "requires a finite domain minimum", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 'CalibrationProfile domain minimum for variable "cadence" must be finite.',
+        'CalibrationProfile domain minimum for variable "cadence" must be finite.',
     );
 });
 
@@ -247,7 +244,7 @@ test("calibration-profile", "requires a finite domain maximum", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 'CalibrationProfile domain maximum for variable "cadence" must be finite.',
+        'CalibrationProfile domain maximum for variable "cadence" must be finite.',
     );
 });
 
@@ -259,7 +256,7 @@ test("calibration-profile", "rejects a domain minimum above its maximum", () => 
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 'CalibrationProfile domain minimum for variable "cadence" cannot exceed its maximum.',
+        'CalibrationProfile domain minimum for variable "cadence" cannot exceed its maximum.',
     );
 });
 
@@ -269,7 +266,7 @@ test("calibration-profile", "requires model to be an object", () => {
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile model must be an object.",
+        "CalibrationProfile model must be an object.",
     );
 });
 
@@ -288,7 +285,7 @@ test("calibration-profile", "requires validation metadata to be an object when p
 
     assertThrows(
         () => new CalibrationProfile(data, MACHINE_PROFILE),
-                 "CalibrationProfile validation must be an object when provided.",
+        "CalibrationProfile validation must be an object when provided.",
     );
 });
 

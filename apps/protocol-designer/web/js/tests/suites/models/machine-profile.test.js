@@ -5,8 +5,8 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ActivityType } from "../../models/activity-type.js";
-import { MachineProfile } from "../../models/machine-profile.js";
+import { ActivityType } from "../../../models/activity-type.js";
+import { MachineProfile } from "../../../models/machine-profile.js";
 
 const ELLIPTICAL_ACTIVITY_TYPE = new ActivityType({
     id: "elliptical",

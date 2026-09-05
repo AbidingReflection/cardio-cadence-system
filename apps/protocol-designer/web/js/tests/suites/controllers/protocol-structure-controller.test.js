@@ -11,10 +11,10 @@ import {
     requestDeletePhase,
     requestMoveBlock,
     requestMovePhase,
-} from "../../controllers/protocol-structure-controller.js";
+} from "../../../controllers/protocol-structure-controller.js";
 
-import { createEditorStateFake } from "../helpers/editor-state-fake.js";
-import { createProtocolModelFake } from "../helpers/protocol-model-fake.js";
+import { createEditorStateFake } from "../../helpers/editor-state-fake.js";
+import { createProtocolModelFake } from "../../helpers/protocol-model-fake.js";
 
 /** Creates a valid edit-mode block draft. */
 function createEditDraft() {

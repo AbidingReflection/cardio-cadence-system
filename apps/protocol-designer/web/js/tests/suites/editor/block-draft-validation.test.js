@@ -4,7 +4,7 @@ import {
     assertDeepEqual,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { validateBlockDraft } from "../../editor/block-draft-validation.js";
+import { validateBlockDraft } from "../../../editor/block-draft-validation.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",

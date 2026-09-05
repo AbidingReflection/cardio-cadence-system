@@ -6,7 +6,7 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ProtocolModel } from "../../models/protocol-model.js";
+import { ProtocolModel } from "../../../models/protocol-model.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",

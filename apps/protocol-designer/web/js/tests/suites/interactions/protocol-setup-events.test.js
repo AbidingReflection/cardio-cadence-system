@@ -5,7 +5,7 @@ import {
     assertDeepEqual,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { wireProtocolSetupEvents } from "../../interactions/protocol-setup-events.js";
+import { wireProtocolSetupEvents } from "../../../interactions/protocol-setup-events.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",

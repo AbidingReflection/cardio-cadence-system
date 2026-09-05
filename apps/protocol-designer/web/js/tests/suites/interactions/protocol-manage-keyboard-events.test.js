@@ -3,10 +3,10 @@ import { assertEqual, test } from "/packages/js-testing/framework/test-framework
 import {
     toggleProtocolManageMode,
     wireProtocolManageKeyboardEvents,
-} from "../../interactions/protocol-manage-keyboard-events.js";
+} from "../../../interactions/protocol-manage-keyboard-events.js";
 
-import { createEditorStateFake } from "../helpers/editor-state-fake.js";
-import { createProtocolModelFake } from "../helpers/protocol-model-fake.js";
+import { createEditorStateFake } from "../../helpers/editor-state-fake.js";
+import { createProtocolModelFake } from "../../helpers/protocol-model-fake.js";
 
 /** Creates a protocol pane with manage-mode keyboard shortcuts wired. */
 function createKeyboardHarness() {

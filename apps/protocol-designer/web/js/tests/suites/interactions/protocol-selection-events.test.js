@@ -4,8 +4,8 @@
 
 import { assertEqual, test } from "/packages/js-testing/framework/test-framework.js";
 
-import { wireProtocolSelectionEvents } from "../../interactions/protocol-selection-events.js";
-import { EditorState } from "../../state/editor-state.js";
+import { wireProtocolSelectionEvents } from "../../../interactions/protocol-selection-events.js";
+import { EditorState } from "../../../state/editor-state.js";
 
 /** Creates an empty protocol-tree container with selection events wired. */
 function createSelectionHarness() {

@@ -7,9 +7,9 @@ import {
     assertEqual,
     test,
 } from "/packages/js-testing/framework/test-framework.js";
-import { wireProtocolStructureKeyboardEvents } from "../../interactions/structure/keyboard-events.js";
-import { EditorState } from "../../state/editor-state.js";
-import { createProtocolModelFake } from "../helpers/protocol-model-fake.js";
+import { wireProtocolStructureKeyboardEvents } from "../../../interactions/structure/keyboard-events.js";
+import { EditorState } from "../../../state/editor-state.js";
+import { createProtocolModelFake } from "../../helpers/protocol-model-fake.js";
 
 /** Creates a protocol tree with structural keyboard events wired. */
 function createKeyboardHarness() {

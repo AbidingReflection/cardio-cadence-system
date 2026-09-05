@@ -14,11 +14,11 @@ import {
     requestCollapseBlock,
     requestCollapsePhase,
     startBlockCreate,
-} from "../../controllers/block-editor-controller.js";
+} from "../../../controllers/block-editor-controller.js";
 
-import { createEditorStateFake } from "../helpers/editor-state-fake.js";
+import { createEditorStateFake } from "../../helpers/editor-state-fake.js";
 
-import { createProtocolModelFake } from "../helpers/protocol-model-fake.js";
+import { createProtocolModelFake } from "../../helpers/protocol-model-fake.js";
 
 const ACTIVITY_TYPE = {
     id: "treadmill",

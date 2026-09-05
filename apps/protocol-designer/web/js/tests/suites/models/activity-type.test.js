@@ -5,7 +5,7 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ActivityType } from "../../models/activity-type.js";
+import { ActivityType } from "../../../models/activity-type.js";
 
 const VALID_ACTIVITY_TYPE = {
     id: "elliptical",

@@ -1,6 +1,6 @@
 import { assertEqual, test } from "/packages/js-testing/framework/test-framework.js";
-import { createBlockElement } from "../../renderers/protocol/block-renderer.js";
-import { createPhaseElement } from "../../renderers/protocol/phase-renderer.js";
+import { createBlockElement } from "../../../renderers/protocol/block-renderer.js";
+import { createPhaseElement } from "../../../renderers/protocol/phase-renderer.js";
 
 test(
     "protocol-structure-renderers",
