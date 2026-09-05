@@ -135,9 +135,10 @@
                 <header class="protocol-setup-dialog__header">
                     <div>
                         <h2 class="protocol-setup-dialog__title">Current Protocol Setup</h2>
+
                         <p class="protocol-setup-dialog__description">
-                            Configure the activity type and machine profile for the current
-                            protocol.
+                            Configure the activity type, machine profile, and calibration profile
+                            for the current protocol.
                         </p>
                     </div>
 
@@ -151,10 +152,61 @@
                     </button>
                 </header>
 
-                <div class="protocol-setup-dialog__body">
-                    <p class="protocol-setup-dialog__placeholder">
-                        Protocol setup controls will appear here.
-                    </p>
+                <div class="protocol-setup-dialog__section">
+                    <div class="protocol-setup-dialog__field">
+                        <label
+                            class="protocol-setup-dialog__label"
+                            for="protocol-setup-activity-type"
+                        >
+                            Activity Type
+                        </label>
+
+                        <select
+                            id="protocol-setup-activity-type"
+                            class="protocol-setup-dialog__select"
+                        ></select>
+                    </div>
+                </div>
+
+                <hr class="protocol-setup-dialog__divider" />
+
+                <div class="protocol-setup-dialog__section">
+                    <div class="protocol-setup-dialog__field">
+                        <label
+                            class="protocol-setup-dialog__label"
+                            for="protocol-setup-machine-profile"
+                        >
+                            Machine Profile
+                        </label>
+
+                        <select
+                            id="protocol-setup-machine-profile"
+                            class="protocol-setup-dialog__select"
+                        ></select>
+
+                        <p class="protocol-setup-dialog__hint">
+                            Available machines depend on the selected activity type.
+                        </p>
+                    </div>
+
+                    <div class="protocol-setup-dialog__field">
+                        <label
+                            class="protocol-setup-dialog__label"
+                            for="protocol-setup-calibration-profile"
+                        >
+                            Calibration Profile
+                        </label>
+
+                        <select
+                            id="protocol-setup-calibration-profile"
+                            class="protocol-setup-dialog__select"
+                            disabled
+                        ></select>
+
+                        <p class="protocol-setup-dialog__hint">
+                            Calibration profiles are specific to the selected machine.
+                        </p>
+                    </div>
                 </div>
 
                 <footer class="protocol-setup-dialog__footer">

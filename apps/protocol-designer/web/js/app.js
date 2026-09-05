@@ -85,6 +85,14 @@ async function main() {
     const protocolSetupDialog = document.querySelector("#protocol-setup-dialog");
     const protocolSetupCloseButton = document.querySelector("#protocol-setup-close-button");
     const protocolSetupCancelButton = document.querySelector("#protocol-setup-cancel-button");
+    const protocolSetupApplyButton = document.querySelector("#protocol-setup-apply-button");
+    const protocolSetupActivityTypeSelect = document.querySelector("#protocol-setup-activity-type");
+    const protocolSetupMachineProfileSelect = document.querySelector(
+        "#protocol-setup-machine-profile",
+    );
+    const protocolSetupCalibrationProfileSelect = document.querySelector(
+        "#protocol-setup-calibration-profile",
+    );
 
     if (
         protocolPane === null ||
@@ -96,7 +104,11 @@ async function main() {
         protocolSetupButton === null ||
         protocolSetupDialog === null ||
         protocolSetupCloseButton === null ||
-        protocolSetupCancelButton === null
+        protocolSetupCancelButton === null ||
+        protocolSetupApplyButton === null ||
+        protocolSetupActivityTypeSelect === null ||
+        protocolSetupMachineProfileSelect === null ||
+        protocolSetupCalibrationProfileSelect === null
     ) {
         throw new Error("Required Protocol Designer elements were not found.");
     }
@@ -238,6 +250,12 @@ async function main() {
         setupDialog: protocolSetupDialog,
         closeButton: protocolSetupCloseButton,
         cancelButton: protocolSetupCancelButton,
+        applyButton: protocolSetupApplyButton,
+        activityTypeSelect: protocolSetupActivityTypeSelect,
+        machineProfileSelect: protocolSetupMachineProfileSelect,
+        calibrationProfileSelect: protocolSetupCalibrationProfileSelect,
+        domainData,
+        protocolModel,
     });
 
     /** Toggles phase structural edit mode. */
