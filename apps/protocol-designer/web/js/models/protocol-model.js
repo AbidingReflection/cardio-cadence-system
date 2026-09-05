@@ -31,6 +31,54 @@ export class ProtocolModel {
         return structuredClone(this.#protocol);
     }
 
+    /** Atomically updates the protocol's domain setup and resolved references. */
+    updateSetup({
+        activityType,
+        machineProfile = undefined,
+        calibrationProfile = undefined,
+        resetStructure = false,
+    }) {
+        const activityTypeChanged = activityType.id !== this.#activityType.id;
+        const hasStructure = this.#protocol.phases.length > 0;
+
+        if (activityTypeChanged && hasStructure && !resetStructure) {
+            throw new Error(
+                "Changing ActivityType requires resetting the existing protocol structure.",
+            );
+        }
+
+        const nextProtocol = structuredClone(this.#protocol);
+
+        nextProtocol.activityTypeId = activityType.id;
+
+        if (machineProfile === undefined) {
+            delete nextProtocol.machineProfileId;
+        } else {
+            nextProtocol.machineProfileId = machineProfile.id;
+        }
+
+        if (calibrationProfile === undefined) {
+            delete nextProtocol.calibrationProfileId;
+        } else {
+            nextProtocol.calibrationProfileId = calibrationProfile.id;
+        }
+
+        if (activityTypeChanged && resetStructure) {
+            nextProtocol.phases = [];
+        }
+
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
+
+        validateProtocol(normalizedProtocol, activityType, machineProfile, calibrationProfile);
+
+        this.#protocol = structuredClone(normalizedProtocol);
+        this.#activityType = activityType;
+        this.#machineProfile = machineProfile;
+        this.#calibrationProfile = calibrationProfile;
+
+        this.#emit();
+    }
+
     /** Adds a new empty phase and returns its generated ID. */
     addPhase(name = "New Phase", index = undefined) {
         const nextProtocol = structuredClone(this.#protocol);

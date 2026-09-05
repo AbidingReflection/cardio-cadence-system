@@ -26,6 +26,61 @@ export function wireProtocolSetupEvents({
         setupDialog.close();
     });
 
+    applyButton.addEventListener("click", () => {
+        const protocol = protocolModel.getSnapshot();
+
+        const activityType = domainData.activityTypes.get(activityTypeSelect.value);
+
+        if (activityType === undefined) {
+            throw new Error(`Unknown ActivityType ID: "${activityTypeSelect.value}".`);
+        }
+
+        const machineProfileId = machineProfileSelect.value || undefined;
+
+        const machineProfile =
+            machineProfileId === undefined
+                ? undefined
+                : domainData.machineProfiles.get(machineProfileId);
+
+        if (machineProfileId !== undefined && machineProfile === undefined) {
+            throw new Error(`Unknown MachineProfile ID: "${machineProfileId}".`);
+        }
+
+        const calibrationProfileId = calibrationProfileSelect.value || undefined;
+
+        const calibrationProfile =
+            calibrationProfileId === undefined
+                ? undefined
+                : domainData.calibrationProfiles.get(calibrationProfileId);
+
+        if (calibrationProfileId !== undefined && calibrationProfile === undefined) {
+            throw new Error(`Unknown CalibrationProfile ID: "${calibrationProfileId}".`);
+        }
+
+        const activityTypeChanged = activityType.id !== protocol.activityTypeId;
+
+        const resetStructure = activityTypeChanged && protocol.phases.length > 0;
+
+        if (resetStructure) {
+            const confirmed = window.confirm(
+                "Changing the Activity Type will clear the existing protocol phases and blocks. Continue?",
+            );
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
+        protocolModel.updateSetup({
+            activityType,
+            machineProfile,
+            calibrationProfile,
+            resetStructure,
+        });
+
+        setupDialog.close();
+    });
+
     activityTypeSelect.addEventListener("change", () => {
         populateMachineProfiles(activityTypeSelect.value);
 

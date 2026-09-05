@@ -57,6 +57,38 @@ const CALIBRATION_PROFILE = {
     machineProfileId: MACHINE_PROFILE.id,
 };
 
+const OTHER_MACHINE_PROFILE = {
+    id: "other-test-treadmill",
+    activityTypeId: ACTIVITY_TYPE.id,
+
+    getVariable(variableId) {
+        return MACHINE_VARIABLES[variableId];
+    },
+};
+
+const OTHER_CALIBRATION_PROFILE = {
+    id: "other-test-treadmill-calibration",
+    machineProfileId: OTHER_MACHINE_PROFILE.id,
+};
+
+const OTHER_ACTIVITY_TYPE = {
+    id: "elliptical",
+    variables: [
+        {
+            id: "cadence",
+            name: "Cadence",
+            unit: "RPM",
+            role: "cadence",
+        },
+        {
+            id: "resistance",
+            name: "Resistance",
+            unit: null,
+            role: "load",
+        },
+    ],
+};
+
 /** Creates a valid protocol for use as a test fixture. */
 function createProtocol() {
     return {
@@ -1420,4 +1452,150 @@ test("protocol-model", "rejects a mismatched CalibrationProfile", () => {
     assertThrows(
         () => new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, otherCalibrationProfile),
     );
+});
+
+test("protocol-model", "updates MachineProfile without changing protocol structure", () => {
+    const model = createProtocolModel();
+    const before = model.getSnapshot();
+
+    model.updateSetup({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: OTHER_MACHINE_PROFILE,
+    });
+
+    const after = model.getSnapshot();
+
+    assertEqual(after.activityTypeId, ACTIVITY_TYPE.id);
+    assertEqual(after.machineProfileId, OTHER_MACHINE_PROFILE.id);
+    assertEqual(after.calibrationProfileId, undefined);
+    assertDeepEqual(after.phases, before.phases);
+});
+
+test("protocol-model", "updates CalibrationProfile without changing protocol structure", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    const before = model.getSnapshot();
+
+    const otherCalibrationProfile = {
+        id: "other-test-calibration",
+        machineProfileId: MACHINE_PROFILE.id,
+    };
+
+    model.updateSetup({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: MACHINE_PROFILE,
+        calibrationProfile: otherCalibrationProfile,
+    });
+
+    const after = model.getSnapshot();
+
+    assertEqual(after.calibrationProfileId, otherCalibrationProfile.id);
+    assertDeepEqual(after.phases, before.phases);
+});
+
+test("protocol-model", "clears MachineProfile and CalibrationProfile references", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    model.updateSetup({
+        activityType: ACTIVITY_TYPE,
+    });
+
+    const snapshot = model.getSnapshot();
+
+    assertEqual(snapshot.machineProfileId, undefined);
+    assertEqual(snapshot.calibrationProfileId, undefined);
+});
+
+test(
+    "protocol-model",
+    "rejects changing ActivityType when protocol structure exists without reset",
+    () => {
+        const model = createProtocolModel();
+        const before = model.getSnapshot();
+
+        assertThrows(() =>
+            model.updateSetup({
+                activityType: OTHER_ACTIVITY_TYPE,
+            }),
+        );
+
+        assertDeepEqual(model.getSnapshot(), before);
+    },
+);
+
+test("protocol-model", "changes ActivityType and clears structure when reset", () => {
+    const model = createProtocolModel();
+
+    model.updateSetup({
+        activityType: OTHER_ACTIVITY_TYPE,
+        resetStructure: true,
+    });
+
+    const snapshot = model.getSnapshot();
+
+    assertEqual(snapshot.activityTypeId, OTHER_ACTIVITY_TYPE.id);
+    assertEqual(snapshot.machineProfileId, undefined);
+    assertEqual(snapshot.calibrationProfileId, undefined);
+    assertDeepEqual(snapshot.phases, []);
+});
+
+test("protocol-model", "failed setup update leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
+    const before = model.getSnapshot();
+
+    const invalidCalibrationProfile = {
+        id: "invalid-calibration",
+        machineProfileId: "wrong-machine",
+    };
+
+    assertThrows(() =>
+        model.updateSetup({
+            activityType: ACTIVITY_TYPE,
+            machineProfile: MACHINE_PROFILE,
+            calibrationProfile: invalidCalibrationProfile,
+        }),
+    );
+
+    assertDeepEqual(model.getSnapshot(), before);
+});
+
+test("protocol-model", "successful setup update notifies subscribers once", () => {
+    const model = createProtocolModel();
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    model.updateSetup({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: OTHER_MACHINE_PROFILE,
+    });
+
+    assertEqual(notificationCount, 1);
+});
+
+test("protocol-model", "failed setup update does not notify subscribers", () => {
+    const model = createProtocolModel();
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    assertThrows(() =>
+        model.updateSetup({
+            activityType: OTHER_ACTIVITY_TYPE,
+        }),
+    );
+
+    assertEqual(notificationCount, 0);
 });
