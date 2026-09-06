@@ -71,3 +71,11 @@
 .protocol-pane__machine-profile:not(:empty)::after {
     content: ")";
 }
+
+.protocol-pane__action-button.is-active,
+.protocol-pane__action-button[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-surface);
+    box-shadow: 0 0 0 1px var(--color-accent);
+
