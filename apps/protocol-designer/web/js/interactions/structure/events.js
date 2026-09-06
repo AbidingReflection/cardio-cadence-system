@@ -18,7 +18,6 @@ export function wireProtocolStructureEvents({
     protocolTree,
     protocolModel,
     editorState,
-    activityType,
     setPendingFieldFocus,
     setPendingPhaseNameFocus,
     setPendingStructuralFocus,
@@ -36,7 +35,7 @@ export function wireProtocolStructureEvents({
                 break;
 
             case "insert-block":
-                insertBlock(actionElement, editorState, activityType, setPendingFieldFocus);
+                insertBlock(actionElement, protocolModel, editorState, setPendingFieldFocus);
                 break;
 
             case "delete-block":
@@ -90,13 +89,15 @@ function insertPhase(actionElement, protocolModel, editorState, setPendingPhaseN
 }
 
 /** Starts a new block draft at the selected structural target. */
-function insertBlock(actionElement, editorState, activityType, setPendingFieldFocus) {
+function insertBlock(actionElement, protocolModel, editorState, setPendingFieldFocus) {
     const phaseId = actionElement.dataset.phaseId;
     const index = Number(actionElement.dataset.insertionIndex);
 
     if (phaseId === undefined || !Number.isInteger(index)) {
         throw new Error("Block insertion target is missing valid insertion data.");
     }
+
+    const { activityType } = protocolModel.getSetupContext();
 
     setPendingFieldFocus({
         blockId: "__new-block-draft__",

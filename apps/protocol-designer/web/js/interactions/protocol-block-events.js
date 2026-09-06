@@ -17,7 +17,6 @@ export function wireProtocolBlockEvents({
     protocolTree,
     protocolModel,
     editorState,
-    activityType,
     setPendingFieldFocus,
     setPendingToggleFocus,
 }) {
@@ -96,6 +95,8 @@ export function wireProtocolBlockEvents({
         }
 
         event.preventDefault();
+
+        const { activityType } = protocolModel.getSetupContext();
 
         const applied = applyBlockDraft(protocolModel, editorState, activityType);
 

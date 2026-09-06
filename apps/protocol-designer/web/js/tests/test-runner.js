@@ -7,6 +7,9 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("./suites/interactions/protocol-structure-events.test.js");
+await import("./suites/interactions/protocol-structure-keyboard-events.test.js");
+
 /* Protocol Designer — loading */
 await import("./suites/loading/app-loading.test.js");
 

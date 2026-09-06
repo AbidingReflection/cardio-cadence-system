@@ -12,7 +12,6 @@ export function wireProtocolTreeEvents({
     protocolTree,
     protocolModel,
     editorState,
-    activityType,
     setPendingFieldFocus,
     setPendingToggleFocus,
     setPendingPhaseNameFocus,
@@ -27,7 +26,6 @@ export function wireProtocolTreeEvents({
         protocolTree,
         protocolModel,
         editorState,
-        activityType,
         setPendingFieldFocus,
         setPendingToggleFocus,
     });
@@ -44,7 +42,6 @@ export function wireProtocolTreeEvents({
         protocolTree,
         protocolModel,
         editorState,
-        activityType,
         setPendingFieldFocus,
         setPendingPhaseNameFocus,
         setPendingStructuralFocus,

@@ -1599,3 +1599,54 @@ test("protocol-model", "failed setup update does not notify subscribers", () => 
 
     assertEqual(notificationCount, 0);
 });
+
+test("protocol-model", "returns the current setup context", () => {
+    const protocol = createProtocol();
+
+    protocol.machineProfileId = MACHINE_PROFILE.id;
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    const setupContext = model.getSetupContext();
+
+    assertEqual(setupContext.activityType, ACTIVITY_TYPE);
+    assertEqual(setupContext.machineProfile, MACHINE_PROFILE);
+    assertEqual(setupContext.calibrationProfile, CALIBRATION_PROFILE);
+});
+
+test("protocol-model", "returns updated setup context after updateSetup", () => {
+    const protocol = createProtocol();
+
+    protocol.machineProfileId = MACHINE_PROFILE.id;
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    model.updateSetup({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: OTHER_MACHINE_PROFILE,
+        calibrationProfile: OTHER_CALIBRATION_PROFILE,
+    });
+
+    const setupContext = model.getSetupContext();
+
+    assertEqual(setupContext.activityType, ACTIVITY_TYPE);
+    assertEqual(setupContext.machineProfile, OTHER_MACHINE_PROFILE);
+    assertEqual(setupContext.calibrationProfile, OTHER_CALIBRATION_PROFILE);
+});
+
+test("protocol-model", "returns undefined optional setup context", () => {
+    const protocol = createProtocol();
+
+    delete protocol.machineProfileId;
+    delete protocol.calibrationProfileId;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE);
+
+    const setupContext = model.getSetupContext();
+
+    assertEqual(setupContext.activityType, ACTIVITY_TYPE);
+    assertEqual(setupContext.machineProfile, undefined);
+    assertEqual(setupContext.calibrationProfile, undefined);
+});

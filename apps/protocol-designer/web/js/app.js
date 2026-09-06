@@ -163,24 +163,24 @@ async function main() {
 
         const editorSnapshot = editorState.getSnapshot();
 
+        const { activityType: currentActivityType, machineProfile: currentMachineProfile } =
+            protocolModel.getSetupContext();
+
         renderProtocolTree(
             protocolTree,
             protocolModel.getSnapshot(),
             editorSnapshot,
-            activityType,
-            machineProfile,
+            currentActivityType,
+            currentMachineProfile,
         );
 
         const phaseEditActive = editorSnapshot.editMode === "phase";
-
         const blockEditActive = editorSnapshot.editMode === "block";
 
         editPhaseButton.classList.toggle("is-active", phaseEditActive);
-
         editBlockButton.classList.toggle("is-active", blockEditActive);
 
         editPhaseButton.setAttribute("aria-pressed", String(phaseEditActive));
-
         editBlockButton.setAttribute("aria-pressed", String(blockEditActive));
 
         if (fieldFocusContext !== undefined) {
@@ -219,7 +219,6 @@ async function main() {
         protocolTree,
         protocolModel,
         editorState,
-        activityType,
 
         setPendingFieldFocus: (focusContext) => {
             pendingFieldFocus = focusContext;

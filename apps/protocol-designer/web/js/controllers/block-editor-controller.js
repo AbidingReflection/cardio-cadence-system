@@ -110,41 +110,6 @@ export function checkBlockDraftNavigation(editorState) {
 }
 
 /**
- * Resolves a dirty block draft before navigation continues.
- */
-export function resolveBlockDraftNavigation(choice, protocolModel, editorState, activityType) {
-    if (choice !== "apply" && choice !== "discard" && choice !== "stay") {
-        throw new Error(`Unknown block draft navigation choice: "${choice}".`);
-    }
-
-    if (choice === "stay") {
-        return {
-            outcome: "stay",
-        };
-    }
-
-    if (choice === "discard") {
-        editorState.closeBlockDraft();
-
-        return {
-            outcome: "proceed",
-        };
-    }
-
-    const applied = applyBlockDraft(protocolModel, editorState, activityType);
-
-    if (!applied) {
-        return {
-            outcome: "stay",
-        };
-    }
-
-    return {
-        outcome: "proceed",
-    };
-}
-
-/**
  * Requests expansion of a block while protecting an active block draft.
  */
 export function requestExpandBlock(editorState, blockId) {

@@ -31,6 +31,15 @@ export class ProtocolModel {
         return structuredClone(this.#protocol);
     }
 
+    /** Returns the resolved domain context currently associated with the protocol. */
+    getSetupContext() {
+        return {
+            activityType: this.#activityType,
+            machineProfile: this.#machineProfile,
+            calibrationProfile: this.#calibrationProfile,
+        };
+    }
+
     /** Atomically updates the protocol's domain setup and resolved references. */
     updateSetup({
         activityType,

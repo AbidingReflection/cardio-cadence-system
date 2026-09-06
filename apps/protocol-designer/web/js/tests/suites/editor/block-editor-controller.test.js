@@ -9,7 +9,6 @@ import {
     applyBlockDraft,
     cancelBlockEdit,
     checkBlockDraftNavigation,
-    resolveBlockDraftNavigation,
     requestExpandBlock,
     requestCollapseBlock,
     requestCollapsePhase,
@@ -311,113 +310,6 @@ test("block-editor-controller", "blocks navigation when the active block draft i
         outcome: "blocked",
         reason: "dirty-draft",
     });
-});
-
-test("block-editor-controller", "stay leaves the dirty draft unchanged", () => {
-    const draft = createEditDraft();
-
-    const protocolModel = createProtocolModelFake();
-
-    const editorState = createEditorStateFake(draft);
-
-    const result = resolveBlockDraftNavigation("stay", protocolModel, editorState, ACTIVITY_TYPE);
-
-    assertDeepEqual(result, {
-        outcome: "stay",
-    });
-
-    assertDeepEqual(editorState.getSnapshot().activeBlockDraft, draft);
-
-    assertEqual(editorState.calls.cancelBlockDraft, 0);
-
-    assertEqual(editorState.calls.clearValidationErrors, 0);
-});
-
-test("block-editor-controller", "discard clears the draft and validation errors", () => {
-    const protocolModel = createProtocolModelFake();
-
-    const editorState = createEditorStateFake(createEditDraft());
-
-    const result = resolveBlockDraftNavigation(
-        "discard",
-        protocolModel,
-        editorState,
-        ACTIVITY_TYPE,
-    );
-
-    assertDeepEqual(result, {
-        outcome: "proceed",
-    });
-
-    assertEqual(editorState.calls.closeBlockDraft, 1);
-
-    assertEqual(editorState.calls.clearValidationErrors, 0);
-
-    assertEqual(editorState.calls.cancelBlockDraft, 0);
-
-    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
-
-    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
-
-    assertDeepEqual(editorState.getSnapshot().validationErrors, []);
-});
-
-test("block-editor-controller", "apply proceeds when the draft commits successfully", () => {
-    const protocolModel = createProtocolModelFake();
-
-    const editorState = createEditorStateFake(createEditDraft());
-
-    const result = resolveBlockDraftNavigation("apply", protocolModel, editorState, ACTIVITY_TYPE);
-
-    assertDeepEqual(result, {
-        outcome: "proceed",
-    });
-
-    assertEqual(protocolModel.calls.updateBlock.length, 1);
-
-    assertEqual(editorState.calls.closeBlockDraft, 1);
-
-    assertEqual(editorState.calls.openBlockDraft, 0);
-
-    assertEqual(editorState.calls.cancelBlockDraft, 0);
-
-    assertEqual(editorState.getSnapshot().expandedBlockId, undefined);
-
-    assertEqual(editorState.getSnapshot().activeBlockDraft, undefined);
-});
-
-test("block-editor-controller", "apply stays when draft validation fails", () => {
-    const draft = createEditDraft();
-    draft.duration = "";
-
-    const protocolModel = createProtocolModelFake();
-
-    const editorState = createEditorStateFake(draft);
-
-    const result = resolveBlockDraftNavigation("apply", protocolModel, editorState, ACTIVITY_TYPE);
-
-    assertDeepEqual(result, {
-        outcome: "stay",
-    });
-
-    assertDeepEqual(protocolModel.calls.updateBlock, []);
-
-    assertEqual(editorState.calls.setValidationErrors, 1);
-
-    assertEqual(editorState.calls.cancelBlockDraft, 0);
-
-    assertDeepEqual(editorState.getSnapshot().activeBlockDraft, draft);
-});
-
-test("block-editor-controller", "throws for an unknown navigation choice", () => {
-    const protocolModel = createProtocolModelFake();
-
-    const editorState = createEditorStateFake(createEditDraft());
-
-    assertThrows(
-        () => resolveBlockDraftNavigation("unknown", protocolModel, editorState, ACTIVITY_TYPE),
-        'Unknown block draft navigation choice: "unknown".',
-    );
 });
 
 test("block-editor-controller", "expands a block when no draft is active", () => {
