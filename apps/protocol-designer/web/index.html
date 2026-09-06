@@ -21,7 +21,12 @@
         <header class="top-ribbon">
             <div class="app-brand">
                 <span class="app-brand__title">Cardio Cadence</span>
-                <span class="app-brand__section">Protocol Designer</span>
+
+                <div class="app-brand__section">
+                    <span>Protocol Designer</span>
+                    <span class="app-brand__separator" aria-hidden="true">—</span>
+                    <span class="app-brand__activity-type" id="protocol-activity-type-name"></span>
+                </div>
             </div>
 
             <nav class="top-ribbon__menu" aria-label="Application menu">
@@ -56,7 +61,14 @@
             <section class="pane-layout" aria-label="Protocol designer workspace">
                 <section class="pane protocol-pane">
                     <header class="pane__header protocol-pane__header">
-                        <span class="protocol-pane__title">Protocol</span>
+                        <div class="protocol-pane__heading">
+                            <span class="protocol-pane__title">Protocol</span>
+
+                            <span
+                                class="protocol-pane__machine-profile"
+                                id="protocol-machine-profile-name"
+                            ></span>
+                        </div>
 
                         <div class="protocol-pane__actions">
                             <button
@@ -85,22 +97,6 @@
                         <div class="protocol-tree" id="protocol-tree"></div>
                     </div>
                 </section>
-                <style>
-                    .graph-pane__content {
-                        position: relative;
-                        padding: 0;
-                        overflow: hidden;
-                    }
-
-                    .graph-pane__content svg {
-                        position: absolute;
-                        inset: 0;
-
-                        display: block;
-                        width: 100%;
-                        height: 100%;
-                    }
-                </style>
 
                 <div class="graph-stack">
                     <section class="pane graph-pane graph-pane--cadence">

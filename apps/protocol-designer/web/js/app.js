@@ -93,6 +93,8 @@ async function main() {
     const protocolSetupCalibrationProfileSelect = document.querySelector(
         "#protocol-setup-calibration-profile",
     );
+    const protocolActivityTypeName = document.querySelector("#protocol-activity-type-name");
+    const protocolMachineProfileName = document.querySelector("#protocol-machine-profile-name");
 
     if (
         protocolPane === null ||
@@ -101,6 +103,8 @@ async function main() {
         editBlockButton === null ||
         cadenceGraph === null ||
         loadGraph === null ||
+        protocolActivityTypeName === null ||
+        protocolMachineProfileName === null ||
         protocolSetupButton === null ||
         protocolSetupDialog === null ||
         protocolSetupCloseButton === null ||
@@ -165,6 +169,9 @@ async function main() {
 
         const { activityType: currentActivityType, machineProfile: currentMachineProfile } =
             protocolModel.getSetupContext();
+
+        protocolActivityTypeName.textContent = currentActivityType.name;
+        protocolMachineProfileName.textContent = currentMachineProfile?.name ?? "";
 
         renderProtocolTree(
             protocolTree,
