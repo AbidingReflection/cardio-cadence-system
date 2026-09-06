@@ -15,19 +15,18 @@
     width: 100%;
 
     grid-template-columns:
-    minmax(100px, 1.7fr)
-    minmax(64px, 0.8fr)
-    minmax(72px, 0.7fr)
-    minmax(54px, 0.5fr)
-    minmax(54px, 0.5fr)
-    8px
-    minmax(72px, 0.7fr)
-    minmax(54px, 0.5fr)
-    minmax(54px, 0.5fr);
+        minmax(100px, 1.7fr)
+        minmax(64px, 0.8fr)
+        minmax(72px, 0.7fr)
+        minmax(54px, 0.5fr)
+        minmax(54px, 0.5fr)
+        8px
+        minmax(72px, 0.7fr)
+        minmax(54px, 0.5fr)
+        minmax(54px, 0.5fr);
 
     column-gap: 0;
 }
-
 
 /* --------------------------------------------------------------------------
  * Block column header
@@ -51,7 +50,6 @@
     font-weight: 700;
 }
 
-
 /* Block label occupies the first column across both header rows. */
 
 .phase-block-header__label {
@@ -62,7 +60,6 @@
     align-items: flex-end;
 
     padding: 0 0 7px 12px;
-
 }
 
 .phase-block-header__duration {
@@ -75,7 +72,6 @@
 
     padding: 0 0 7px;
 }
-
 
 /* Variable group titles occupy row 1 and span three columns each. */
 
@@ -105,7 +101,6 @@
     grid-column: 7 / 10;
 }
 
-
 /* Ramp / Start / End labels occupy row 2. */
 
 .phase-block-header__sub {
@@ -125,7 +120,6 @@
     text-align: center;
 }
 
-
 /*
  * Cadence subheaders auto-place into columns 3, 4, and 5.
  * Resistance must be explicitly placed after the spacer column.
@@ -139,12 +133,9 @@
     grid-column: 8;
 }
 
-.phase-block-header__sub--load-ramp
-+ .phase-block-header__sub
-+ .phase-block-header__sub {
+.phase-block-header__sub--load-ramp + .phase-block-header__sub + .phase-block-header__sub {
     grid-column: 9;
 }
-
 
 /*
  * Block values follow the same layout.
@@ -211,9 +202,9 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease;
 }
 
 .block-toggle:hover {
@@ -227,12 +218,12 @@
     line-height: 1;
 }
 
-
 /* --------------------------------------------------------------------------
  * Collapsed block cards
  * -------------------------------------------------------------------------- */
 
 .block-card {
+    position: relative;
     width: 100%;
     border: 1px solid var(--color-block-border);
     border-radius: 6px;
@@ -242,9 +233,9 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    transform 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        transform 120ms ease;
 }
 
 .block-card:hover {
@@ -261,6 +252,31 @@
     opacity: 0.55;
     cursor: grabbing;
     transform: none;
+}
+
+/* Block status rail */
+
+.block-card--error::before,
+.block-card--warning::before {
+    content: "";
+
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 3px;
+
+    width: 4px;
+    border-radius: 2px;
+
+    pointer-events: none;
+}
+
+.block-card--error::before {
+    background: #ef4444;
+}
+
+.block-card--warning::before {
+    background: #facc15;
 }
 
 .block-summary {
@@ -311,10 +327,10 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease,
+        transform 120ms ease;
 }
 
 .block-insertion-target:hover {
@@ -338,7 +354,6 @@
     transform: translateY(-1px);
 }
 
-
 /* --------------------------------------------------------------------------
  * Selection
  * -------------------------------------------------------------------------- */
@@ -355,7 +370,6 @@
     outline-offset: 2px;
 }
 
-
 /* ============================================================
  *  Expanded Block
  *  ============================================================ */
@@ -363,7 +377,6 @@
 .block-card--expanded .block-row {
     border-bottom: 1px solid var(--color-border);
 }
-
 
 /*
  * Preserve the existing summary grid while hiding the

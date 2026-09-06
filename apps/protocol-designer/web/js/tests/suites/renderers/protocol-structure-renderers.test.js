@@ -2,6 +2,13 @@ import { assertEqual, test } from "/packages/js-testing/framework/test-framework
 import { createBlockElement } from "../../../renderers/protocol/block-renderer.js";
 import { createPhaseElement } from "../../../renderers/protocol/phase-renderer.js";
 
+function createEmptyStatusContext() {
+    return {
+        phaseStatusById: new Map(),
+        blockStatusById: new Map(),
+    };
+}
+
 test(
     "protocol-structure-renderers",
     "phase manage mode keeps phase cards draggable but out of the tab order",
@@ -21,7 +28,14 @@ test(
             phaseNameDraft: undefined,
         };
 
-        const element = createPhaseElement(phase, 0, editorSnapshot, { variables: [] }, {});
+        const element = createPhaseElement(
+            phase,
+            0,
+            editorSnapshot,
+            { variables: [] },
+            {},
+            createEmptyStatusContext(),
+        );
 
         assertEqual(element.hasAttribute("tabindex"), false);
         assertEqual(element.dataset.structuralItem, "phase");
@@ -46,7 +60,13 @@ test(
             selectedBlockId: undefined,
         };
 
-        const element = createBlockElement(block, editorSnapshot, { variables: [] }, {});
+        const element = createBlockElement(
+            block,
+            editorSnapshot,
+            { variables: [] },
+            {},
+            createEmptyStatusContext(),
+        );
 
         assertEqual(element.hasAttribute("tabindex"), false);
         assertEqual(element.dataset.structuralItem, "block");

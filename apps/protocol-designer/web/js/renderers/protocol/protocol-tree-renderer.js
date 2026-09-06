@@ -4,6 +4,7 @@
  */
 
 import { createPhaseElement, createPhaseInsertionTarget } from "./phase-renderer.js";
+import { buildProtocolStatusContext } from "./protocol-status-context.js";
 
 /** Renders the complete protocol tree. */
 export function renderProtocolTree(
@@ -15,6 +16,8 @@ export function renderProtocolTree(
 ) {
     container.replaceChildren();
 
+    const statusContext = buildProtocolStatusContext(protocolSnapshot, machineProfile);
+
     for (let phaseIndex = 0; phaseIndex <= protocolSnapshot.phases.length; phaseIndex += 1) {
         if (editorSnapshot.editMode === "phase") {
             container.append(createPhaseInsertionTarget(phaseIndex));
@@ -24,7 +27,14 @@ export function renderProtocolTree(
             const phase = protocolSnapshot.phases[phaseIndex];
 
             container.append(
-                createPhaseElement(phase, phaseIndex, editorSnapshot, activityType, machineProfile),
+                createPhaseElement(
+                    phase,
+                    phaseIndex,
+                    editorSnapshot,
+                    activityType,
+                    machineProfile,
+                    statusContext,
+                ),
             );
         }
     }

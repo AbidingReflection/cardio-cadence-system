@@ -54,6 +54,28 @@
       }
     },
     {
+  "id": "dev-incompatible-elliptical",
+  "name": "DEV - Intentionally Incompatible Elliptical",
+  "activityTypeId": "elliptical",
+  "variables": {
+    "cadence": {
+      "controlMode": "user-produced",
+      "progressionTypes": [
+        "steady"
+      ]
+    },
+    "resistance": {
+      "controlMode": "machine-set",
+      "min": 1,
+      "max": 5,
+      "increment": 2,
+      "progressionTypes": [
+        "steady"
+      ]
+    }
+  }
+},
+    {
       "id": "true-recumbent-bike-aquatic-center",
       "name": "True Recumbent Stationary Bike - Aquatic Center",
       "activityTypeId": "stationary-bike",

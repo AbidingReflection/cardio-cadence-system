@@ -7,6 +7,8 @@ import { createBlockElement, createNewBlockElement } from "./block-renderer.js";
 
 import { formatDuration } from "../../../../../packages/utils/format-duration.js";
 
+import { createErrorIcon } from "/packages/ui/status-icons.js";
+
 /** Creates a selectable insertion target between phases. */
 export function createPhaseInsertionTarget(index) {
     const target = document.createElement("button");
@@ -29,6 +31,7 @@ export function createPhaseElement(
     editorSnapshot,
     activityType,
     machineProfile,
+    statusContext,
 ) {
     const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
     const isSelected = editorSnapshot.selectedPhaseId === phase.id;
@@ -55,18 +58,23 @@ export function createPhaseElement(
         phaseElement.dataset.blockDropPhaseId = phase.id;
     }
 
-    phaseElement.append(createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot));
+    phaseElement.append(
+        createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot, statusContext),
+    );
 
     if (isExpanded) {
-        phaseElement.append(createPhaseBody(phase, editorSnapshot, activityType, machineProfile));
+        phaseElement.append(
+            createPhaseBody(phase, editorSnapshot, activityType, machineProfile, statusContext),
+        );
     }
 
     return phaseElement;
 }
 
 /** Creates a phase header. */
-function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot) {
+function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot, statusContext) {
     const isEditingName = editorSnapshot.editingPhaseId === phase.id;
+    const phaseStatus = statusContext.phaseStatusById.get(phase.id);
 
     const header = document.createElement("header");
     header.className = "phase-header";
@@ -74,11 +82,20 @@ function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot) {
     const heading = document.createElement("div");
     heading.className = "phase-heading";
 
+    const indexRow = document.createElement("div");
+    indexRow.className = "phase-index-row";
+
     const index = document.createElement("span");
     index.className = "phase-index";
     index.textContent = `Phase ${phaseIndex + 1}`;
 
-    heading.append(index);
+    indexRow.append(index);
+
+    if (phaseStatus?.errorCount > 0) {
+        indexRow.append(createPhaseErrorStatus(phaseStatus.errorCount));
+    }
+
+    heading.append(indexRow);
 
     if (isEditingName) {
         heading.append(createPhaseNameEditor(phase, editorSnapshot.phaseNameDraft));
@@ -123,8 +140,28 @@ function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot) {
     return header;
 }
 
+/** Creates the aggregated machine compatibility error indicator for a phase. */
+function createPhaseErrorStatus(errorCount) {
+    const status = document.createElement("span");
+    status.className = "phase-status phase-status--error";
+    status.setAttribute(
+        "aria-label",
+        `${errorCount} machine compatibility ${errorCount === 1 ? "issue" : "issues"}`,
+    );
+
+    const icon = createErrorIcon();
+
+    const count = document.createElement("span");
+    count.className = "phase-status__count";
+    count.textContent = String(errorCount);
+
+    status.append(icon, count);
+
+    return status;
+}
+
 /** Creates the expanded contents of a phase. */
-function createPhaseBody(phase, editorSnapshot, activityType, machineProfile) {
+function createPhaseBody(phase, editorSnapshot, activityType, machineProfile, statusContext) {
     const body = document.createElement("div");
     body.className = "phase-body";
 
@@ -159,6 +196,7 @@ function createPhaseBody(phase, editorSnapshot, activityType, machineProfile) {
                     editorSnapshot,
                     activityType,
                     machineProfile,
+                    statusContext,
                 ),
             );
         }

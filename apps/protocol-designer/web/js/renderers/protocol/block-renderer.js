@@ -7,9 +7,16 @@ import { createExpandedBlock } from "./block-editor-renderer.js";
 import { formatDuration } from "../../../../packages/utils/format-duration.js";
 
 /** Creates a block card. */
-export function createBlockElement(block, editorSnapshot, activityType, machineProfile) {
+export function createBlockElement(
+    block,
+    editorSnapshot,
+    activityType,
+    machineProfile,
+    statusContext,
+) {
     const isExpanded = editorSnapshot.expandedBlockId === block.id;
     const isSelected = editorSnapshot.selectedBlockId === block.id;
+    const blockStatus = statusContext.blockStatusById.get(block.id);
 
     const blockElement = document.createElement("article");
 
@@ -17,6 +24,8 @@ export function createBlockElement(block, editorSnapshot, activityType, machineP
         "block-card",
         isExpanded ? "block-card--expanded" : undefined,
         isSelected ? "block-card--selected" : undefined,
+        blockStatus?.severity === "error" ? "block-card--error" : undefined,
+        blockStatus?.severity === "warning" ? "block-card--warning" : undefined,
     ]
         .filter(Boolean)
         .join(" ");

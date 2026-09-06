@@ -7,7 +7,6 @@
     font-size: 0.82rem;
 }
 
-
 /* ============================================================
  *  Expanded Block
  *  ============================================================ */
@@ -16,7 +15,6 @@
     margin: 0;
     padding: 0;
 }
-
 
 /* ============================================================
  *  Expanded Block Header
@@ -53,7 +51,6 @@
     white-space: nowrap;
 }
 
-
 /* ============================================================
  *  Block Editor Body
  *  ============================================================ */
@@ -65,7 +62,6 @@
 
     padding: 16px;
 }
-
 
 /* ============================================================
  *  Block Properties
@@ -79,7 +75,6 @@
 
     border-bottom: 1px solid var(--color-border);
 }
-
 
 /* ============================================================
  *  Variable Editors
@@ -121,7 +116,6 @@
     gap: 10px;
 }
 
-
 /* ============================================================
  *  Editor Fields
  *  ============================================================ */
@@ -143,7 +137,6 @@
 .block-editor__field label {
     white-space: nowrap;
 }
-
 
 /* ============================================================
  *  Editor Controls
@@ -167,9 +160,9 @@
     font-size: 0.82rem;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    box-shadow 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .block-name-editor__input:hover,
@@ -196,19 +189,18 @@
     padding-right: 30px;
 
     background-image:
-    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
-    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+        linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+        linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
     background-position:
-    calc(100% - 15px) 14px,
-    calc(100% - 10px) 14px;
+        calc(100% - 15px) 14px,
+        calc(100% - 10px) 14px;
     background-size:
-    5px 5px,
-    5px 5px;
+        5px 5px,
+        5px 5px;
     background-repeat: no-repeat;
 
     cursor: pointer;
 }
-
 
 /* ============================================================
  *  Block Editor Footer
@@ -218,28 +210,49 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
+    gap: 16px;
 }
 
-.block-editor__footer--invalid {
+.block-editor__footer--has-feedback {
     padding-top: 16px;
 
     border-top: 1px solid var(--color-border);
 }
 
-
 /* ============================================================
- *  Validation Feedback
- *  ============================================================ */
+ *  Feedback
+ *  ============================================================= */
 
 .block-editor__feedback {
     display: grid;
-    gap: 4px;
+    gap: 12px;
 
     min-width: 0;
 }
 
 .block-editor__feedback:empty {
     display: none;
+}
+
+.block-editor__feedback-section {
+    display: grid;
+    gap: 4px;
+}
+
+.block-editor__feedback-title {
+    padding-bottom: 3px;
+
+    border-bottom: 1px solid var(--color-border);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.block-editor__feedback-messages {
+    display: grid;
+    gap: 2px;
+
+    padding-left: 12px;
 }
 
 .block-editor__feedback-message {
@@ -266,7 +279,6 @@
     outline: 2px solid currentColor;
     outline-offset: 1px;
 }
-
 
 /* ============================================================
  *  Editor Actions
@@ -301,10 +313,10 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    box-shadow 120ms ease,
-    transform 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
 }
 
 .block-editor__cancel:hover,
@@ -328,7 +340,6 @@
 .block-editor__apply {
     border-color: var(--color-accent);
 }
-
 
 /* ============================================================
  *  Block Structural Actions
@@ -371,9 +382,9 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease;
 }
 
 .block-delete-action:hover {

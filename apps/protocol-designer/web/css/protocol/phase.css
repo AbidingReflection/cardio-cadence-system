@@ -11,8 +11,8 @@
     background: var(--color-phase-background);
 
     transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+        border-color 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .phase-card:hover {
@@ -73,10 +73,10 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease,
+        transform 120ms ease;
 }
 
 .phase-insertion-target:hover {
@@ -176,7 +176,6 @@
     font-size: 1rem;
     font-weight: bold;
 
-
     border: 1px solid var(--color-phase-border);
     border-radius: 4px;
 
@@ -186,9 +185,9 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease;
 }
 
 .phase-name-action:hover {
@@ -226,7 +225,6 @@
     font-weight: 600;
 }
 
-
 /* --------------------------------------------------------------------------
  * Phase toggle
  * -------------------------------------------------------------------------- */
@@ -249,9 +247,9 @@
     cursor: pointer;
 
     transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease;
+        border-color 120ms ease,
+        background 120ms ease,
+        color 120ms ease;
 }
 
 .phase-toggle:hover {
@@ -278,4 +276,34 @@
 
 .phase-block-table {
     min-width: 620px;
+}
+
+.status-icon {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+}
+
+.phase-index-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.phase-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.phase-status .status-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 auto;
+}
+
+.phase-status__count {
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 600;
 }

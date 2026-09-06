@@ -7,6 +7,9 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("./suites/renderers/block-machine-feedback.test.js");
+await import("./suites/renderers/protocol-status-context.test.js");
+await import("/packages/ui/tests/status-icons.test.js");
 await import("./suites/interactions/protocol-structure-events.test.js");
 await import("./suites/interactions/protocol-structure-keyboard-events.test.js");
 

@@ -1,4 +1,5 @@
 import { getProgressionTypes } from "/packages/protocol-core/progression-types.js";
+import { buildBlockMachineFeedback } from "./block-machine-feedback.js";
 
 /**
  * Renders the expanded block editor, including editable fields, progression
@@ -21,19 +22,22 @@ export function createExpandedBlock(block, editorSnapshot, activityType, machine
         throw new Error(`Expanded block "${block.id}" has no matching create draft.`);
     }
 
+    const blockErrors = editorSnapshot.validationErrors.filter(
+        (error) =>
+            error.scope === "block" &&
+            (error.entityId === undefined || error.entityId === block.id),
+    );
+
     const form = document.createElement("form");
     form.className = "block-editor";
     form.id = `${block.id}-editor`;
+
     form.append(
         createBlockEditorHeader(block, draft),
-        createBlockEditorBody(
-            block,
-            draft,
-            activityType,
-            editorSnapshot.validationErrors,
-            machineProfile,
-        ),
+        createBlockEditorBody(block, draft, activityType, blockErrors, machineProfile),
     );
+
+    applyBlockValidationState(form, blockErrors);
 
     return form;
 }
@@ -75,29 +79,27 @@ function createBlockEditorHeader(block, draft) {
 }
 
 /** Creates the editable block body. */
-function createBlockEditorBody(block, draft, activityType, validationErrors, machineProfile) {
+function createBlockEditorBody(block, draft, activityType, blockErrors, machineProfile) {
     const body = document.createElement("div");
     body.className = "block-editor__body";
 
-    const blockErrors = validationErrors.filter(
-        (error) =>
-            error.scope === "block" &&
-            (error.entityId === undefined || error.entityId === block.id),
-    );
+    const orderedErrors = sortBlockFeedbackItems(blockErrors, activityType);
+
+    const machineFeedback = buildBlockMachineFeedback(draft, machineProfile, activityType);
+
+    const orderedMachineFeedback = sortBlockFeedbackItems(machineFeedback, activityType);
 
     body.append(
         createBlockProperties(block, draft),
         createVariableEditors(block, draft, activityType, machineProfile),
-        createBlockFooter(blockErrors),
+        createBlockFooter(orderedErrors, orderedMachineFeedback),
     );
-
-    applyBlockValidationState(body, blockErrors);
 
     return body;
 }
 
 /** Creates the block-editor footer containing feedback and actions. */
-function createBlockFooter(validationErrors) {
+function createBlockFooter(validationErrors, machineFeedback) {
     const footer = document.createElement("div");
     footer.className = "block-editor__footer";
 
@@ -105,11 +107,35 @@ function createBlockFooter(validationErrors) {
         footer.classList.add("block-editor__footer--invalid");
     }
 
+    const feedback = document.createElement("div");
+    feedback.className = "block-editor__feedback";
+    feedback.setAttribute("aria-live", "polite");
+
+    if (validationErrors.length > 0) {
+        feedback.append(
+            createFeedbackSection(
+                "Validation Errors",
+                validationErrors,
+                "block-editor__feedback-section--error",
+            ),
+        );
+    }
+
+    if (machineFeedback.length > 0) {
+        feedback.append(
+            createFeedbackSection(
+                "Machine Compatibility",
+                machineFeedback,
+                "block-editor__feedback-section--machine",
+            ),
+        );
+    }
+
     const actionArea = document.createElement("div");
     actionArea.className = "block-editor__action-area";
     actionArea.append(createBlockActions());
 
-    footer.append(createBlockFeedback(validationErrors), actionArea);
+    footer.append(feedback, actionArea);
 
     return footer;
 }
@@ -211,10 +237,22 @@ function createProgressionTypeField(block, variable, progression, progressionTyp
     select.name = `${variable.id}-type`;
     select.dataset.field = `variables.${variable.id}.type`;
 
+    const currentTypeSupported = progressionTypes.includes(progression.type);
+
+    if (!currentTypeSupported) {
+        const unsupportedOption = document.createElement("option");
+        unsupportedOption.value = progression.type;
+        unsupportedOption.textContent = `${formatProgressionType(progression.type)} — unsupported by machine`;
+        unsupportedOption.selected = true;
+        unsupportedOption.disabled = true;
+
+        select.append(unsupportedOption);
+    }
+
     for (const type of progressionTypes) {
         const option = document.createElement("option");
         option.value = type;
-        option.textContent = type[0].toUpperCase() + type.slice(1);
+        option.textContent = formatProgressionType(type);
         option.selected = progression.type === type;
 
         select.append(option);
@@ -223,6 +261,11 @@ function createProgressionTypeField(block, variable, progression, progressionTyp
     field.append(label, select);
 
     return field;
+}
+
+/** Formats a progression type for display. */
+function formatProgressionType(type) {
+    return type[0].toUpperCase() + type.slice(1);
 }
 
 /** Creates a variable start/end input. */
@@ -271,27 +314,34 @@ function createStepField(block, variable, progression) {
     return field;
 }
 
-/** Creates the block validation feedback region. */
-function createBlockFeedback(validationErrors) {
-    const feedback = document.createElement("div");
+/** Creates one categorized block feedback section. */
+function createFeedbackSection(titleText, feedbackItems, modifierClass) {
+    const section = document.createElement("section");
+    section.className = `block-editor__feedback-section ${modifierClass}`;
 
-    feedback.className = "block-editor__feedback";
-    feedback.setAttribute("aria-live", "polite");
+    const title = document.createElement("div");
+    title.className = "block-editor__feedback-title";
+    title.textContent = titleText;
 
-    for (const error of validationErrors) {
+    const messages = document.createElement("div");
+    messages.className = "block-editor__feedback-messages";
+
+    for (const item of feedbackItems) {
         const message = document.createElement("button");
 
         message.type = "button";
         message.className = "block-editor__feedback-message";
-        message.dataset.validationField = error.field;
-        message.textContent = error.message;
+        message.dataset.validationField = item.field;
+        message.textContent = item.message;
 
-        message.setAttribute("aria-label", `Go to invalid field: ${error.message}`);
+        message.setAttribute("aria-label", `Go to field: ${item.message}`);
 
-        feedback.append(message);
+        messages.append(message);
     }
 
-    return feedback;
+    section.append(title, messages);
+
+    return section;
 }
 
 /** Marks block-editor controls associated with validation errors. */
@@ -308,6 +358,29 @@ function applyBlockValidationState(container, validationErrors) {
         control.classList.add("block-editor__control--invalid");
         control.setAttribute("aria-invalid", "true");
     }
+}
+
+/** Sorts block feedback into stable editor field order. */
+function sortBlockFeedbackItems(feedbackItems, activityType) {
+    const fieldOrder = [
+        "name",
+        "durationSeconds",
+        ...activityType.variables.flatMap((variable) => [
+            `variables.${variable.id}.type`,
+            `variables.${variable.id}.start`,
+            `variables.${variable.id}.end`,
+            `variables.${variable.id}.step`,
+        ]),
+    ];
+
+    const orderByField = new Map(fieldOrder.map((field, index) => [field, index]));
+
+    return [...feedbackItems].sort((left, right) => {
+        const leftOrder = orderByField.get(left.field) ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder = orderByField.get(right.field) ?? Number.MAX_SAFE_INTEGER;
+
+        return leftOrder - rightOrder;
+    });
 }
 
 /** Creates Apply and Cancel block-editor actions. */
