@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import http.server
+import json
 import os
 import posixpath
 import sys
@@ -12,25 +13,36 @@ import urllib.parse
 from pathlib import Path
 
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from js_testing.test_manifest import (
+    build_test_manifest,
+    get_test_manifest_request,
+    load_test_roots,
+)
+
+from serve.routing import (
+    APP_ROUTES,
+    get_redirect_target,
+    select_root,
+)
+
+
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8080
-
-APP_ROUTES = {
-    "/protocol-designer": "protocol-designer",
-    "/cadence-controller": "cadence-controller",
-    "/workout-analyzer": "workout-analyzer",
-}
-
-APP_ALIASES = {
-    "/designer": "/protocol-designer",
-    "/controller": "/cadence-controller",
-    "/analyzer": "/workout-analyzer",
-}
 
 TEST_PAGE_RELATIVE_PATH = Path(
     "js-testing",
     "page",
     "tests.html",
+)
+
+TEST_MANIFESTS_RELATIVE_PATH = Path(
+    "js-testing",
+    "manifests",
 )
 
 
@@ -44,17 +56,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Serve the Cardio Cadence System web applications."
     )
+
     parser.add_argument(
         "--host",
         default=DEFAULT_HOST,
         help=f"Host interface to bind to. Default: {DEFAULT_HOST}",
     )
+
     parser.add_argument(
         "--port",
         type=int,
         default=DEFAULT_PORT,
         help=f"TCP port to listen on. Default: {DEFAULT_PORT}",
     )
+
     return parser.parse_args()
 
 
@@ -95,21 +110,21 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         )
 
     def do_GET(self) -> None:
-        """Handle redirects before serving GET requests."""
-        redirect_target = self._get_redirect_target()
+        """Handle redirects and test manifests before serving GET requests."""
+        if self._handle_redirect():
+            return
 
-        if redirect_target is not None:
-            self._send_redirect(redirect_target)
+        if self._handle_test_manifest_request(head_only=False):
             return
 
         super().do_GET()
 
     def do_HEAD(self) -> None:
-        """Handle redirects before serving HEAD requests."""
-        redirect_target = self._get_redirect_target()
+        """Handle redirects and test manifests before serving HEAD requests."""
+        if self._handle_redirect():
+            return
 
-        if redirect_target is not None:
-            self._send_redirect(redirect_target)
+        if self._handle_test_manifest_request(head_only=True):
             return
 
         super().do_HEAD()
@@ -119,7 +134,14 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         url_path = urllib.parse.urlsplit(path).path
         url_path = urllib.parse.unquote(url_path)
 
-        root, relative_path = self._select_root(url_path)
+        root, relative_path = select_root(
+            url_path,
+            data_root=self.data_root,
+            packages_root=self.packages_root,
+            app_roots=self.app_roots,
+            test_page_path=self.test_page_path,
+            invalid_root=self.invalid_root,
+        )
 
         relative_path = posixpath.normpath(relative_path)
 
@@ -142,86 +164,135 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         return str(filesystem_path)
 
-    def _select_root(self, url_path: str) -> tuple[Path, str]:
-        """Select the filesystem root corresponding to a request URL."""
-        if url_path == "/data":
-            return self.data_root, ""
-
-        if url_path.startswith("/data/"):
-            return (
-                self.data_root,
-                url_path.removeprefix("/data/"),
-            )
-
-        if url_path == "/packages":
-            return self.packages_root, ""
-
-        if url_path.startswith("/packages/"):
-            return (
-                self.packages_root,
-                url_path.removeprefix("/packages/"),
-            )
-
-        for route, app_root in self.app_roots.items():
-            if url_path == f"{route}/tests":
-                return (
-                    self.test_page_path.parent,
-                    self.test_page_path.name,
-                )
-
-            if url_path == route:
-                return app_root, ""
-
-            if url_path.startswith(f"{route}/"):
-                return (
-                    app_root,
-                    url_path.removeprefix(f"{route}/"),
-                )
-
-        return self.invalid_root, url_path.lstrip("/")
-
-    def _get_redirect_target(self) -> str | None:
-        """Return the canonical redirect target for the current request."""
+    def _handle_redirect(self) -> bool:
+        """Redirect the current request when a canonical target exists."""
         parsed_url = urllib.parse.urlsplit(self.path)
-        url_path = parsed_url.path
 
-        if url_path == "/":
-            target = "/protocol-designer/"
-            return self._with_query(target, parsed_url.query)
+        target = get_redirect_target(
+            parsed_url.path,
+            parsed_url.query,
+        )
 
-        for route in APP_ROUTES:
-            if url_path == route:
-                target = f"{route}/"
-                return self._with_query(target, parsed_url.query)
+        if target is None:
+            return False
 
-            if url_path == f"{route}/tests/":
-                target = f"{route}/tests"
-                return self._with_query(target, parsed_url.query)
+        self._send_redirect(target)
 
-        for alias, canonical_route in APP_ALIASES.items():
-            if url_path == alias:
-                target = f"{canonical_route}/"
-                return self._with_query(target, parsed_url.query)
+        return True
 
-            if url_path.startswith(f"{alias}/"):
-                suffix = url_path.removeprefix(alias)
-                target = f"{canonical_route}{suffix}"
-                return self._with_query(target, parsed_url.query)
+    def _handle_test_manifest_request(
+        self,
+        *,
+        head_only: bool,
+    ) -> bool:
+        """Serve a discovered test-module manifest when requested."""
+        parsed_url = urllib.parse.urlsplit(self.path)
+        url_path = urllib.parse.unquote(parsed_url.path)
 
-        return None
+        request = get_test_manifest_request(
+            url_path,
+            APP_ROUTES,
+        )
 
-    def _send_redirect(self, target: str) -> None:
+        if request is None:
+            return False
+
+        app_route, target = request
+        app_root = self.app_roots[app_route]
+
+        manifest_path = (
+            self.packages_root
+            / TEST_MANIFESTS_RELATIVE_PATH
+            / f"{target}.json"
+        )
+
+        if not manifest_path.is_file():
+            self.send_error(
+                http.HTTPStatus.NOT_FOUND,
+                f'Unknown test target "{target}".',
+            )
+
+            return True
+
+        try:
+            test_roots = load_test_roots(manifest_path)
+
+            manifest = build_test_manifest(
+                target=target,
+                test_roots=test_roots,
+                route_roots={
+                    app_route: app_root,
+                    "/packages": self.packages_root,
+                },
+            )
+
+        except (
+            json.JSONDecodeError,
+            ValueError,
+            TypeError,
+            FileNotFoundError,
+            NotADirectoryError,
+        ) as exc:
+            self.send_error(
+                http.HTTPStatus.INTERNAL_SERVER_ERROR,
+                "Could not build test manifest.",
+                explain=str(exc),
+            )
+
+            return True
+
+        self._send_json_response(
+            manifest,
+            head_only=head_only,
+        )
+
+        return True
+
+    def _send_json_response(
+        self,
+        value: object,
+        *,
+        head_only: bool,
+    ) -> None:
+        """Send a JSON HTTP response."""
+        response_body = (
+            json.dumps(
+                value,
+                indent=2,
+            )
+            + "\n"
+        ).encode("utf-8")
+
+        self.send_response(http.HTTPStatus.OK)
+
+        self.send_header(
+            "Content-Type",
+            "application/json; charset=utf-8",
+        )
+
+        self.send_header(
+            "Content-Length",
+            str(len(response_body)),
+        )
+
+        self.send_header(
+            "Cache-Control",
+            "no-store",
+        )
+
+        self.end_headers()
+
+        if not head_only:
+            self.wfile.write(response_body)
+
+    def _send_redirect(
+        self,
+        target: str,
+    ) -> None:
         """Send an HTTP redirect response."""
         self.send_response(http.HTTPStatus.FOUND)
         self.send_header("Location", target)
         self.end_headers()
-
-    def _with_query(self, target: str, query: str) -> str:
-        """Append the original query string to a redirect target."""
-        if not query:
-            return target
-
-        return f"{target}?{query}"
 
 
 def main() -> int:
@@ -229,6 +300,7 @@ def main() -> int:
     args = parse_args()
 
     project_root = find_project_root()
+
     data_root = project_root / "data"
     packages_root = project_root / "packages"
 
@@ -251,6 +323,7 @@ def main() -> int:
                 f"{app_root}",
                 file=sys.stderr,
             )
+
             continue
 
         entry_point = app_root / "index.html"
@@ -268,17 +341,20 @@ def main() -> int:
             f"{test_page_path}",
             file=sys.stderr,
         )
+
         return 1
 
     if not data_root.is_dir():
         print(
-            f"Warning: shared data directory not found:\n{data_root}",
+            f"Warning: shared data directory not found:\n"
+            f"{data_root}",
             file=sys.stderr,
         )
 
     if not packages_root.is_dir():
         print(
-            f"Warning: shared packages directory not found:\n{packages_root}",
+            f"Warning: shared packages directory not found:\n"
+            f"{packages_root}",
             file=sys.stderr,
         )
 
@@ -309,6 +385,7 @@ def main() -> int:
 
     except KeyboardInterrupt:
         print("\nCardio Cadence server stopped.")
+
         return 0
 
     except OSError as exc:
@@ -317,9 +394,11 @@ def main() -> int:
             f"{args.host}:{args.port}: {exc}",
             file=sys.stderr,
         )
+
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

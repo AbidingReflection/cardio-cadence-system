@@ -13,12 +13,27 @@ async function main() {
 /** Returns the application path from a test-page URL. */
 function getAppPath(pathname) {
     const normalizedPath = pathname.replace(/\/+$/, "");
+    const testSegment = "/tests";
 
-    if (!normalizedPath.endsWith("/tests")) {
-        throw new Error(`Test page route must end with "/tests": "${pathname}".`);
+    const testIndex = normalizedPath.indexOf(testSegment);
+
+    if (testIndex === -1) {
+        throw new Error(
+            `Test page route must contain "/tests": "${pathname}".`
+        );
     }
 
-    return normalizedPath.slice(0, -"/tests".length);
+    const suffix = normalizedPath.slice(
+        testIndex + testSegment.length
+    );
+
+    if (suffix && !/^\/[^/]+$/.test(suffix)) {
+        throw new Error(
+            `Test page route may contain at most one test target: "${pathname}".`
+        );
+    }
+
+    return normalizedPath.slice(0, testIndex);
 }
 
 main().catch((error) => {
