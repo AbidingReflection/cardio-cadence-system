@@ -93,7 +93,8 @@
     text-transform: uppercase;
 }
 
-.phase-block-header__group--cadence {
+.phase-block-header__group--cadence,
+.phase-block-header__group--pace {
     grid-column: 3 / 6;
 }
 
