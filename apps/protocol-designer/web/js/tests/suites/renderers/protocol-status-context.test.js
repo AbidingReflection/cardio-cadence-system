@@ -203,3 +203,181 @@ test(
         });
     },
 );
+
+test(
+    "protocol-status-context",
+    "maps calibration applicability issues to phase and block warnings",
+    () => {
+        const protocol = createProtocol([
+            createBlock("block-1", {
+                cadence: {
+                    type: "steady",
+                    start: 75,
+                },
+                resistance: {
+                    type: "steady",
+                    start: 8,
+                },
+            }),
+        ]);
+
+        const calibrationProfile = {
+            domain: {
+                cadence: {
+                    min: 40,
+                    max: 70,
+                },
+                resistance: {
+                    min: 1,
+                    max: 16,
+                },
+            },
+        };
+
+        const statusContext = buildProtocolStatusContext(protocol, undefined, calibrationProfile);
+
+        assertDeepEqual(statusContext.phaseStatusById.get("phase-1"), {
+            errorCount: 0,
+            warningCount: 1,
+        });
+
+        assertDeepEqual(statusContext.blockStatusById.get("block-1"), {
+            severity: "warning",
+            errorCount: 0,
+            warningCount: 1,
+        });
+    },
+);
+
+test(
+    "protocol-status-context",
+    "accumulates multiple calibration warnings within one block",
+    () => {
+        const protocol = createProtocol([
+            createBlock("block-1", {
+                cadence: {
+                    type: "linear",
+                    start: 35,
+                    end: 75,
+                },
+                resistance: {
+                    type: "steady",
+                    start: 20,
+                },
+            }),
+        ]);
+
+        const calibrationProfile = {
+            domain: {
+                cadence: {
+                    min: 40,
+                    max: 70,
+                },
+                resistance: {
+                    min: 1,
+                    max: 16,
+                },
+            },
+        };
+
+        const statusContext = buildProtocolStatusContext(protocol, undefined, calibrationProfile);
+
+        assertDeepEqual(statusContext.phaseStatusById.get("phase-1"), {
+            errorCount: 0,
+            warningCount: 3,
+        });
+
+        assertDeepEqual(statusContext.blockStatusById.get("block-1"), {
+            severity: "warning",
+            errorCount: 0,
+            warningCount: 3,
+        });
+    },
+);
+
+test(
+    "protocol-status-context",
+    "machine errors outrank calibration warnings for block severity",
+    () => {
+        const protocol = createProtocol([
+            createBlock("block-1", {
+                cadence: {
+                    type: "steady",
+                    start: 75,
+                },
+                resistance: {
+                    type: "steady",
+                    start: 25,
+                },
+            }),
+        ]);
+
+        const machineProfile = createMachineProfile({
+            resistanceMax: 20,
+        });
+
+        const calibrationProfile = {
+            domain: {
+                cadence: {
+                    min: 40,
+                    max: 70,
+                },
+                resistance: {
+                    min: 1,
+                    max: 16,
+                },
+            },
+        };
+
+        const statusContext = buildProtocolStatusContext(
+            protocol,
+            machineProfile,
+            calibrationProfile,
+        );
+
+        assertDeepEqual(statusContext.phaseStatusById.get("phase-1"), {
+            errorCount: 1,
+            warningCount: 2,
+        });
+
+        assertDeepEqual(statusContext.blockStatusById.get("block-1"), {
+            severity: "error",
+            errorCount: 1,
+            warningCount: 2,
+        });
+    },
+);
+
+test(
+    "protocol-status-context",
+    "preserves machine-only behavior without a calibration profile",
+    () => {
+        const protocol = createProtocol([
+            createBlock("block-1", {
+                cadence: {
+                    type: "steady",
+                    start: 90,
+                },
+                resistance: {
+                    type: "steady",
+                    start: 5,
+                },
+            }),
+        ]);
+
+        const machineProfile = createMachineProfile();
+
+        const statusContext = buildProtocolStatusContext(protocol, machineProfile);
+
+        assertDeepEqual(statusContext.phaseStatusById.get("phase-1"), {
+            errorCount: 1,
+            warningCount: 0,
+        });
+
+        assertDeepEqual(statusContext.blockStatusById.get("block-1"), {
+            severity: "error",
+            errorCount: 1,
+            warningCount: 0,
+        });
+    },
+);

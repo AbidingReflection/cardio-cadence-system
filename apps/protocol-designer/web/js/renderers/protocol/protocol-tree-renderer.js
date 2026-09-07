@@ -13,10 +13,15 @@ export function renderProtocolTree(
     editorSnapshot,
     activityType,
     machineProfile,
+    calibrationProfile,
 ) {
     container.replaceChildren();
 
-    const statusContext = buildProtocolStatusContext(protocolSnapshot, machineProfile);
+    const statusContext = buildProtocolStatusContext(
+        protocolSnapshot,
+        machineProfile,
+        calibrationProfile,
+    );
 
     for (let phaseIndex = 0; phaseIndex <= protocolSnapshot.phases.length; phaseIndex += 1) {
         if (editorSnapshot.editMode === "phase") {
@@ -33,6 +38,7 @@ export function renderProtocolTree(
                     editorSnapshot,
                     activityType,
                     machineProfile,
+                    calibrationProfile,
                     statusContext,
                 ),
             );

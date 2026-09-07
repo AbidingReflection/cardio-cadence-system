@@ -12,6 +12,7 @@ export function createBlockElement(
     editorSnapshot,
     activityType,
     machineProfile,
+    calibrationProfile,
     statusContext,
 ) {
     const isExpanded = editorSnapshot.expandedBlockId === block.id;
@@ -41,7 +42,13 @@ export function createBlockElement(
 
     if (isExpanded) {
         blockElement.append(
-            createExpandedBlock(block, editorSnapshot, activityType, machineProfile),
+            createExpandedBlock(
+                block,
+                editorSnapshot,
+                activityType,
+                machineProfile,
+                calibrationProfile,
+            ),
         );
     } else {
         blockElement.append(createCollapsedBlock(block, activityType, editorSnapshot));
@@ -51,7 +58,12 @@ export function createBlockElement(
 }
 
 /** Creates the expanded editor for an uncommitted new block. */
-export function createNewBlockElement(editorSnapshot, activityType, machineProfile) {
+export function createNewBlockElement(
+    editorSnapshot,
+    activityType,
+    machineProfile,
+    calibrationProfile,
+) {
     const draft = editorSnapshot.activeBlockDraft;
     const blockId = editorSnapshot.expandedBlockId;
 
@@ -67,7 +79,15 @@ export function createNewBlockElement(editorSnapshot, activityType, machineProfi
     const blockElement = document.createElement("article");
     blockElement.className = "block-card block-card--expanded";
     blockElement.dataset.blockId = block.id;
-    blockElement.append(createExpandedBlock(block, editorSnapshot, activityType, machineProfile));
+    blockElement.append(
+        createExpandedBlock(
+            block,
+            editorSnapshot,
+            activityType,
+            machineProfile,
+            calibrationProfile,
+        ),
+    );
 
     return blockElement;
 }

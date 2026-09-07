@@ -1,48 +1,100 @@
 {
-  "schemaVersion": 1,
-  "calibrationProfiles": [
-    {
-      "id": "true-elliptical-aquatic-center-default",
-      "name": "True Elliptical - Aquatic Center Calibration",
-      "machineProfileId": "true-elliptical-aquatic-center",
+    "schemaVersion": 1,
+    "calibrationProfiles": [
+        {
+            "id": "true-elliptical-aquatic-center-default",
+            "name": "True Elliptical - Aquatic Center Calibration",
+            "machineProfileId": "true-elliptical-aquatic-center",
 
-      "context": {},
+            "context": {},
 
-      "domain": {
-        "cadence": {
-          "min": 40,
-          "max": 70
+            "domain": {
+                "cadence": {
+                    "min": 40,
+                    "max": 70
+                },
+                "resistance": {
+                    "min": 1,
+                    "max": 16
+                }
+            },
+
+            "model": {
+                "type": "polynomial",
+                "input": {
+                    "type": "product",
+                    "variables": ["cadence", "resistance"]
+                },
+                "coefficients": [0.0572, 0.00014, 0.000000285, -0.000000000143],
+                "outputUnit": "kcalPerSecond"
+            },
+
+            "validation": {
+                "sessionDurationSeconds": 4500,
+                "observedCalories": 980,
+                "absoluteErrorCalories": 1.4,
+                "relativeErrorPercent": 0.13
+            }
         },
-        "resistance": {
-          "min": 1,
-          "max": 16
+        {
+            "id": "dev-narrow-true-elliptical-calibration",
+            "name": "DEV - Intentionally Narrow Elliptical Calibration",
+            "machineProfileId": "true-elliptical-aquatic-center",
+
+            "context": {
+                "purpose": "Development fixture for calibration applicability warning testing"
+            },
+
+            "domain": {
+                "cadence": {
+                    "min": 55,
+                    "max": 60
+                },
+                "resistance": {
+                    "min": 6,
+                    "max": 10
+                }
+            },
+
+            "model": {
+                "type": "polynomial",
+                "input": {
+                    "type": "product",
+                    "variables": ["cadence", "resistance"]
+                },
+                "coefficients": [0.0572, 0.00014, 0.000000285, -0.000000000143],
+                "outputUnit": "kcalPerSecond"
+            }
+        },
+        {
+            "id": "dev-incompatible-elliptical-calibration",
+            "name": "DEV - Incompatible Elliptical Calibration",
+            "machineProfileId": "dev-incompatible-elliptical",
+
+            "context": {
+                "purpose": "Development fixture for combined machine error and calibration warning testing"
+            },
+
+            "domain": {
+                "cadence": {
+                    "min": 50,
+                    "max": 55
+                },
+                "resistance": {
+                    "min": 2,
+                    "max": 4
+                }
+            },
+
+            "model": {
+                "type": "polynomial",
+                "input": {
+                    "type": "product",
+                    "variables": ["cadence", "resistance"]
+                },
+                "coefficients": [0.0572, 0.00014, 0.000000285, -0.000000000143],
+                "outputUnit": "kcalPerSecond"
+            }
         }
-      },
-
-      "model": {
-        "type": "polynomial",
-        "input": {
-          "type": "product",
-          "variables": [
-            "cadence",
-            "resistance"
-          ]
-        },
-        "coefficients": [
-          0.0572,
-          0.00014,
-          0.000000285,
-          -0.000000000143
-        ],
-        "outputUnit": "kcalPerSecond"
-      },
-
-      "validation": {
-        "sessionDurationSeconds": 4500,
-        "observedCalories": 980,
-        "absoluteErrorCalories": 1.4,
-        "relativeErrorPercent": 0.13
-      }
-    }
-  ]
+    ]
 }

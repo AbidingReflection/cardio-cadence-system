@@ -167,8 +167,11 @@ async function main() {
 
         const editorSnapshot = editorState.getSnapshot();
 
-        const { activityType: currentActivityType, machineProfile: currentMachineProfile } =
-            protocolModel.getSetupContext();
+        const {
+            activityType: currentActivityType,
+            machineProfile: currentMachineProfile,
+            calibrationProfile: currentCalibrationProfile,
+        } = protocolModel.getSetupContext();
 
         protocolActivityTypeName.textContent = currentActivityType.name;
         protocolMachineProfileName.textContent = currentMachineProfile?.name ?? "";
@@ -179,6 +182,7 @@ async function main() {
             editorSnapshot,
             currentActivityType,
             currentMachineProfile,
+            currentCalibrationProfile,
         );
 
         const phaseEditActive = editorSnapshot.editMode === "phase";

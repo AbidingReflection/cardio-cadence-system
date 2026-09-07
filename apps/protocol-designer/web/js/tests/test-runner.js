@@ -7,6 +7,8 @@ import {
     renderSuiteSummary,
 } from "/packages/js-testing/page/test-renderer.js";
 
+await import("./suites/renderers/block-calibration-feedback.test.js");
+await import("/packages/protocol-core/tests/calibration-applicability.test.js");
 await import("./suites/renderers/block-machine-feedback.test.js");
 await import("./suites/renderers/protocol-status-context.test.js");
 await import("/packages/ui/tests/status-icons.test.js");

@@ -34,6 +34,7 @@ test(
             editorSnapshot,
             { variables: [] },
             {},
+            undefined,
             createEmptyStatusContext(),
         );
 
@@ -65,6 +66,7 @@ test(
             editorSnapshot,
             { variables: [] },
             {},
+            undefined,
             createEmptyStatusContext(),
         );
 

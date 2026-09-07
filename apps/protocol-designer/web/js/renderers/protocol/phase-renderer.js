@@ -7,7 +7,7 @@ import { createBlockElement, createNewBlockElement } from "./block-renderer.js";
 
 import { formatDuration } from "../../../../../packages/utils/format-duration.js";
 
-import { createErrorIcon } from "/packages/ui/status-icons.js";
+import { createErrorIcon, createWarningIcon } from "/packages/ui/status-icons.js";
 
 /** Creates a selectable insertion target between phases. */
 export function createPhaseInsertionTarget(index) {
@@ -31,6 +31,7 @@ export function createPhaseElement(
     editorSnapshot,
     activityType,
     machineProfile,
+    calibrationProfile,
     statusContext,
 ) {
     const isExpanded = editorSnapshot.expandedPhaseIds.includes(phase.id);
@@ -64,7 +65,14 @@ export function createPhaseElement(
 
     if (isExpanded) {
         phaseElement.append(
-            createPhaseBody(phase, editorSnapshot, activityType, machineProfile, statusContext),
+            createPhaseBody(
+                phase,
+                editorSnapshot,
+                activityType,
+                machineProfile,
+                calibrationProfile,
+                statusContext,
+            ),
         );
     }
 
@@ -93,6 +101,10 @@ function createPhaseHeader(phase, phaseIndex, isExpanded, editorSnapshot, status
 
     if (phaseStatus?.errorCount > 0) {
         indexRow.append(createPhaseErrorStatus(phaseStatus.errorCount));
+    }
+
+    if (phaseStatus?.warningCount > 0) {
+        indexRow.append(createPhaseWarningStatus(phaseStatus.warningCount));
     }
 
     heading.append(indexRow);
@@ -160,8 +172,35 @@ function createPhaseErrorStatus(errorCount) {
     return status;
 }
 
+/** Creates the aggregated calibration applicability warning indicator for a phase. */
+function createPhaseWarningStatus(warningCount) {
+    const status = document.createElement("span");
+    status.className = "phase-status phase-status--warning";
+    status.setAttribute(
+        "aria-label",
+        `${warningCount} calibration applicability ${warningCount === 1 ? "warning" : "warnings"}`,
+    );
+
+    const icon = createWarningIcon();
+
+    const count = document.createElement("span");
+    count.className = "phase-status__count";
+    count.textContent = String(warningCount);
+
+    status.append(icon, count);
+
+    return status;
+}
+
 /** Creates the expanded contents of a phase. */
-function createPhaseBody(phase, editorSnapshot, activityType, machineProfile, statusContext) {
+function createPhaseBody(
+    phase,
+    editorSnapshot,
+    activityType,
+    machineProfile,
+    calibrationProfile,
+    statusContext,
+) {
     const body = document.createElement("div");
     body.className = "phase-body";
 
@@ -184,7 +223,14 @@ function createPhaseBody(phase, editorSnapshot, activityType, machineProfile, st
 
     for (let index = 0; index <= phase.blocks.length; index += 1) {
         if (hasCreateDraftInPhase && insertionTarget.index === index) {
-            blocks.append(createNewBlockElement(editorSnapshot, activityType, machineProfile));
+            blocks.append(
+                createNewBlockElement(
+                    editorSnapshot,
+                    activityType,
+                    machineProfile,
+                    calibrationProfile,
+                ),
+            );
         } else if (blockManageActive && !hasActiveCreateDraft) {
             blocks.append(createBlockInsertionTarget(phase.id, index));
         }
@@ -196,6 +242,7 @@ function createPhaseBody(phase, editorSnapshot, activityType, machineProfile, st
                     editorSnapshot,
                     activityType,
                     machineProfile,
+                    calibrationProfile,
                     statusContext,
                 ),
             );

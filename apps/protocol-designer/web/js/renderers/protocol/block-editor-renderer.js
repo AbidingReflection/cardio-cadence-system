@@ -1,5 +1,7 @@
 import { getProgressionTypes } from "/packages/protocol-core/progression-types.js";
+
 import { buildBlockMachineFeedback } from "./block-machine-feedback.js";
+import { buildBlockCalibrationFeedback } from "./block-calibration-feedback.js";
 
 /**
  * Renders the expanded block editor, including editable fields, progression
@@ -7,7 +9,13 @@ import { buildBlockMachineFeedback } from "./block-machine-feedback.js";
  */
 
 /** Creates the expanded block editor. */
-export function createExpandedBlock(block, editorSnapshot, activityType, machineProfile) {
+export function createExpandedBlock(
+    block,
+    editorSnapshot,
+    activityType,
+    machineProfile,
+    calibrationProfile,
+) {
     const draft = editorSnapshot.activeBlockDraft;
 
     if (draft === undefined) {
@@ -34,7 +42,14 @@ export function createExpandedBlock(block, editorSnapshot, activityType, machine
 
     form.append(
         createBlockEditorHeader(block, draft),
-        createBlockEditorBody(block, draft, activityType, blockErrors, machineProfile),
+        createBlockEditorBody(
+            block,
+            draft,
+            activityType,
+            blockErrors,
+            machineProfile,
+            calibrationProfile,
+        ),
     );
 
     applyBlockValidationState(form, blockErrors);
@@ -79,7 +94,14 @@ function createBlockEditorHeader(block, draft) {
 }
 
 /** Creates the editable block body. */
-function createBlockEditorBody(block, draft, activityType, blockErrors, machineProfile) {
+function createBlockEditorBody(
+    block,
+    draft,
+    activityType,
+    blockErrors,
+    machineProfile,
+    calibrationProfile,
+) {
     const body = document.createElement("div");
     body.className = "block-editor__body";
 
@@ -89,19 +111,35 @@ function createBlockEditorBody(block, draft, activityType, blockErrors, machineP
 
     const orderedMachineFeedback = sortBlockFeedbackItems(machineFeedback, activityType);
 
+    const calibrationFeedback = buildBlockCalibrationFeedback(
+        draft,
+        calibrationProfile,
+        activityType,
+    );
+
+    const orderedCalibrationFeedback = sortBlockFeedbackItems(calibrationFeedback, activityType);
+
     body.append(
         createBlockProperties(block, draft),
         createVariableEditors(block, draft, activityType, machineProfile),
-        createBlockFooter(orderedErrors, orderedMachineFeedback),
+        createBlockFooter(orderedErrors, orderedMachineFeedback, orderedCalibrationFeedback),
     );
 
     return body;
 }
 
 /** Creates the block-editor footer containing feedback and actions. */
-function createBlockFooter(validationErrors, machineFeedback) {
+function createBlockFooter(validationErrors, machineFeedback, calibrationFeedback) {
     const footer = document.createElement("div");
     footer.className = "block-editor__footer";
+
+    if (
+        validationErrors.length > 0 ||
+        machineFeedback.length > 0 ||
+        calibrationFeedback.length > 0
+    ) {
+        footer.classList.add("block-editor__footer--has-feedback");
+    }
 
     if (validationErrors.length > 0) {
         footer.classList.add("block-editor__footer--invalid");
@@ -127,6 +165,16 @@ function createBlockFooter(validationErrors, machineFeedback) {
                 "Machine Compatibility",
                 machineFeedback,
                 "block-editor__feedback-section--machine",
+            ),
+        );
+    }
+
+    if (calibrationFeedback.length > 0) {
+        feedback.append(
+            createFeedbackSection(
+                "Calibration Applicability",
+                calibrationFeedback,
+                "block-editor__feedback-section--calibration",
             ),
         );
     }
