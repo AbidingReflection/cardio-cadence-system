@@ -329,6 +329,7 @@ function createVariableValueField(block, variable, progression, key, labelText) 
 
     const input = document.createElement("input");
     input.type = "number";
+    input.step = "any";
     input.id = id;
     input.name = `${variable.id}-${key}`;
     input.value = progression[key] ?? "";
@@ -352,6 +353,7 @@ function createStepField(block, variable, progression) {
 
     const input = document.createElement("input");
     input.type = "number";
+    input.step = "any";
     input.id = id;
     input.name = `${variable.id}-step`;
     input.value = progression.step ?? "";

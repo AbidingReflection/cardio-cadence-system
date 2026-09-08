@@ -52,7 +52,7 @@ export function wireProtocolBlockEvents({
     });
 
     protocolTree.addEventListener("input", (event) => {
-        const field = event.target.closest("input[data-field]");
+        const field = event.target.closest("input[data-field]:not([type='number'])");
 
         if (field === null) {
             return;
@@ -70,7 +70,7 @@ export function wireProtocolBlockEvents({
     });
 
     protocolTree.addEventListener("change", (event) => {
-        const field = event.target.closest("select[data-field]");
+        const field = event.target.closest("select[data-field], input[type='number'][data-field]");
 
         if (field === null) {
             return;
