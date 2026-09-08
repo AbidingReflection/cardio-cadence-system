@@ -270,6 +270,120 @@ test("calibration-profile", "requires model to be an object", () => {
     );
 });
 
+test("calibration-profile", "requires a model type", () => {
+    const data = createCalibrationData();
+    data.model.type = "";
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model type must be a non-empty string.",
+    );
+});
+
+test("calibration-profile", "requires model input to be an object", () => {
+    const data = createCalibrationData();
+    data.model.input = null;
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model input must be an object.",
+    );
+});
+
+test("calibration-profile", "requires a model input type", () => {
+    const data = createCalibrationData();
+    data.model.input.type = "";
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model input type must be a non-empty string.",
+    );
+});
+
+test("calibration-profile", "requires model input variables", () => {
+    const data = createCalibrationData();
+    data.model.input.variables = [];
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model input variables must be a non-empty array.",
+    );
+});
+
+test("calibration-profile", "requires model input variable IDs to be strings", () => {
+    const data = createCalibrationData();
+    data.model.input.variables = ["cadence", ""];
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model input variable must be a non-empty string.",
+    );
+});
+
+test("calibration-profile", "rejects duplicate model input variables", () => {
+    const data = createCalibrationData();
+    data.model.input.variables = ["cadence", "cadence"];
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        'CalibrationProfile model input contains duplicate variable "cadence".',
+    );
+});
+
+test("calibration-profile", "rejects unknown model input variables", () => {
+    const data = createCalibrationData();
+    data.model.input.variables = ["cadence", "unknownVariable"];
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        'CalibrationProfile model input contains unknown MachineProfile variable "unknownVariable".',
+    );
+});
+
+test("calibration-profile", "requires model coefficients", () => {
+    const data = createCalibrationData();
+    data.model.coefficients = [];
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model coefficients must be a non-empty array.",
+    );
+});
+
+test("calibration-profile", "requires finite model coefficients", () => {
+    const data = createCalibrationData();
+    data.model.coefficients[2] = Number.NaN;
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model coefficients must contain only finite numbers.",
+    );
+});
+
+test("calibration-profile", "requires a model output unit", () => {
+    const data = createCalibrationData();
+    data.model.outputUnit = "";
+
+    assertThrows(
+        () => new CalibrationProfile(data, MACHINE_PROFILE),
+        "CalibrationProfile model outputUnit must be a non-empty string.",
+    );
+});
+
+test("calibration-profile", "allows structurally valid unsupported model types", () => {
+    const data = createCalibrationData();
+
+    data.model.type = "future-model";
+    data.model.input.type = "future-input";
+    data.model.outputUnit = "future-unit";
+
+    const calibrationProfile = new CalibrationProfile(data, MACHINE_PROFILE);
+
+    assertEqual(calibrationProfile.model.type, "future-model");
+    assertEqual(calibrationProfile.model.input.type, "future-input");
+    assertEqual(calibrationProfile.model.outputUnit, "future-unit");
+});
+
 test("calibration-profile", "allows validation metadata to be omitted", () => {
     const data = createCalibrationData();
     delete data.validation;

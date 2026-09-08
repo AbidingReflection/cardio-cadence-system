@@ -37,8 +37,8 @@ export class CalibrationProfile {
 
     get validation() {
         return this.#data.validation === undefined
-        ? undefined
-        : structuredClone(this.#data.validation);
+            ? undefined
+            : structuredClone(this.#data.validation);
     }
 }
 
@@ -55,7 +55,7 @@ function validateCalibrationProfile(data, machineProfile) {
     validateMachineProfileReference(data.machineProfileId, machineProfile);
     validateContext(data.context);
     validateDomain(data.domain, machineProfile);
-    validateModel(data.model);
+    validateModel(data.model, machineProfile);
     validateValidation(data.validation);
 }
 
@@ -72,7 +72,7 @@ function validateMachineProfileReference(machineProfileId, machineProfile) {
     if (machineProfileId !== machineProfile.id) {
         throw new Error(
             `CalibrationProfile references MachineProfile "${machineProfileId}", ` +
-            `but received "${machineProfile.id}".`,
+                `but received "${machineProfile.id}".`,
         );
     }
 }
@@ -129,9 +129,59 @@ function validateDomainRange(variableId, range) {
 }
 
 /** Validates the calibration model payload. */
-function validateModel(model) {
+function validateModel(model, machineProfile) {
     if (!isPlainObject(model)) {
         throw new Error("CalibrationProfile model must be an object.");
+    }
+
+    validateRequiredString(model.type, "CalibrationProfile model type");
+    validateModelInput(model.input, machineProfile);
+
+    if (!Array.isArray(model.coefficients) || model.coefficients.length === 0) {
+        throw new Error("CalibrationProfile model coefficients must be a non-empty array.");
+    }
+
+    for (const coefficient of model.coefficients) {
+        if (!Number.isFinite(coefficient)) {
+            throw new Error(
+                "CalibrationProfile model coefficients must contain only finite numbers.",
+            );
+        }
+    }
+
+    validateRequiredString(model.outputUnit, "CalibrationProfile model outputUnit");
+}
+
+/** Validates the calibration model input definition. */
+function validateModelInput(input, machineProfile) {
+    if (!isPlainObject(input)) {
+        throw new Error("CalibrationProfile model input must be an object.");
+    }
+
+    validateRequiredString(input.type, "CalibrationProfile model input type");
+
+    if (!Array.isArray(input.variables) || input.variables.length === 0) {
+        throw new Error("CalibrationProfile model input variables must be a non-empty array.");
+    }
+
+    const variableIds = new Set();
+
+    for (const variableId of input.variables) {
+        validateRequiredString(variableId, "CalibrationProfile model input variable");
+
+        if (variableIds.has(variableId)) {
+            throw new Error(
+                `CalibrationProfile model input contains duplicate variable "${variableId}".`,
+            );
+        }
+
+        if (machineProfile.getVariable(variableId) === undefined) {
+            throw new Error(
+                `CalibrationProfile model input contains unknown MachineProfile variable "${variableId}".`,
+            );
+        }
+
+        variableIds.add(variableId);
     }
 }
 
