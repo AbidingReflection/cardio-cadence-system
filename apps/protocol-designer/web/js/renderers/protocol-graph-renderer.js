@@ -38,12 +38,6 @@ function getGraphMargins(widthPx, heightPx) {
 /** Renders one protocol variable through the generic graph pipeline. */
 export class ProtocolGraphRenderer {
     #container;
-    #variableId;
-    #seriesId;
-    #label;
-    #unit;
-    #valueMin;
-    #valueMax;
     #svg;
     #svgRenderer;
     #axesRenderer;
@@ -53,25 +47,12 @@ export class ProtocolGraphRenderer {
         selectedPhaseId: undefined,
         selectedBlockId: undefined,
     };
+    #lastConfig;
     #resizeObserver;
 
-    /** Creates a renderer for one protocol-backed graph series. */
-    constructor({
-        container,
-        variableId,
-        seriesId = variableId,
-        label,
-        unit = null,
-        valueMin,
-        valueMax,
-    }) {
+    /** Creates a renderer for one protocol-backed graph container. */
+    constructor({ container }) {
         this.#container = container;
-        this.#variableId = variableId;
-        this.#seriesId = seriesId;
-        this.#label = label;
-        this.#unit = unit;
-        this.#valueMin = valueMin;
-        this.#valueMax = valueMax;
 
         this.#svg = document.createElementNS(SVG_NAMESPACE, "svg");
         this.#container.replaceChildren(this.#svg);
@@ -87,13 +68,14 @@ export class ProtocolGraphRenderer {
         this.#resizeObserver.observe(this.#container);
     }
 
-    /** Stores and renders the latest protocol snapshot and graph selection. */
-    render(protocol, { selectedPhaseId = undefined, selectedBlockId = undefined } = {}) {
+    /** Stores and renders the latest protocol, selection, and graph configuration. */
+    render(protocol, { selectedPhaseId = undefined, selectedBlockId = undefined } = {}, config) {
         this.#lastProtocol = protocol;
         this.#lastSelection = {
             selectedPhaseId,
             selectedBlockId,
         };
+        this.#lastConfig = config;
 
         this.#renderCurrent();
     }
@@ -105,9 +87,18 @@ export class ProtocolGraphRenderer {
 
     /** Renders the current protocol using the container's current dimensions. */
     #renderCurrent() {
-        if (this.#lastProtocol === undefined) {
+        if (this.#lastProtocol === undefined || this.#lastConfig === undefined) {
             return;
         }
+
+        const {
+            variableId,
+            seriesId = variableId,
+            label,
+            unit = null,
+            valueMin,
+            valueMax,
+        } = this.#lastConfig;
 
         const widthPx = this.#container.clientWidth;
         const heightPx = this.#container.clientHeight;
@@ -137,12 +128,16 @@ export class ProtocolGraphRenderer {
                 widthPx,
                 heightPx,
                 margins,
+                valueMin,
+                valueMax,
             });
 
             this.#renderAxes({
                 layout,
                 xTicks: [],
                 yTicks: [],
+                label,
+                unit,
             });
 
             this.#structureRenderer.render({
@@ -160,10 +155,10 @@ export class ProtocolGraphRenderer {
 
         const graphContext = new ProtocolGraphContext(expander);
 
-        const series = new ProtocolVariableSeries(expander, this.#variableId, {
-            id: this.#seriesId,
-            label: this.#label,
-            unit: this.#unit,
+        const series = new ProtocolVariableSeries(expander, variableId, {
+            id: seriesId,
+            label,
+            unit,
         });
 
         const sampleIntervalMs = getGraphSampleIntervalMs({
@@ -186,6 +181,8 @@ export class ProtocolGraphRenderer {
             widthPx,
             heightPx,
             margins,
+            valueMin,
+            valueMax,
         });
 
         const points = roundSvgPoints(layout.layoutSamples(samples), SVG_POINT_PRECISION);
@@ -197,8 +194,8 @@ export class ProtocolGraphRenderer {
         });
 
         const yTicks = getLinearTicks({
-            min: this.#valueMin,
-            max: this.#valueMax,
+            min: valueMin,
+            max: valueMax,
             targetCount: 6,
         });
 
@@ -209,6 +206,8 @@ export class ProtocolGraphRenderer {
             layout,
             xTicks,
             yTicks,
+            label,
+            unit,
         });
 
         this.#structureRenderer.render({
@@ -237,12 +236,12 @@ export class ProtocolGraphRenderer {
     }
 
     /** Creates graph layout geometry for the current value domain. */
-    #createLayout({ startTimeMs, endTimeMs, widthPx, heightPx, margins }) {
+    #createLayout({ startTimeMs, endTimeMs, widthPx, heightPx, margins, valueMin, valueMax }) {
         return new GraphLayout({
             startTimeMs,
             endTimeMs,
-            valueMin: this.#valueMin,
-            valueMax: this.#valueMax,
+            valueMin,
+            valueMax,
             widthPx,
             heightPx,
             padding: margins,
@@ -272,23 +271,23 @@ export class ProtocolGraphRenderer {
     }
 
     /** Renders axes using the presentation configuration for this graph. */
-    #renderAxes({ layout, xTicks, yTicks }) {
+    #renderAxes({ layout, xTicks, yTicks, label, unit }) {
         this.#axesRenderer.render({
             layout,
             xTicks,
             yTicks,
             xAxisLabel: "Time",
-            yAxisLabel: this.#getYAxisLabel(),
+            yAxisLabel: this.#getYAxisLabel(label, unit),
             formatXTick: (timeMs) => formatDuration(Math.round(timeMs / 1000)),
         });
     }
 
     /** Returns the presentation label for this graph's value axis. */
-    #getYAxisLabel() {
-        if (this.#unit === null) {
-            return this.#label;
+    #getYAxisLabel(label, unit) {
+        if (unit === null) {
+            return label;
         }
 
-        return `${this.#label} (${this.#unit})`;
+        return `${label} (${unit})`;
     }
 }

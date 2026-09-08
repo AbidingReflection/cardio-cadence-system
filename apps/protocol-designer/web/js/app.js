@@ -9,6 +9,7 @@ import { EditorState } from "./state/editor-state.js";
 import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
 import { ProtocolGraphRenderer } from "./renderers/protocol-graph-renderer.js";
 import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
+import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.js";
 
 import {
     restoreProtocolFieldFocus,
@@ -117,36 +118,34 @@ async function main() {
         throw new Error("Required Protocol Designer elements were not found.");
     }
 
-    const cadenceGraphRenderer = new ProtocolGraphRenderer({
+    const primaryGraphRenderer = new ProtocolGraphRenderer({
         container: cadenceGraph,
-        variableId: "cadence",
-        label: "Cadence",
-        unit: "RPM",
-        valueMin: 30,
-        valueMax: 80,
     });
 
     const loadGraphRenderer = new ProtocolGraphRenderer({
         container: loadGraph,
-        variableId: "resistance",
-        label: "Resistance",
-        unit: "Level",
-        valueMin: 0,
-        valueMax: 20,
     });
 
-    /** Renders protocol-backed graphs from committed protocol and editor selection state. */
+    /** Renders protocol-backed graphs from committed protocol, setup, and editor selection state. */
     const renderGraphs = () => {
         const protocol = protocolModel.getSnapshot();
         const editorSnapshot = editorState.getSnapshot();
+
+        const { activityType: currentActivityType, machineProfile: currentMachineProfile } =
+            protocolModel.getSetupContext();
+
+        const graphConfigs = resolveProtocolGraphConfigs(
+            currentActivityType,
+            currentMachineProfile,
+        );
 
         const selection = {
             selectedPhaseId: editorSnapshot.selectedPhaseId,
             selectedBlockId: editorSnapshot.selectedBlockId,
         };
 
-        cadenceGraphRenderer.render(protocol, selection);
-        loadGraphRenderer.render(protocol, selection);
+        primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
+        loadGraphRenderer.render(protocol, selection, graphConfigs.load);
     };
 
     let pendingFieldFocus;
