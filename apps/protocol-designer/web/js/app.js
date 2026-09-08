@@ -11,6 +11,11 @@ import { ProtocolGraphRenderer } from "./renderers/protocol-graph-renderer.js";
 import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
 import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.js";
 
+import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
+import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
+
+import { renderTotalsRibbon } from "./renderers/totals-ribbon-renderer.js";
+
 import {
     restoreProtocolFieldFocus,
     restoreProtocolStructuralFocus,
@@ -131,8 +136,11 @@ async function main() {
         const protocol = protocolModel.getSnapshot();
         const editorSnapshot = editorState.getSnapshot();
 
-        const { activityType: currentActivityType, machineProfile: currentMachineProfile } =
-            protocolModel.getSetupContext();
+        const {
+            activityType: currentActivityType,
+            machineProfile: currentMachineProfile,
+            calibrationProfile: currentCalibrationProfile,
+        } = protocolModel.getSetupContext();
 
         const graphConfigs = resolveProtocolGraphConfigs(
             currentActivityType,
@@ -164,6 +172,7 @@ async function main() {
         pendingToggleFocus = undefined;
         pendingPhaseNameFocus = undefined;
 
+        const protocol = protocolModel.getSnapshot();
         const editorSnapshot = editorState.getSnapshot();
 
         const {
@@ -175,9 +184,21 @@ async function main() {
         protocolActivityTypeName.textContent = currentActivityType.name;
         protocolMachineProfileName.textContent = currentMachineProfile?.name ?? "";
 
+        const expander = new ProtocolExpander(protocol);
+
+        const calories =
+            currentCalibrationProfile === undefined
+                ? null
+                : calculateProtocolCalories(protocol, currentCalibrationProfile);
+
+        renderTotalsRibbon({
+            durationMs: expander.durationMs,
+            calories,
+        });
+
         renderProtocolTree(
             protocolTree,
-            protocolModel.getSnapshot(),
+            protocol,
             editorSnapshot,
             currentActivityType,
             currentMachineProfile,
