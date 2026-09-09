@@ -15,25 +15,22 @@
                 },
                 "resistance": {
                     "min": 1,
-                    "max": 16
+                    "max": 19
                 }
             },
-
             "model": {
                 "type": "polynomial",
                 "input": {
                     "type": "product",
                     "variables": ["cadence", "resistance"]
                 },
-                "coefficients": [0.0572, 0.00014, 0.000000285, -0.000000000143],
+                "coefficients": [
+                    0.0515331192882177,
+                    0.0001946554580168838,
+                    1.512030999237404e-7,
+                    -5.5945687373135794e-11
+                ],
                 "outputUnit": "kcalPerSecond"
-            },
-
-            "validation": {
-                "sessionDurationSeconds": 4500,
-                "observedCalories": 980,
-                "absoluteErrorCalories": 1.4,
-                "relativeErrorPercent": 0.13
             }
         },
         {

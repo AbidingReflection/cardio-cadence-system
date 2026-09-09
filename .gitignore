@@ -1,4 +1,5 @@
 .venv/
 __pycache__/
 *.pyc
-scripts/context_export/output/
+scripts/calibration-POC/output/
+.~lock.*#
