@@ -48,6 +48,7 @@ export class ProtocolGraphRenderer {
         selectedBlockId: undefined,
     };
     #lastConfig;
+    #lastStructureState;
     #resizeObserver;
 
     /** Creates a renderer for one protocol-backed graph container. */
@@ -78,6 +79,20 @@ export class ProtocolGraphRenderer {
         this.#lastConfig = config;
 
         this.#renderCurrent();
+    }
+
+    /** Updates graph selection styling without recomputing graph data. */
+    updateSelection({ selectedPhaseId = undefined, selectedBlockId = undefined } = {}) {
+        this.#lastSelection = {
+            selectedPhaseId,
+            selectedBlockId,
+        };
+
+        if (this.#lastStructureState === undefined) {
+            return;
+        }
+
+        this.#renderStructure();
     }
 
     /** Stops observing the graph container for size changes. */
@@ -142,13 +157,13 @@ export class ProtocolGraphRenderer {
                 unit,
             });
 
-            this.#structureRenderer.render({
+            this.#lastStructureState = {
                 layout,
                 phases: [],
                 blocks: [],
-                selectedPhaseId: this.#lastSelection.selectedPhaseId,
-                selectedBlockId: this.#lastSelection.selectedBlockId,
-            });
+            };
+
+            this.#renderStructure();
 
             this.#svgRenderer.render({ points: [] });
             this.#renderEmptyState(layout);
@@ -222,13 +237,13 @@ export class ProtocolGraphRenderer {
             unit,
         });
 
-        this.#structureRenderer.render({
+        this.#lastStructureState = {
             layout,
             phases,
             blocks,
-            selectedPhaseId: this.#lastSelection.selectedPhaseId,
-            selectedBlockId: this.#lastSelection.selectedBlockId,
-        });
+        };
+
+        this.#renderStructure();
 
         this.#svgRenderer.render({ points });
     }
@@ -301,5 +316,18 @@ export class ProtocolGraphRenderer {
         }
 
         return `${label} (${unit})`;
+    }
+
+    /** Renders protocol structure using the latest layout and selection state. */
+    #renderStructure() {
+        const { layout, phases, blocks } = this.#lastStructureState;
+
+        this.#structureRenderer.render({
+            layout,
+            phases,
+            blocks,
+            selectedPhaseId: this.#lastSelection.selectedPhaseId,
+            selectedBlockId: this.#lastSelection.selectedBlockId,
+        });
     }
 }

@@ -476,3 +476,45 @@ test("protocol-graph-renderer", "applies a presentation value transform", () => 
         "Calorie Rate (kcal/min)",
     );
 });
+
+test("protocol-graph-renderer", "updates selection without resampling the graph series", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    let valueAtCalls = 0;
+
+    const createSeries = () => ({
+        valueAt() {
+            valueAtCalls += 1;
+            return 5;
+        },
+
+        valueBefore() {
+            return 5;
+        },
+
+        boundariesBetween() {
+            return [];
+        },
+    });
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Custom",
+            unit: "units",
+            valueMin: 0,
+            valueMax: 10,
+        },
+    );
+
+    const callsAfterRender = valueAtCalls;
+
+    renderer.updateSelection({
+        selectedPhaseId: "phase-1",
+    });
+
+    assertEqual(valueAtCalls, callsAfterRender);
+});

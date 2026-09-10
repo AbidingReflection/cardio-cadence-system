@@ -87,8 +87,8 @@ async function main() {
     const protocolTree = document.querySelector("#protocol-tree");
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
-    const cadenceGraph = document.querySelector("#cadence-graph");
-    const loadGraph = document.querySelector("#load-graph");
+    // const cadenceGraph = document.querySelector("#cadence-graph");
+    // const loadGraph = document.querySelector("#load-graph");
 
     const cumulativeCaloriesGraphPane = document.querySelector(".graph-pane--cumulative-calories");
     const cumulativeCaloriesGraph = document.querySelector("#cumulative-calories-graph");
@@ -115,7 +115,7 @@ async function main() {
         protocolTree === null ||
         editPhaseButton === null ||
         editBlockButton === null ||
-        cadenceGraph === null ||
+        // cadenceGraph === null ||
         // loadGraph === null ||
         calorieRateGraphPane === null ||
         calorieRateGraph === null ||
@@ -133,9 +133,9 @@ async function main() {
         throw new Error("Required Protocol Designer elements were not found.");
     }
 
-    const primaryGraphRenderer = new ProtocolGraphRenderer({
-        container: cadenceGraph,
-    });
+    // const primaryGraphRenderer = new ProtocolGraphRenderer({
+    //     container: cadenceGraph,
+    // });
 
     // const loadGraphRenderer = new ProtocolGraphRenderer({
     //     container: loadGraph,
@@ -170,7 +170,7 @@ async function main() {
             selectedBlockId: editorSnapshot.selectedBlockId,
         };
 
-        primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
+        // primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
         // loadGraphRenderer.render(protocol, selection, graphConfigs.load);
 
         const hasCalibration = currentCalibrationProfile !== undefined;
@@ -203,6 +203,23 @@ async function main() {
                 valueMax: totalCalories,
             });
         }
+    };
+
+    /** Updates graph selection styling without recomputing graph data. */
+    const updateGraphSelections = () => {
+        const editorSnapshot = editorState.getSnapshot();
+
+        const selection = {
+            selectedPhaseId: editorSnapshot.selectedPhaseId,
+            selectedBlockId: editorSnapshot.selectedBlockId,
+        };
+
+        // Keep these commented while those graphs are disabled for profiling.
+        // primaryGraphRenderer.updateSelection(selection);
+        // loadGraphRenderer.updateSelection(selection);
+
+        calorieRateGraphRenderer.updateSelection(selection);
+        cumulativeCaloriesGraphRenderer.updateSelection(selection);
     };
 
     let pendingFieldFocus;
@@ -293,7 +310,7 @@ async function main() {
     protocolModel.subscribe(render);
     protocolModel.subscribe(renderGraphs);
     editorState.subscribe(render);
-    editorState.subscribe(renderGraphs);
+    editorState.subscribe(updateGraphSelections);
 
     wireProtocolTreeEvents({
         protocolTree,
