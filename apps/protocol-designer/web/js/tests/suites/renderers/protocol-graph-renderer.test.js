@@ -388,3 +388,91 @@ test("protocol-graph-renderer", "removes the empty state when blocks are rendere
 
     assertEqual(container.querySelector(".graph-empty-state"), null);
 });
+
+test("protocol-graph-renderer", "renders a supplied graph series", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    const createSeries = () => ({
+        valueAt() {
+            return 5;
+        },
+
+        valueBefore() {
+            return 5;
+        },
+
+        boundariesBetween() {
+            return [];
+        },
+    });
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Custom",
+            unit: "units",
+            valueMin: 0,
+            valueMax: 10,
+        },
+    );
+
+    assertEqual(container.querySelectorAll(".graph-series__line").length, 1);
+    assertEqual(container.querySelector(".graph-axis__title--y").textContent, "Custom (units)");
+});
+
+test("protocol-graph-renderer", "applies a presentation value transform", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    const createSeries = () => ({
+        valueAt() {
+            return 0.25;
+        },
+
+        valueBefore() {
+            return 0.25;
+        },
+
+        boundariesBetween() {
+            return [];
+        },
+    });
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Calorie Rate",
+            unit: "kcal/s",
+            valueMin: 0,
+            valueMax: 30,
+        },
+    );
+
+    const untransformedPath = container.querySelector(".graph-series__line").getAttribute("d");
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            transformValue: (value) => value * 60,
+            label: "Calorie Rate",
+            unit: "kcal/min",
+            valueMin: 0,
+            valueMax: 30,
+        },
+    );
+
+    const transformedPath = container.querySelector(".graph-series__line").getAttribute("d");
+
+    assertEqual(transformedPath === untransformedPath, false);
+    assertEqual(
+        container.querySelector(".graph-axis__title--y").textContent,
+        "Calorie Rate (kcal/min)",
+    );
+});

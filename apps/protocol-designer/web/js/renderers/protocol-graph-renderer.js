@@ -94,6 +94,8 @@ export class ProtocolGraphRenderer {
         const {
             variableId,
             seriesId = variableId,
+            createSeries = undefined,
+            transformValue = undefined,
             label,
             unit = null,
             valueMin,
@@ -155,11 +157,14 @@ export class ProtocolGraphRenderer {
 
         const graphContext = new ProtocolGraphContext(expander);
 
-        const series = new ProtocolVariableSeries(expander, variableId, {
-            id: seriesId,
-            label,
-            unit,
-        });
+        const series =
+            createSeries === undefined
+                ? new ProtocolVariableSeries(expander, variableId, {
+                      id: seriesId,
+                      label,
+                      unit,
+                  })
+                : createSeries(expander);
 
         const sampleIntervalMs = getGraphSampleIntervalMs({
             startTimeMs: 0,
@@ -169,11 +174,18 @@ export class ProtocolGraphRenderer {
 
         const sampler = new GraphSeriesSampler(series);
 
-        const samples = sampler.sample({
+        let samples = sampler.sample({
             startTimeMs: 0,
             endTimeMs: expander.durationMs,
             sampleIntervalMs,
         });
+
+        if (transformValue !== undefined) {
+            samples = samples.map((sample) => ({
+                ...sample,
+                value: sample.value === undefined ? undefined : transformValue(sample.value),
+            }));
+        }
 
         const layout = this.#createLayout({
             startTimeMs: 0,

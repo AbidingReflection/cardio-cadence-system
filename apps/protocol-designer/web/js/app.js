@@ -12,6 +12,7 @@ import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.
 import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.js";
 
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
+import { CalorieRateSeries } from "/packages/protocol-expander/calorie-rate-series.js";
 import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
 
 import { renderTotalsRibbon } from "./renderers/totals-ribbon-renderer.js";
@@ -87,6 +88,8 @@ async function main() {
     const editBlockButton = document.querySelector("#manage-blocks-button");
     const cadenceGraph = document.querySelector("#cadence-graph");
     const loadGraph = document.querySelector("#load-graph");
+    const calorieRateGraphPane = document.querySelector(".graph-pane--calorie-rate");
+    const calorieRateGraph = document.querySelector("#calorie-rate-graph");
     const protocolSetupButton = document.querySelector("#protocol-setup-button");
     const protocolSetupDialog = document.querySelector("#protocol-setup-dialog");
     const protocolSetupCloseButton = document.querySelector("#protocol-setup-close-button");
@@ -108,7 +111,9 @@ async function main() {
         editPhaseButton === null ||
         editBlockButton === null ||
         cadenceGraph === null ||
-        loadGraph === null ||
+        // loadGraph === null ||
+        calorieRateGraphPane === null ||
+        calorieRateGraph === null ||
         protocolActivityTypeName === null ||
         protocolMachineProfileName === null ||
         protocolSetupButton === null ||
@@ -127,8 +132,12 @@ async function main() {
         container: cadenceGraph,
     });
 
-    const loadGraphRenderer = new ProtocolGraphRenderer({
-        container: loadGraph,
+    // const loadGraphRenderer = new ProtocolGraphRenderer({
+    //     container: loadGraph,
+    // });
+
+    const calorieRateGraphRenderer = new ProtocolGraphRenderer({
+        container: calorieRateGraph,
     });
 
     /** Renders protocol-backed graphs from committed protocol, setup, and editor selection state. */
@@ -153,7 +162,23 @@ async function main() {
         };
 
         primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
-        loadGraphRenderer.render(protocol, selection, graphConfigs.load);
+        // loadGraphRenderer.render(protocol, selection, graphConfigs.load);
+
+        const hasCalibration = currentCalibrationProfile !== undefined;
+
+        calorieRateGraphPane.hidden = !hasCalibration;
+
+        if (hasCalibration) {
+            calorieRateGraphRenderer.render(protocol, selection, {
+                createSeries: (expander) =>
+                    new CalorieRateSeries(expander, currentCalibrationProfile),
+                transformValue: (value) => value * 60,
+                label: "Calorie Rate",
+                unit: "kcal/min",
+                valueMin: 0,
+                valueMax: 30,
+            });
+        }
     };
 
     let pendingFieldFocus;
