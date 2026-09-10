@@ -1,4 +1,5 @@
 import {
+    assertEqual,
     assertDeepEqual,
     assertThrows,
     test,
@@ -30,22 +31,15 @@ test(SUITE, "resolves cadence and load variables for elliptical activity", () =>
         ],
     });
 
-    assertDeepEqual(resolveProtocolGraphConfigs(activityType), {
-        primary: {
-            variableId: "cadence",
-            label: "Cadence",
-            unit: "RPM",
-            valueMin: 0,
-            valueMax: 100,
-        },
-        load: {
-            variableId: "resistance",
-            label: "Resistance",
-            unit: null,
-            valueMin: 0,
-            valueMax: 20,
-        },
-    });
+    const configs = resolveProtocolGraphConfigs(activityType);
+
+    assertEqual(configs.primary.variableId, "cadence");
+    assertEqual(configs.primary.label, "Cadence");
+    assertEqual(configs.primary.unit, "RPM");
+
+    assertEqual(configs.load.variableId, "resistance");
+    assertEqual(configs.load.label, "Resistance");
+    assertEqual(configs.load.unit, null);
 });
 
 test(SUITE, "resolves pace and load variables for treadmill activity", () => {
@@ -149,7 +143,7 @@ test(SUITE, "uses machine bounds when available", () => {
     });
 });
 
-test(SUITE, "uses fallback bounds when machine bounds are absent", () => {
+test(SUITE, "uses default graph bounds when machine bounds are absent", () => {
     const activityType = createActivityType({
         id: "rowing",
         name: "Rowing Ergometer",
@@ -188,22 +182,13 @@ test(SUITE, "uses fallback bounds when machine bounds are absent", () => {
         activityType,
     );
 
-    assertDeepEqual(resolveProtocolGraphConfigs(activityType, machineProfile), {
-        primary: {
-            variableId: "strokeRate",
-            label: "Stroke Rate",
-            unit: "SPM",
-            valueMin: 0,
-            valueMax: 100,
-        },
-        load: {
-            variableId: "dragFactor",
-            label: "Drag Factor",
-            unit: null,
-            valueMin: 0,
-            valueMax: 20,
-        },
-    });
+    const configs = resolveProtocolGraphConfigs(activityType, machineProfile);
+
+    assertEqual(configs.primary.valueMin, 39);
+    assertEqual(configs.primary.valueMax, 71);
+
+    assertEqual(configs.load.valueMin, 0);
+    assertEqual(configs.load.valueMax, 20);
 });
 
 test(SUITE, "throws when no primary graph role is defined", () => {

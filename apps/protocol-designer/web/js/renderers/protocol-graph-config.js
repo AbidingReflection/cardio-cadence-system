@@ -1,7 +1,7 @@
 const FALLBACK_VALUE_DOMAINS = {
     cadence: {
-        min: 0,
-        max: 100,
+        min: 39,
+        max: 71,
     },
     pace: {
         min: 0,
