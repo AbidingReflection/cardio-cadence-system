@@ -104,12 +104,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
 
@@ -138,11 +133,11 @@ export class ProtocolModel {
 
         nextProtocol.phases.splice(moveIndex, 0, phase);
 
-        const normalizedProtocol = normalizeProtocol(nextProtocol, this.#activityType);
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        this.#validateCurrentProtocol(normalizedProtocol);
 
-        this.#protocol = normalizedProtocol;
+        this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
     }
 
@@ -160,12 +155,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -187,12 +177,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -219,12 +204,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
 
@@ -277,11 +257,11 @@ export class ProtocolModel {
 
         nextTargetPhase.blocks.splice(moveIndex, 0, block);
 
-        const normalizedProtocol = normalizeProtocol(nextProtocol, this.#activityType);
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(normalizedProtocol, this.#activityType, this.#machineProfile);
+        this.#validateCurrentProtocol(normalizedProtocol);
 
-        this.#protocol = normalizedProtocol;
+        this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
     }
 
@@ -309,12 +289,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -352,12 +327,7 @@ export class ProtocolModel {
 
         const normalizedProtocol = normalizeProtocol(nextProtocol);
 
-        validateProtocol(
-            normalizedProtocol,
-            this.#activityType,
-            this.#machineProfile,
-            this.#calibrationProfile,
-        );
+        this.#validateCurrentProtocol(normalizedProtocol);
 
         this.#protocol = structuredClone(normalizedProtocol);
         this.#emit();
@@ -370,6 +340,16 @@ export class ProtocolModel {
         return () => {
             this.#listeners.delete(listener);
         };
+    }
+
+    /** Validates protocol data against the model's current setup context. */
+    #validateCurrentProtocol(protocol) {
+        validateProtocol(
+            protocol,
+            this.#activityType,
+            this.#machineProfile,
+            this.#calibrationProfile,
+        );
     }
 
     /** Notifies all subscribers with the current protocol snapshot. */

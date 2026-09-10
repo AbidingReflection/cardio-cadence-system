@@ -1139,27 +1139,27 @@ test("protocol-model", "failed block insertion leaves protocol state unchanged",
 test("protocol-model", "moves a phase to a later final index", () => {
     const model = createProtocolModel();
 
-    const before = model.getSnapshot();
-    const phaseId = before.phases[0].id;
+    const originalPhaseId = model.getSnapshot().phases[0].id;
 
-    model.movePhase(phaseId, before.phases.length - 1);
+    model.addPhase("Second Phase");
+
+    model.movePhase(originalPhaseId, 1);
 
     const after = model.getSnapshot();
 
-    assertEqual(after.phases.at(-1).id, phaseId);
+    assertEqual(after.phases[1].id, originalPhaseId);
 });
 
 test("protocol-model", "moves a phase to an earlier final index", () => {
     const model = createProtocolModel();
 
-    const before = model.getSnapshot();
-    const phaseId = before.phases.at(-1).id;
+    const newPhaseId = model.addPhase("Second Phase");
 
-    model.movePhase(phaseId, 0);
+    model.movePhase(newPhaseId, 0);
 
     const after = model.getSnapshot();
 
-    assertEqual(after.phases[0].id, phaseId);
+    assertEqual(after.phases[0].id, newPhaseId);
 });
 
 test("protocol-model", "preserves phase data when moving a phase", () => {
@@ -1649,4 +1649,46 @@ test("protocol-model", "returns undefined optional setup context", () => {
     assertEqual(setupContext.activityType, ACTIVITY_TYPE);
     assertEqual(setupContext.machineProfile, undefined);
     assertEqual(setupContext.calibrationProfile, undefined);
+});
+
+test("protocol-model", "moves a phase when calibration context is present", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    const originalPhaseId = model.getSnapshot().phases[0].id;
+
+    model.addPhase("Second Phase");
+
+    model.movePhase(originalPhaseId, 1);
+
+    const after = model.getSnapshot();
+
+    assertEqual(after.phases[1].id, originalPhaseId);
+    assertEqual(after.calibrationProfileId, CALIBRATION_PROFILE.id);
+});
+
+test("protocol-model", "moves a block when calibration context is present", () => {
+    const protocol = createProtocol();
+    protocol.calibrationProfileId = CALIBRATION_PROFILE.id;
+
+    const model = new ProtocolModel(protocol, ACTIVITY_TYPE, MACHINE_PROFILE, CALIBRATION_PROFILE);
+
+    const initial = model.getSnapshot();
+    const phase = initial.phases.find((candidate) => candidate.blocks.length > 0);
+    const originalBlockId = phase.blocks[0].id;
+
+    model.addBlock(phase.id, phase.blocks[0]);
+
+    const before = model.getSnapshot();
+    const updatedPhase = before.phases.find((candidate) => candidate.id === phase.id);
+
+    model.moveBlock(originalBlockId, updatedPhase.id, updatedPhase.blocks.length - 1);
+
+    const after = model.getSnapshot();
+    const movedPhase = after.phases.find((candidate) => candidate.id === phase.id);
+
+    assertEqual(movedPhase.blocks.at(-1).id, originalBlockId);
+    assertEqual(after.calibrationProfileId, CALIBRATION_PROFILE.id);
 });
