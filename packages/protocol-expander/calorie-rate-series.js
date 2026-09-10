@@ -5,23 +5,25 @@
  * - Delegate calibration mathematics to evaluateCalibration().
  */
 
-import { evaluateCalibration } from "../protocol-core/calibration-evaluator.js";
+import { evaluateCalibrationModel } from "../protocol-core/calibration-evaluator.js";
 
 /** Exposes calibrated calorie rate as a protocol time series. */
 export class CalorieRateSeries {
     #expander;
-    #calibrationProfile;
+    #model;
     #variableIds;
 
     /** Creates a calorie-rate series backed by a protocol expander and calibration profile. */
     constructor(expander, calibrationProfile) {
-        if (calibrationProfile.model.outputUnit !== "kcalPerSecond") {
+        const model = calibrationProfile.model;
+
+        if (model.outputUnit !== "kcalPerSecond") {
             throw new Error('CalorieRateSeries requires calibration output unit "kcalPerSecond".');
         }
 
         this.#expander = expander;
-        this.#calibrationProfile = calibrationProfile;
-        this.#variableIds = calibrationProfile.model.input.variables;
+        this.#model = model;
+        this.#variableIds = model.input.variables;
     }
 
     /** Returns the series identifier. */
@@ -53,7 +55,7 @@ export class CalorieRateSeries {
             values[variableId] = value;
         }
 
-        return evaluateCalibration(this.#calibrationProfile, values);
+        return evaluateCalibrationModel(this.#model, values);
     }
 
     /** Returns calibrated calorie rate immediately before an absolute workout time. */
@@ -70,7 +72,7 @@ export class CalorieRateSeries {
             values[variableId] = value;
         }
 
-        return evaluateCalibration(this.#calibrationProfile, values);
+        return evaluateCalibrationModel(this.#model, values);
     }
 
     /** Returns all calibration-input boundaries within an absolute workout time range. */

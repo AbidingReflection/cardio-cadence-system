@@ -2,13 +2,16 @@
  * Evaluates validated calibration models against supplied protocol-variable values.
  */
 
-/** Evaluates a supported calibration model for the supplied variable values. */
+/** Evaluates a supported calibration profile for the supplied variable values. */
 export function evaluateCalibration(calibrationProfile, values) {
+    return evaluateCalibrationModel(calibrationProfile.model, values);
+}
+
+/** Evaluates a supported calibration model for the supplied variable values. */
+export function evaluateCalibrationModel(model, values) {
     if (values === null || typeof values !== "object" || Array.isArray(values)) {
         throw new TypeError("Calibration values must be an object.");
     }
-
-    const model = calibrationProfile.model;
 
     if (model.type !== "polynomial") {
         throw new Error(`Unsupported calibration model type: "${model.type}".`);
