@@ -50,6 +50,8 @@ export class ProtocolGraphRenderer {
     #lastConfig;
     #lastStructureState;
     #resizeObserver;
+    #widthPx;
+    #heightPx;
 
     /** Creates a renderer for one protocol-backed graph container. */
     constructor({ container }) {
@@ -62,7 +64,16 @@ export class ProtocolGraphRenderer {
         this.#axesRenderer = new SvgGraphAxesRenderer(this.#svg);
         this.#structureRenderer = new SvgGraphStructureRenderer(this.#svg);
 
-        this.#resizeObserver = new ResizeObserver(() => {
+        this.#resizeObserver = new ResizeObserver((entries) => {
+            const { width, height } = entries[0].contentRect;
+
+            if (width === this.#widthPx && height === this.#heightPx) {
+                return;
+            }
+
+            this.#widthPx = width;
+            this.#heightPx = height;
+
             this.#renderCurrent();
         });
 
@@ -117,8 +128,11 @@ export class ProtocolGraphRenderer {
             valueMax,
         } = this.#lastConfig;
 
-        const widthPx = this.#container.clientWidth;
-        const heightPx = this.#container.clientHeight;
+        const widthPx = this.#widthPx ?? this.#container.clientWidth;
+        const heightPx = this.#heightPx ?? this.#container.clientHeight;
+
+        this.#widthPx = widthPx;
+        this.#heightPx = heightPx;
 
         if (widthPx <= 0 || heightPx <= 0) {
             return;

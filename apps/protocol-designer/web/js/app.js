@@ -87,8 +87,8 @@ async function main() {
     const protocolTree = document.querySelector("#protocol-tree");
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
-    // const cadenceGraph = document.querySelector("#cadence-graph");
-    // const loadGraph = document.querySelector("#load-graph");
+    const cadenceGraph = document.querySelector("#cadence-graph");
+    const loadGraph = document.querySelector("#load-graph");
 
     const cumulativeCaloriesGraphPane = document.querySelector(".graph-pane--cumulative-calories");
     const cumulativeCaloriesGraph = document.querySelector("#cumulative-calories-graph");
@@ -115,8 +115,8 @@ async function main() {
         protocolTree === null ||
         editPhaseButton === null ||
         editBlockButton === null ||
-        // cadenceGraph === null ||
-        // loadGraph === null ||
+        cadenceGraph === null ||
+        loadGraph === null ||
         calorieRateGraphPane === null ||
         calorieRateGraph === null ||
         protocolActivityTypeName === null ||
@@ -133,13 +133,13 @@ async function main() {
         throw new Error("Required Protocol Designer elements were not found.");
     }
 
-    // const primaryGraphRenderer = new ProtocolGraphRenderer({
-    //     container: cadenceGraph,
-    // });
+    const primaryGraphRenderer = new ProtocolGraphRenderer({
+        container: cadenceGraph,
+    });
 
-    // const loadGraphRenderer = new ProtocolGraphRenderer({
-    //     container: loadGraph,
-    // });
+    const loadGraphRenderer = new ProtocolGraphRenderer({
+        container: loadGraph,
+    });
 
     const calorieRateGraphRenderer = new ProtocolGraphRenderer({
         container: calorieRateGraph,
@@ -170,8 +170,8 @@ async function main() {
             selectedBlockId: editorSnapshot.selectedBlockId,
         };
 
-        // primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
-        // loadGraphRenderer.render(protocol, selection, graphConfigs.load);
+        primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
+        loadGraphRenderer.render(protocol, selection, graphConfigs.load);
 
         const hasCalibration = currentCalibrationProfile !== undefined;
 
@@ -215,8 +215,8 @@ async function main() {
         };
 
         // Keep these commented while those graphs are disabled for profiling.
-        // primaryGraphRenderer.updateSelection(selection);
-        // loadGraphRenderer.updateSelection(selection);
+        primaryGraphRenderer.updateSelection(selection);
+        loadGraphRenderer.updateSelection(selection);
 
         calorieRateGraphRenderer.updateSelection(selection);
         cumulativeCaloriesGraphRenderer.updateSelection(selection);

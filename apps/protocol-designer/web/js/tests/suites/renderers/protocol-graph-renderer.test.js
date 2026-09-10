@@ -13,6 +13,46 @@ const CADENCE_GRAPH_CONFIG = {
     valueMax: 80,
 };
 
+const resizeObserverCallbacks = new Map();
+
+globalThis.ResizeObserver = class {
+    #callback;
+    #observedElement;
+
+    constructor(callback) {
+        this.#callback = callback;
+    }
+
+    observe(element) {
+        this.#observedElement = element;
+        resizeObserverCallbacks.set(element, this.#callback);
+    }
+
+    disconnect() {
+        if (this.#observedElement !== undefined) {
+            resizeObserverCallbacks.delete(this.#observedElement);
+        }
+    }
+};
+
+/** Triggers the ResizeObserver callback registered for a graph container. */
+function triggerResizeObserver(container, { width, height }) {
+    const callback = resizeObserverCallbacks.get(container);
+
+    if (callback === undefined) {
+        throw new Error("No ResizeObserver callback is registered for the container.");
+    }
+
+    callback([
+        {
+            contentRect: {
+                width,
+                height,
+            },
+        },
+    ]);
+}
+
 /** Creates a small stepped-cadence protocol for graph rendering tests. */
 function createProtocol() {
     return {
@@ -517,4 +557,61 @@ test("protocol-graph-renderer", "updates selection without resampling the graph 
     });
 
     assertEqual(valueAtCalls, callsAfterRender);
+});
+
+test("protocol-graph-renderer", "does not rerender for unchanged observed dimensions", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    let valueAtCalls = 0;
+
+    const createSeries = () => ({
+        valueAt() {
+            valueAtCalls += 1;
+            return 5;
+        },
+
+        valueBefore() {
+            return 5;
+        },
+
+        boundariesBetween() {
+            return [];
+        },
+    });
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Custom",
+            unit: "units",
+            valueMin: 0,
+            valueMax: 10,
+        },
+    );
+
+    const callsAfterRender = valueAtCalls;
+
+    triggerResizeObserver(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+    });
+
+    assertEqual(valueAtCalls, callsAfterRender);
+});
+
+test("protocol-graph-renderer", "rerenders when observed dimensions change", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(createProtocol(), {}, CADENCE_GRAPH_CONFIG);
+
+    triggerResizeObserver(container, {
+        width: 640,
+        height: 320,
+    });
+
+    assertEqual(container.querySelector("svg").getAttribute("viewBox"), "0 0 640 320");
 });
