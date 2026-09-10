@@ -10,6 +10,9 @@ import { integrateCalorieRate } from "./calorie-integrator.js";
 
 /** Exposes cumulative calibrated calories as a protocol time series. */
 export class CumulativeCalorieSeries {
+    #cache;
+    #furthestTimeMs;
+    #furthestCalories;
     #expander;
     #rateSeries;
 
@@ -17,6 +20,10 @@ export class CumulativeCalorieSeries {
     constructor(expander, calibrationProfile) {
         this.#expander = expander;
         this.#rateSeries = new CalorieRateSeries(expander, calibrationProfile);
+
+        this.#cache = new Map([[0, 0]]);
+        this.#furthestTimeMs = 0;
+        this.#furthestCalories = 0;
     }
 
     /** Returns the series identifier. */
@@ -42,7 +49,7 @@ export class CumulativeCalorieSeries {
             return undefined;
         }
 
-        return integrateCalorieRate(this.#rateSeries, 0, timeMs);
+        return this.#getCumulativeCalories(timeMs);
     }
 
     /** Returns cumulative calories immediately before an absolute workout time. */
@@ -53,7 +60,7 @@ export class CumulativeCalorieSeries {
             return undefined;
         }
 
-        return integrateCalorieRate(this.#rateSeries, 0, timeMs);
+        return this.#getCumulativeCalories(timeMs);
     }
 
     /** Returns all calorie-rate boundaries within an absolute workout time range. */
@@ -66,5 +73,29 @@ export class CumulativeCalorieSeries {
         if (!Number.isFinite(timeMs)) {
             throw new TypeError("Time must be a finite number.");
         }
+    }
+
+    /** Returns cumulative calories at a valid workout time, reusing cached progress when possible. */
+    #getCumulativeCalories(timeMs) {
+        if (this.#cache.has(timeMs)) {
+            return this.#cache.get(timeMs);
+        }
+
+        let calories;
+
+        if (timeMs > this.#furthestTimeMs) {
+            calories =
+                this.#furthestCalories +
+                integrateCalorieRate(this.#rateSeries, this.#furthestTimeMs, timeMs);
+
+            this.#furthestTimeMs = timeMs;
+            this.#furthestCalories = calories;
+        } else {
+            calories = integrateCalorieRate(this.#rateSeries, 0, timeMs);
+        }
+
+        this.#cache.set(timeMs, calories);
+
+        return calories;
     }
 }

@@ -135,3 +135,22 @@ test("cumulative-calorie-series", "rejects invalid times", () => {
     assertThrows(() => series.valueBefore(NaN), /finite number/);
     assertThrows(() => series.boundariesBetween(0, Infinity), /finite numbers/);
 });
+
+test("cumulative-calorie-series", "preserves correctness for out-of-order queries", () => {
+    const series = createSeries();
+
+    const later = series.valueAt(8000);
+    const earlier = series.valueAt(4000);
+
+    assertEqual(Math.abs(later - 3.4) < 1e-9, true);
+    assertEqual(Math.abs(earlier - 1.6) < 1e-9, true);
+});
+
+test("cumulative-calorie-series", "returns the same value for repeated queries", () => {
+    const series = createSeries();
+
+    const first = series.valueAt(8000);
+    const second = series.valueAt(8000);
+
+    assertEqual(first, second);
+});
