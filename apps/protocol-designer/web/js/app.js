@@ -14,6 +14,7 @@ import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.j
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 import { CalorieRateSeries } from "/packages/protocol-expander/calorie-rate-series.js";
 import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
+import { CumulativeCalorieSeries } from "/packages/protocol-expander/cumulative-calorie-series.js";
 
 import { renderTotalsRibbon } from "./renderers/totals-ribbon-renderer.js";
 
@@ -88,6 +89,10 @@ async function main() {
     const editBlockButton = document.querySelector("#manage-blocks-button");
     const cadenceGraph = document.querySelector("#cadence-graph");
     const loadGraph = document.querySelector("#load-graph");
+
+    const cumulativeCaloriesGraphPane = document.querySelector(".graph-pane--cumulative-calories");
+    const cumulativeCaloriesGraph = document.querySelector("#cumulative-calories-graph");
+
     const calorieRateGraphPane = document.querySelector(".graph-pane--calorie-rate");
     const calorieRateGraph = document.querySelector("#calorie-rate-graph");
     const protocolSetupButton = document.querySelector("#protocol-setup-button");
@@ -140,6 +145,10 @@ async function main() {
         container: calorieRateGraph,
     });
 
+    const cumulativeCaloriesGraphRenderer = new ProtocolGraphRenderer({
+        container: cumulativeCaloriesGraph,
+    });
+
     /** Renders protocol-backed graphs from committed protocol, setup, and editor selection state. */
     const renderGraphs = () => {
         const protocol = protocolModel.getSnapshot();
@@ -177,6 +186,21 @@ async function main() {
                 unit: "kcal/min",
                 valueMin: 0,
                 valueMax: 30,
+            });
+        }
+
+        cumulativeCaloriesGraphPane.hidden = !hasCalibration;
+
+        if (hasCalibration) {
+            const totalCalories = calculateProtocolCalories(protocol, currentCalibrationProfile);
+
+            cumulativeCaloriesGraphRenderer.render(protocol, selection, {
+                createSeries: (expander) =>
+                    new CumulativeCalorieSeries(expander, currentCalibrationProfile),
+                label: "Cumulative Calories",
+                unit: "kcal",
+                valueMin: 0,
+                valueMax: totalCalories,
             });
         }
     };

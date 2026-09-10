@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 scripts/calibration-POC/output/
 .~lock.*#
+scripts/
+scripts/context_export/output/
