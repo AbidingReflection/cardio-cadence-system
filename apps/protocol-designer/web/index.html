@@ -99,20 +99,71 @@
                 </section>
 
                 <div class="graph-stack">
-                    <section class="pane graph-pane graph-pane--cadence">
-                        <header class="pane__header">Cadence</header>
+                    <section
+                        class="pane graph-pane graph-pane--cadence"
+                        data-graph-id="cadence"
+                        data-collapsed="false"
+                    >
+                        <header class="pane__header graph-pane__header">
+                            <span>Cadence</span>
+
+                            <button
+                                type="button"
+                                class="graph-pane__toggle"
+                                data-graph-toggle="cadence"
+                                aria-label="Collapse cadence graph"
+                                aria-controls="cadence-graph"
+                                aria-expanded="true"
+                            >
+                                ▲
+                            </button>
+                        </header>
 
                         <div class="pane__content graph-pane__content" id="cadence-graph"></div>
                     </section>
 
-                    <section class="pane graph-pane graph-pane--load">
-                        <header class="pane__header">Load</header>
+                    <section
+                        class="pane graph-pane graph-pane--load"
+                        data-graph-id="load"
+                        data-collapsed="false"
+                    >
+                        <header class="pane__header graph-pane__header">
+                            <span>Load</span>
+
+                            <button
+                                type="button"
+                                class="graph-pane__toggle"
+                                data-graph-toggle="load"
+                                aria-label="Toggle load graph"
+                                aria-controls="load-graph"
+                                aria-expanded="true"
+                            >
+                                <span aria-hidden="true">▾</span>
+                            </button>
+                        </header>
 
                         <div class="pane__content graph-pane__content" id="load-graph"></div>
                     </section>
 
-                    <section class="pane graph-pane graph-pane--calorie-rate">
-                        <header class="pane__header">Calorie Rate</header>
+                    <section
+                        class="pane graph-pane graph-pane--calorie-rate"
+                        data-graph-id="calorie-rate"
+                        data-collapsed="false"
+                    >
+                        <header class="pane__header graph-pane__header">
+                            <span>Calorie Rate</span>
+
+                            <button
+                                type="button"
+                                class="graph-pane__toggle"
+                                data-graph-toggle="calorie-rate"
+                                aria-label="Toggle calorie rate graph"
+                                aria-controls="calorie-rate-graph"
+                                aria-expanded="true"
+                            >
+                                <span aria-hidden="true">▾</span>
+                            </button>
+                        </header>
 
                         <div
                             class="pane__content graph-pane__content"
@@ -120,8 +171,26 @@
                         ></div>
                     </section>
 
-                    <section class="pane graph-pane graph-pane--cumulative-calories">
-                        <header class="pane__header">Cumulative Calories</header>
+                    <section
+                        class="pane graph-pane graph-pane--cumulative-calories"
+                        data-graph-id="cumulative-calories"
+                        data-collapsed="false"
+                    >
+                        <header class="pane__header graph-pane__header">
+                            <span>Cumulative Calories</span>
+
+                            <button
+                                type="button"
+                                class="graph-pane__toggle"
+                                data-graph-toggle="cumulative-calories"
+                                aria-label="Toggle cumulative calories graph"
+                                aria-controls="cumulative-calories-graph"
+                                aria-expanded="true"
+                            >
+                                <span aria-hidden="true">▾</span>
+                            </button>
+                        </header>
+
                         <div
                             class="pane__content graph-pane__content"
                             id="cumulative-calories-graph"

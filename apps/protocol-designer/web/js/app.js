@@ -10,6 +10,7 @@ import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
 import { ProtocolGraphRenderer } from "./renderers/protocol-graph-renderer.js";
 import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
 import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.js";
+import { GraphPaneController } from "./controllers/graph-pane-controller.js";
 
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 import { CalorieRateSeries } from "/packages/protocol-expander/calorie-rate-series.js";
@@ -87,8 +88,19 @@ async function main() {
     const protocolTree = document.querySelector("#protocol-tree");
     const editPhaseButton = document.querySelector("#manage-phases-button");
     const editBlockButton = document.querySelector("#manage-blocks-button");
+
     const cadenceGraph = document.querySelector("#cadence-graph");
     const loadGraph = document.querySelector("#load-graph");
+
+    const cadenceGraphPane = document.querySelector(".graph-pane--cadence");
+    const loadGraphPane = document.querySelector(".graph-pane--load");
+
+    const cadenceGraphToggle = document.querySelector('[data-graph-toggle="cadence"]');
+    const loadGraphToggle = document.querySelector('[data-graph-toggle="load"]');
+    const calorieRateGraphToggle = document.querySelector('[data-graph-toggle="calorie-rate"]');
+    const cumulativeCaloriesGraphToggle = document.querySelector(
+        '[data-graph-toggle="cumulative-calories"]',
+    );
 
     const cumulativeCaloriesGraphPane = document.querySelector(".graph-pane--cumulative-calories");
     const cumulativeCaloriesGraph = document.querySelector("#cumulative-calories-graph");
@@ -117,21 +129,44 @@ async function main() {
         editBlockButton === null ||
         cadenceGraph === null ||
         loadGraph === null ||
+        cadenceGraphPane === null ||
+        loadGraphPane === null ||
+        cadenceGraphToggle === null ||
+        loadGraphToggle === null ||
+        calorieRateGraphToggle === null ||
+        cumulativeCaloriesGraphToggle === null ||
         calorieRateGraphPane === null ||
         calorieRateGraph === null ||
+        cumulativeCaloriesGraphPane === null ||
+        cumulativeCaloriesGraph === null ||
         protocolActivityTypeName === null ||
-        protocolMachineProfileName === null ||
-        protocolSetupButton === null ||
-        protocolSetupDialog === null ||
-        protocolSetupCloseButton === null ||
-        protocolSetupCancelButton === null ||
-        protocolSetupApplyButton === null ||
-        protocolSetupActivityTypeSelect === null ||
-        protocolSetupMachineProfileSelect === null ||
-        protocolSetupCalibrationProfileSelect === null
+        protocolMachineProfileName === null
     ) {
         throw new Error("Required Protocol Designer elements were not found.");
     }
+
+    const graphPaneController = new GraphPaneController([
+        {
+            id: "cadence",
+            pane: cadenceGraphPane,
+            toggleButton: cadenceGraphToggle,
+        },
+        {
+            id: "load",
+            pane: loadGraphPane,
+            toggleButton: loadGraphToggle,
+        },
+        {
+            id: "calorie-rate",
+            pane: calorieRateGraphPane,
+            toggleButton: calorieRateGraphToggle,
+        },
+        {
+            id: "cumulative-calories",
+            pane: cumulativeCaloriesGraphPane,
+            toggleButton: cumulativeCaloriesGraphToggle,
+        },
+    ]);
 
     const primaryGraphRenderer = new ProtocolGraphRenderer({
         container: cadenceGraph,
@@ -170,14 +205,19 @@ async function main() {
             selectedBlockId: editorSnapshot.selectedBlockId,
         };
 
-        primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
-        loadGraphRenderer.render(protocol, selection, graphConfigs.load);
+        if (graphPaneController.isExpanded("cadence")) {
+            primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
+        }
+
+        if (graphPaneController.isExpanded("load")) {
+            loadGraphRenderer.render(protocol, selection, graphConfigs.load);
+        }
 
         const hasCalibration = currentCalibrationProfile !== undefined;
 
         calorieRateGraphPane.hidden = !hasCalibration;
 
-        if (hasCalibration) {
+        if (hasCalibration && graphPaneController.isExpanded("calorie-rate")) {
             calorieRateGraphRenderer.render(protocol, selection, {
                 createSeries: (expander) =>
                     new CalorieRateSeries(expander, currentCalibrationProfile),
@@ -191,7 +231,7 @@ async function main() {
 
         cumulativeCaloriesGraphPane.hidden = !hasCalibration;
 
-        if (hasCalibration) {
+        if (hasCalibration && graphPaneController.isExpanded("cumulative-calories")) {
             const totalCalories = calculateProtocolCalories(protocol, currentCalibrationProfile);
 
             cumulativeCaloriesGraphRenderer.render(protocol, selection, {
@@ -214,12 +254,24 @@ async function main() {
             selectedBlockId: editorSnapshot.selectedBlockId,
         };
 
-        // Keep these commented while those graphs are disabled for profiling.
-        primaryGraphRenderer.updateSelection(selection);
-        loadGraphRenderer.updateSelection(selection);
+        if (graphPaneController.isExpanded("cadence")) {
+            primaryGraphRenderer.updateSelection(selection);
+        }
 
-        calorieRateGraphRenderer.updateSelection(selection);
-        cumulativeCaloriesGraphRenderer.updateSelection(selection);
+        if (graphPaneController.isExpanded("load")) {
+            loadGraphRenderer.updateSelection(selection);
+        }
+
+        if (!calorieRateGraphPane.hidden && graphPaneController.isExpanded("calorie-rate")) {
+            calorieRateGraphRenderer.updateSelection(selection);
+        }
+
+        if (
+            !cumulativeCaloriesGraphPane.hidden &&
+            graphPaneController.isExpanded("cumulative-calories")
+        ) {
+            cumulativeCaloriesGraphRenderer.updateSelection(selection);
+        }
     };
 
     let pendingFieldFocus;
@@ -311,6 +363,12 @@ async function main() {
     protocolModel.subscribe(renderGraphs);
     editorState.subscribe(render);
     editorState.subscribe(updateGraphSelections);
+
+    graphPaneController.subscribe(({ expanded }) => {
+        if (expanded) {
+            renderGraphs();
+        }
+    });
 
     wireProtocolTreeEvents({
         protocolTree,

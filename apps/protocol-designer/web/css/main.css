@@ -17,13 +17,12 @@
     --shadow-pane: 0 4px 14px rgb(16 24 40 / 8%);
     --shadow-ribbon: 0 10px 30px rgb(16 24 40 / 18%);
 
-    --header-height: 48px;
-    --pane-header-height: 46px;
+    --header-height: 42px;
+    --pane-header-height: 42px;
     --totals-height: 32px;
 
-    --layout-gap: 16px;
+    --layout-gap: 8px;
     --border-radius: 10px;
-
 }
 
 /*
@@ -41,7 +40,6 @@ body {
     height: 100%;
 }
 
-
 body {
     margin: 0;
     overflow: hidden;
@@ -50,12 +48,12 @@ body {
     color: var(--color-text);
 
     font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 }
 
 /* --------------------------------------------------------------------------
@@ -63,11 +61,7 @@ body {
  * -------------------------------------------------------------------------- */
 
 .workspace {
-    height: calc(
-        100vh
-        - var(--header-height)
-        - var(--totals-height)
-    );
+    height: calc(100vh - var(--header-height) - var(--totals-height));
 
     margin-top: var(--header-height);
     padding: var(--layout-gap);
