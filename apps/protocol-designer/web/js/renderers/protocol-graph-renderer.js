@@ -52,6 +52,7 @@ export class ProtocolGraphRenderer {
     #resizeObserver;
     #widthPx;
     #heightPx;
+    #unavailableMessage;
 
     /** Creates a renderer for one protocol-backed graph container. */
     constructor({ container }) {
@@ -88,6 +89,7 @@ export class ProtocolGraphRenderer {
             selectedBlockId,
         };
         this.#lastConfig = config;
+        this.#unavailableMessage = undefined;
 
         this.#renderCurrent();
     }
@@ -111,9 +113,22 @@ export class ProtocolGraphRenderer {
         this.#resizeObserver.disconnect();
     }
 
+    /** Stores and renders a graph unavailable state. */
+    renderUnavailable(message, config) {
+        this.#lastProtocol = undefined;
+        this.#lastSelection = {
+            selectedPhaseId: undefined,
+            selectedBlockId: undefined,
+        };
+        this.#lastConfig = config;
+        this.#unavailableMessage = message;
+
+        this.#renderCurrent();
+    }
+
     /** Renders the current protocol using the container's current dimensions. */
     #renderCurrent() {
-        if (this.#lastProtocol === undefined || this.#lastConfig === undefined) {
+        if (this.#lastConfig === undefined) {
             return;
         }
 
@@ -148,9 +163,45 @@ export class ProtocolGraphRenderer {
 
         this.#svg.querySelector(".graph-empty-state")?.remove();
 
-        const expander = new ProtocolExpander(this.#lastProtocol);
-
         this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
+
+        if (this.#unavailableMessage !== undefined) {
+            const layout = this.#createLayout({
+                startTimeMs: 0,
+                endTimeMs: 1,
+                widthPx,
+                heightPx,
+                margins,
+                valueMin,
+                valueMax,
+            });
+
+            this.#renderAxes({
+                layout,
+                xTicks: [],
+                yTicks: [],
+                label,
+                unit,
+            });
+
+            this.#lastStructureState = {
+                layout,
+                phases: [],
+                blocks: [],
+            };
+
+            this.#renderStructure();
+
+            this.#svgRenderer.render({ points: [] });
+            this.#renderEmptyState(layout, this.#unavailableMessage);
+            return;
+        }
+
+        if (this.#lastProtocol === undefined) {
+            return;
+        }
+
+        const expander = new ProtocolExpander(this.#lastProtocol);
 
         if (expander.durationMs <= 0) {
             const layout = this.#createLayout({
@@ -262,8 +313,8 @@ export class ProtocolGraphRenderer {
         this.#svgRenderer.render({ points });
     }
 
-    /** Renders the no-block graph empty state. */
-    #renderEmptyState(layout) {
+    /** Renders a centered graph empty-state message. */
+    #renderEmptyState(layout, message = "Add a block to preview this protocol") {
         const text = document.createElementNS(SVG_NAMESPACE, "text");
 
         text.setAttribute("class", "graph-empty-state");
@@ -271,7 +322,7 @@ export class ProtocolGraphRenderer {
         text.setAttribute("y", String((layout.plot.top + layout.plot.bottom) / 2));
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
-        text.textContent = "Add a block to preview this protocol";
+        text.textContent = message;
 
         this.#svg.append(text);
     }

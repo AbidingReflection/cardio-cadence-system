@@ -215,33 +215,56 @@ async function main() {
 
         const hasCalibration = currentCalibrationProfile !== undefined;
 
-        calorieRateGraphPane.hidden = !hasCalibration;
-
-        if (hasCalibration && graphPaneController.isExpanded("calorie-rate")) {
-            calorieRateGraphRenderer.render(protocol, selection, {
-                createSeries: (expander) =>
-                    new CalorieRateSeries(expander, currentCalibrationProfile),
-                transformValue: (value) => value * 60,
-                label: "Calorie Rate",
-                unit: "kcal/min",
-                valueMin: 0,
-                valueMax: 30,
-            });
+        if (graphPaneController.isExpanded("calorie-rate")) {
+            if (!hasCalibration) {
+                calorieRateGraphRenderer.renderUnavailable(
+                    "Select a calibration profile to preview calorie rate",
+                    {
+                        label: "Calorie Rate",
+                        unit: "kcal/min",
+                        valueMin: 0,
+                        valueMax: 30,
+                    },
+                );
+            } else {
+                calorieRateGraphRenderer.render(protocol, selection, {
+                    createSeries: (expander) =>
+                        new CalorieRateSeries(expander, currentCalibrationProfile),
+                    transformValue: (value) => value * 60,
+                    label: "Calorie Rate",
+                    unit: "kcal/min",
+                    valueMin: 0,
+                    valueMax: 30,
+                });
+            }
         }
 
-        cumulativeCaloriesGraphPane.hidden = !hasCalibration;
+        if (graphPaneController.isExpanded("cumulative-calories")) {
+            if (!hasCalibration) {
+                cumulativeCaloriesGraphRenderer.renderUnavailable(
+                    "Select a calibration profile to preview cumulative calories",
+                    {
+                        label: "Cumulative Calories",
+                        unit: "kcal",
+                        valueMin: 0,
+                        valueMax: 1,
+                    },
+                );
+            } else {
+                const totalCalories = calculateProtocolCalories(
+                    protocol,
+                    currentCalibrationProfile,
+                );
 
-        if (hasCalibration && graphPaneController.isExpanded("cumulative-calories")) {
-            const totalCalories = calculateProtocolCalories(protocol, currentCalibrationProfile);
-
-            cumulativeCaloriesGraphRenderer.render(protocol, selection, {
-                createSeries: (expander) =>
-                    new CumulativeCalorieSeries(expander, currentCalibrationProfile),
-                label: "Cumulative Calories",
-                unit: "kcal",
-                valueMin: 0,
-                valueMax: totalCalories,
-            });
+                cumulativeCaloriesGraphRenderer.render(protocol, selection, {
+                    createSeries: (expander) =>
+                        new CumulativeCalorieSeries(expander, currentCalibrationProfile),
+                    label: "Cumulative Calories",
+                    unit: "kcal",
+                    valueMin: 0,
+                    valueMax: totalCalories,
+                });
+            }
         }
     };
 
@@ -262,14 +285,11 @@ async function main() {
             loadGraphRenderer.updateSelection(selection);
         }
 
-        if (!calorieRateGraphPane.hidden && graphPaneController.isExpanded("calorie-rate")) {
+        if (graphPaneController.isExpanded("calorie-rate")) {
             calorieRateGraphRenderer.updateSelection(selection);
         }
 
-        if (
-            !cumulativeCaloriesGraphPane.hidden &&
-            graphPaneController.isExpanded("cumulative-calories")
-        ) {
+        if (graphPaneController.isExpanded("cumulative-calories")) {
             cumulativeCaloriesGraphRenderer.updateSelection(selection);
         }
     };

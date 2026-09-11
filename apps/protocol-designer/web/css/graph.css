@@ -50,6 +50,15 @@
     font-size: 0.8rem;
 }
 
+.graph-pane__content {
+    container-name: graph;
+    container-type: size;
+}
+
+.graph-axis__title--y {
+    font-size: clamp(0.65rem, 4cqh, 0.9rem);
+}
+
 .graph-phase-boundary {
     stroke: currentColor;
     stroke-opacity: 0.25;
