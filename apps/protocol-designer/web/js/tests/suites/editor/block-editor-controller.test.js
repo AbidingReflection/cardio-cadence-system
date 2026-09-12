@@ -13,6 +13,7 @@ import {
     requestCollapseBlock,
     requestCollapsePhase,
     startBlockCreate,
+    updateBlockDraftField,
 } from "../../../controllers/block-editor-controller.js";
 
 import { createEditorStateFake } from "../../helpers/editor-state-fake.js";
@@ -800,4 +801,68 @@ test("block-editor-controller", "canceling a create draft clears its insertion t
     assertEqual(editorState.getSnapshot().insertionTarget, undefined);
 
     assertEqual(editorState.calls.closeBlockDraft, 1);
+});
+
+test("block-editor-controller", "updates a top-level block draft field", () => {
+    const editorState = createEditorStateFake(createEditDraft());
+
+    updateBlockDraftField(editorState, "name", "Updated Climb");
+
+    assertEqual(editorState.getSnapshot().activeBlockDraft.name, "Updated Climb");
+});
+
+test("block-editor-controller", "updates a variable field in the active block draft", () => {
+    const editorState = createEditorStateFake(createEditDraft());
+
+    updateBlockDraftField(editorState, "variables.speed.start", "4");
+
+    assertDeepEqual(editorState.getSnapshot().activeBlockDraft, {
+        mode: "edit",
+        blockId: "block-1",
+        phaseId: "phase-1",
+        name: "Climb",
+        duration: "3:00",
+        variables: {
+            speed: {
+                type: "linear",
+                start: "4",
+                end: "5",
+            },
+            incline: {
+                type: "steady",
+                start: "2",
+            },
+        },
+    });
+});
+
+test(
+    "block-editor-controller",
+    "throws when updating a field without an active block draft",
+    () => {
+        const editorState = createEditorStateFake();
+
+        assertThrows(
+            () => updateBlockDraftField(editorState, "name", "Updated Climb"),
+            "Cannot update a block field without an active draft.",
+        );
+    },
+);
+
+test("block-editor-controller", "throws for an unsupported block draft field", () => {
+    const editorState = createEditorStateFake(createEditDraft());
+
+    assertThrows(
+        () => updateBlockDraftField(editorState, "variables.speed", "4"),
+        'Unsupported block draft field: "variables.speed".',
+    );
+});
+
+test("block-editor-controller", "throws when updating an unknown block draft variable", () => {
+    const editorState = createEditorStateFake(createEditDraft());
+
+    assertThrows(
+        () => updateBlockDraftField(editorState, "variables.cadence.start", "90"),
+        'Block draft has no variable "cadence".',
+    );
 });

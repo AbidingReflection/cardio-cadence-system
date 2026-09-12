@@ -8,6 +8,7 @@ import {
     cancelBlockEdit,
     requestCollapseBlock,
     startBlockEdit,
+    updateBlockDraftField,
 } from "../controllers/block-editor-controller.js";
 
 import { captureProtocolFieldFocus } from "./protocol-focus.js";
@@ -58,15 +59,7 @@ export function wireProtocolBlockEvents({
             return;
         }
 
-        setPendingFieldFocus(captureProtocolFieldFocus(field));
-
-        try {
-            updateBlockDraftField(editorState, field.dataset.field, field.value);
-        } catch (error) {
-            setPendingFieldFocus(undefined);
-
-            throw error;
-        }
+        updateDraftField(editorState, field, setPendingFieldFocus);
     });
 
     protocolTree.addEventListener("change", (event) => {
@@ -76,15 +69,7 @@ export function wireProtocolBlockEvents({
             return;
         }
 
-        setPendingFieldFocus(captureProtocolFieldFocus(field));
-
-        try {
-            updateBlockDraftField(editorState, field.dataset.field, field.value);
-        } catch (error) {
-            setPendingFieldFocus(undefined);
-
-            throw error;
-        }
+        updateDraftField(editorState, field, setPendingFieldFocus);
     });
 
     protocolTree.addEventListener("submit", (event) => {
@@ -167,47 +152,15 @@ function collapseBlock(actionElement, editorState, setPendingToggleFocus) {
     }
 }
 
-/** Updates one field in the active block draft. */
-function updateBlockDraftField(editorState, fieldPath, value) {
-    const editorSnapshot = editorState.getSnapshot();
+/** Updates a block draft field while preserving its focus across rerendering. */
+function updateDraftField(editorState, field, setPendingFieldFocus) {
+    setPendingFieldFocus(captureProtocolFieldFocus(field));
 
-    const draft = editorSnapshot.activeBlockDraft;
+    try {
+        updateBlockDraftField(editorState, field.dataset.field, field.value);
+    } catch (error) {
+        setPendingFieldFocus(undefined);
 
-    if (draft === undefined) {
-        throw new Error("Cannot update a block field without an active draft.");
+        throw error;
     }
-
-    if (fieldPath === "name" || fieldPath === "duration") {
-        editorState.updateBlockDraft({
-            [fieldPath]: value,
-        });
-
-        return;
-    }
-
-    const parts = fieldPath.split(".");
-
-    if (parts.length !== 3 || parts[0] !== "variables") {
-        throw new Error(`Unsupported block draft field: "${fieldPath}".`);
-    }
-
-    const variableId = parts[1];
-    const variableField = parts[2];
-
-    const progression = draft.variables?.[variableId];
-
-    if (progression === undefined) {
-        throw new Error(`Block draft has no variable "${variableId}".`);
-    }
-
-    editorState.updateBlockDraft({
-        variables: {
-            ...draft.variables,
-
-            [variableId]: {
-                ...progression,
-                [variableField]: value,
-            },
-        },
-    });
 }

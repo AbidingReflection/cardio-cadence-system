@@ -273,6 +273,51 @@ export function startBlockCreate(editorState, activityType, phaseId, index) {
     };
 }
 
+/** Updates one field in the active block draft. */
+export function updateBlockDraftField(editorState, fieldPath, value) {
+    const editorSnapshot = editorState.getSnapshot();
+
+    const draft = editorSnapshot.activeBlockDraft;
+
+    if (draft === undefined) {
+        throw new Error("Cannot update a block field without an active draft.");
+    }
+
+    if (fieldPath === "name" || fieldPath === "duration") {
+        editorState.updateBlockDraft({
+            [fieldPath]: value,
+        });
+
+        return;
+    }
+
+    const parts = fieldPath.split(".");
+
+    if (parts.length !== 3 || parts[0] !== "variables") {
+        throw new Error(`Unsupported block draft field: "${fieldPath}".`);
+    }
+
+    const variableId = parts[1];
+    const variableField = parts[2];
+
+    const progression = draft.variables?.[variableId];
+
+    if (progression === undefined) {
+        throw new Error(`Block draft has no variable "${variableId}".`);
+    }
+
+    editorState.updateBlockDraft({
+        variables: {
+            ...draft.variables,
+
+            [variableId]: {
+                ...progression,
+                [variableField]: value,
+            },
+        },
+    });
+}
+
 /** Creates a blank create-mode block draft for an activity type. */
 function createCreateDraft(activityType, phaseId) {
     const variables = {};
