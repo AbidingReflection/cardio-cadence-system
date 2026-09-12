@@ -261,7 +261,7 @@ function createVariableEditor(block, draft, variable, machineVariable) {
     }
 
     if (progression.type === "stepped") {
-        fields.append(createStepField(block, variable, progression));
+        fields.append(createVariableValueField(block, variable, progression, "step", "Step Size"));
     }
 
     fieldset.append(legend, fields);
@@ -334,30 +334,6 @@ function createVariableValueField(block, variable, progression, key, labelText) 
     input.name = `${variable.id}-${key}`;
     input.value = progression[key] ?? "";
     input.dataset.field = `variables.${variable.id}.${key}`;
-
-    field.append(label, input);
-
-    return field;
-}
-
-/** Creates the stepped progression step-size input. */
-function createStepField(block, variable, progression) {
-    const field = document.createElement("div");
-    field.className = "block-editor__field";
-
-    const id = `${block.id}-${variable.id}-step`;
-
-    const label = document.createElement("label");
-    label.htmlFor = id;
-    label.textContent = "Step Size";
-
-    const input = document.createElement("input");
-    input.type = "number";
-    input.step = "any";
-    input.id = id;
-    input.name = `${variable.id}-step`;
-    input.value = progression.step ?? "";
-    input.dataset.field = `variables.${variable.id}.step`;
 
     field.append(label, input);
 
