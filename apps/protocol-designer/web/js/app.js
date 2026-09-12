@@ -3,37 +3,34 @@
  * rendering, focus restoration, and protocol-tree interactions.
  */
 
-import { loadDomainData } from "./domain-data.js";
-import { ProtocolModel } from "./models/protocol-model.js";
-import { EditorState } from "./state/editor-state.js";
-import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
-import { ProtocolGraphRenderer } from "./renderers/protocol-graph-renderer.js";
-import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
-import { resolveProtocolGraphConfigs } from "./renderers/protocol-graph-config.js";
 import { GraphPaneController } from "./controllers/graph-pane-controller.js";
+import { ProtocolGraphController } from "./controllers/protocol-graph-controller.js";
 
-import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
-import { CalorieRateSeries } from "/packages/protocol-expander/calorie-rate-series.js";
-import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
-import { CumulativeCalorieSeries } from "/packages/protocol-expander/cumulative-calorie-series.js";
-
-import { renderTotalsRibbon } from "./renderers/totals-ribbon-renderer.js";
+import { loadDomainData } from "./domain-data.js";
 
 import {
+    restorePhaseNameFocus,
     restoreProtocolFieldFocus,
     restoreProtocolStructuralFocus,
     restoreProtocolToggleFocus,
-    restorePhaseNameFocus,
 } from "./interactions/protocol-focus.js";
-
-import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
-
 import {
     toggleProtocolManageMode,
     wireProtocolManageKeyboardEvents,
 } from "./interactions/protocol-manage-keyboard-events.js";
-
 import { wireProtocolSetupEvents } from "./interactions/protocol-setup-events.js";
+import { wireProtocolTreeEvents } from "./interactions/protocol-tree-events.js";
+
+import { ProtocolModel } from "./models/protocol-model.js";
+
+import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
+import { renderProtocolTree } from "./renderers/protocol/protocol-tree-renderer.js";
+import { renderTotalsRibbon } from "./renderers/totals-ribbon-renderer.js";
+
+import { EditorState } from "./state/editor-state.js";
+
+import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
+import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
@@ -44,8 +41,10 @@ const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.
 async function main() {
     const domainData = await loadDomainData();
     const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
-    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
 
+    await loadGraphSvgs();
+
+    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
     if (activityType === undefined) {
         throw new Error(`Protocol ActivityType "${protocolData.activityTypeId}" was not found.`);
     }
@@ -79,71 +78,50 @@ async function main() {
         calibrationProfile,
     );
 
-    window.protocolModel = protocolModel;
-    await loadGraphSvgs();
-
     const editorState = new EditorState();
 
-    const protocolPane = document.querySelector(".protocol-pane");
-    const protocolTree = document.querySelector("#protocol-tree");
-    const editPhaseButton = document.querySelector("#manage-phases-button");
-    const editBlockButton = document.querySelector("#manage-blocks-button");
+    window.protocolModel = protocolModel;
 
-    const cadenceGraph = document.querySelector("#cadence-graph");
-    const loadGraph = document.querySelector("#load-graph");
+    // Protocol tree and management controls
+    const protocolPane = requireElement(".protocol-pane");
+    const protocolTree = requireElement("#protocol-tree");
+    const editPhaseButton = requireElement("#manage-phases-button");
+    const editBlockButton = requireElement("#manage-blocks-button");
 
-    const cadenceGraphPane = document.querySelector(".graph-pane--cadence");
-    const loadGraphPane = document.querySelector(".graph-pane--load");
+    const protocolActivityTypeName = requireElement("#protocol-activity-type-name");
+    const protocolMachineProfileName = requireElement("#protocol-machine-profile-name");
 
-    const cadenceGraphToggle = document.querySelector('[data-graph-toggle="cadence"]');
-    const loadGraphToggle = document.querySelector('[data-graph-toggle="load"]');
-    const calorieRateGraphToggle = document.querySelector('[data-graph-toggle="calorie-rate"]');
-    const cumulativeCaloriesGraphToggle = document.querySelector(
+    // Graph containers
+    const cadenceGraph = requireElement("#cadence-graph");
+    const loadGraph = requireElement("#load-graph");
+    const calorieRateGraph = requireElement("#calorie-rate-graph");
+    const cumulativeCaloriesGraph = requireElement("#cumulative-calories-graph");
+
+    // Graph panes
+    const cadenceGraphPane = requireElement(".graph-pane--cadence");
+    const loadGraphPane = requireElement(".graph-pane--load");
+    const calorieRateGraphPane = requireElement(".graph-pane--calorie-rate");
+    const cumulativeCaloriesGraphPane = requireElement(".graph-pane--cumulative-calories");
+
+    // Graph pane toggles
+    const cadenceGraphToggle = requireElement('[data-graph-toggle="cadence"]');
+    const loadGraphToggle = requireElement('[data-graph-toggle="load"]');
+    const calorieRateGraphToggle = requireElement('[data-graph-toggle="calorie-rate"]');
+    const cumulativeCaloriesGraphToggle = requireElement(
         '[data-graph-toggle="cumulative-calories"]',
     );
 
-    const cumulativeCaloriesGraphPane = document.querySelector(".graph-pane--cumulative-calories");
-    const cumulativeCaloriesGraph = document.querySelector("#cumulative-calories-graph");
-
-    const calorieRateGraphPane = document.querySelector(".graph-pane--calorie-rate");
-    const calorieRateGraph = document.querySelector("#calorie-rate-graph");
-    const protocolSetupButton = document.querySelector("#protocol-setup-button");
-    const protocolSetupDialog = document.querySelector("#protocol-setup-dialog");
-    const protocolSetupCloseButton = document.querySelector("#protocol-setup-close-button");
-    const protocolSetupCancelButton = document.querySelector("#protocol-setup-cancel-button");
-    const protocolSetupApplyButton = document.querySelector("#protocol-setup-apply-button");
-    const protocolSetupActivityTypeSelect = document.querySelector("#protocol-setup-activity-type");
-    const protocolSetupMachineProfileSelect = document.querySelector(
-        "#protocol-setup-machine-profile",
-    );
-    const protocolSetupCalibrationProfileSelect = document.querySelector(
+    // Protocol setup dialog
+    const protocolSetupButton = requireElement("#protocol-setup-button");
+    const protocolSetupDialog = requireElement("#protocol-setup-dialog");
+    const protocolSetupCloseButton = requireElement("#protocol-setup-close-button");
+    const protocolSetupCancelButton = requireElement("#protocol-setup-cancel-button");
+    const protocolSetupApplyButton = requireElement("#protocol-setup-apply-button");
+    const protocolSetupActivityTypeSelect = requireElement("#protocol-setup-activity-type");
+    const protocolSetupMachineProfileSelect = requireElement("#protocol-setup-machine-profile");
+    const protocolSetupCalibrationProfileSelect = requireElement(
         "#protocol-setup-calibration-profile",
     );
-    const protocolActivityTypeName = document.querySelector("#protocol-activity-type-name");
-    const protocolMachineProfileName = document.querySelector("#protocol-machine-profile-name");
-
-    if (
-        protocolPane === null ||
-        protocolTree === null ||
-        editPhaseButton === null ||
-        editBlockButton === null ||
-        cadenceGraph === null ||
-        loadGraph === null ||
-        cadenceGraphPane === null ||
-        loadGraphPane === null ||
-        cadenceGraphToggle === null ||
-        loadGraphToggle === null ||
-        calorieRateGraphToggle === null ||
-        cumulativeCaloriesGraphToggle === null ||
-        calorieRateGraphPane === null ||
-        calorieRateGraph === null ||
-        cumulativeCaloriesGraphPane === null ||
-        cumulativeCaloriesGraph === null ||
-        protocolActivityTypeName === null ||
-        protocolMachineProfileName === null
-    ) {
-        throw new Error("Required Protocol Designer elements were not found.");
-    }
 
     const graphPaneController = new GraphPaneController([
         {
@@ -168,130 +146,38 @@ async function main() {
         },
     ]);
 
-    const primaryGraphRenderer = new ProtocolGraphRenderer({
-        container: cadenceGraph,
+    const protocolGraphController = new ProtocolGraphController({
+        graphPaneController,
+        cadenceContainer: cadenceGraph,
+        loadContainer: loadGraph,
+        calorieRateContainer: calorieRateGraph,
+        cumulativeCaloriesContainer: cumulativeCaloriesGraph,
     });
 
-    const loadGraphRenderer = new ProtocolGraphRenderer({
-        container: loadGraph,
-    });
-
-    const calorieRateGraphRenderer = new ProtocolGraphRenderer({
-        container: calorieRateGraph,
-    });
-
-    const cumulativeCaloriesGraphRenderer = new ProtocolGraphRenderer({
-        container: cumulativeCaloriesGraph,
-    });
-
-    /** Renders protocol-backed graphs from committed protocol, setup, and editor selection state. */
+    /** Renders protocol-backed graphs from current application state. */
     const renderGraphs = () => {
         const protocol = protocolModel.getSnapshot();
         const editorSnapshot = editorState.getSnapshot();
+        const setupContext = protocolModel.getSetupContext();
 
-        const {
-            activityType: currentActivityType,
-            machineProfile: currentMachineProfile,
-            calibrationProfile: currentCalibrationProfile,
-        } = protocolModel.getSetupContext();
-
-        const graphConfigs = resolveProtocolGraphConfigs(
-            currentActivityType,
-            currentMachineProfile,
+        protocolGraphController.render(
+            protocol,
+            {
+                selectedPhaseId: editorSnapshot.selectedPhaseId,
+                selectedBlockId: editorSnapshot.selectedBlockId,
+            },
+            setupContext,
         );
-
-        const selection = {
-            selectedPhaseId: editorSnapshot.selectedPhaseId,
-            selectedBlockId: editorSnapshot.selectedBlockId,
-        };
-
-        if (graphPaneController.isExpanded("cadence")) {
-            primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
-        }
-
-        if (graphPaneController.isExpanded("load")) {
-            loadGraphRenderer.render(protocol, selection, graphConfigs.load);
-        }
-
-        const hasCalibration = currentCalibrationProfile !== undefined;
-
-        if (graphPaneController.isExpanded("calorie-rate")) {
-            if (!hasCalibration) {
-                calorieRateGraphRenderer.renderUnavailable(
-                    "Select a calibration profile to preview calorie rate",
-                    {
-                        label: "Calorie Rate",
-                        unit: "kcal/min",
-                        valueMin: 0,
-                        valueMax: 30,
-                    },
-                );
-            } else {
-                calorieRateGraphRenderer.render(protocol, selection, {
-                    createSeries: (expander) =>
-                        new CalorieRateSeries(expander, currentCalibrationProfile),
-                    transformValue: (value) => value * 60,
-                    label: "Calorie Rate",
-                    unit: "kcal/min",
-                    valueMin: 0,
-                    valueMax: 30,
-                });
-            }
-        }
-
-        if (graphPaneController.isExpanded("cumulative-calories")) {
-            if (!hasCalibration) {
-                cumulativeCaloriesGraphRenderer.renderUnavailable(
-                    "Select a calibration profile to preview cumulative calories",
-                    {
-                        label: "Cumulative Calories",
-                        unit: "kcal",
-                        valueMin: 0,
-                        valueMax: 1,
-                    },
-                );
-            } else {
-                const totalCalories = calculateProtocolCalories(
-                    protocol,
-                    currentCalibrationProfile,
-                );
-
-                cumulativeCaloriesGraphRenderer.render(protocol, selection, {
-                    createSeries: (expander) =>
-                        new CumulativeCalorieSeries(expander, currentCalibrationProfile),
-                    label: "Cumulative Calories",
-                    unit: "kcal",
-                    valueMin: 0,
-                    valueMax: totalCalories,
-                });
-            }
-        }
     };
 
     /** Updates graph selection styling without recomputing graph data. */
     const updateGraphSelections = () => {
         const editorSnapshot = editorState.getSnapshot();
 
-        const selection = {
+        protocolGraphController.updateSelection({
             selectedPhaseId: editorSnapshot.selectedPhaseId,
             selectedBlockId: editorSnapshot.selectedBlockId,
-        };
-
-        if (graphPaneController.isExpanded("cadence")) {
-            primaryGraphRenderer.updateSelection(selection);
-        }
-
-        if (graphPaneController.isExpanded("load")) {
-            loadGraphRenderer.updateSelection(selection);
-        }
-
-        if (graphPaneController.isExpanded("calorie-rate")) {
-            calorieRateGraphRenderer.updateSelection(selection);
-        }
-
-        if (graphPaneController.isExpanded("cumulative-calories")) {
-            cumulativeCaloriesGraphRenderer.updateSelection(selection);
-        }
+        });
     };
 
     let pendingFieldFocus;
@@ -446,6 +332,17 @@ async function main() {
 
     render();
     renderGraphs();
+}
+
+/** Returns a required element or throws when it cannot be found. */
+function requireElement(selector, root = document) {
+    const element = root.querySelector(selector);
+
+    if (element === null) {
+        throw new Error(`Required element "${selector}" was not found.`);
+    }
+
+    return element;
 }
 
 /** Loads and returns protocol data from the specified JSON resource. */
