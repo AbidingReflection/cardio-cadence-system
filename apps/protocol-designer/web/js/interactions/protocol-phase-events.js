@@ -4,6 +4,7 @@
  */
 
 import { requestCollapsePhase } from "../controllers/block-editor-controller.js";
+import { applyPhaseNameDraft, startPhaseNameEdit } from "../controllers/phase-name-controller.js";
 
 import { capturePhaseNameFocus } from "./protocol-focus.js";
 
@@ -83,16 +84,11 @@ export function wireProtocolPhaseEvents({
                 throw new Error("Phase-name field is missing its phase container.");
             }
 
-            setPendingPhaseNameFocus({
-                phaseId: phaseElement.dataset.phaseId,
-                target: "edit-action",
-            });
-
-            try {
-                editorState.closePhaseNameEdit();
-            } finally {
-                setPendingPhaseNameFocus(undefined);
-            }
+            closePhaseNameEditor(
+                phaseElement.dataset.phaseId,
+                editorState,
+                setPendingPhaseNameFocus,
+            );
         }
     });
 }
@@ -107,19 +103,13 @@ function editPhaseName(actionElement, protocolModel, editorState, setPendingPhas
 
     const phaseId = phaseElement.dataset.phaseId;
 
-    const phase = protocolModel.getSnapshot().phases.find((candidate) => candidate.id === phaseId);
-
-    if (phase === undefined) {
-        throw new Error(`Cannot edit missing phase "${phaseId}".`);
-    }
-
     setPendingPhaseNameFocus({
         phaseId,
         target: "editor",
     });
 
     try {
-        editorState.startPhaseNameEdit(phaseId, phase.name);
+        startPhaseNameEdit(protocolModel, editorState, phaseId);
     } finally {
         setPendingPhaseNameFocus(undefined);
     }
@@ -133,16 +123,7 @@ function cancelPhaseName(actionElement, editorState, setPendingPhaseNameFocus) {
         throw new Error("Phase-name cancel action is missing its phase container.");
     }
 
-    setPendingPhaseNameFocus({
-        phaseId: phaseElement.dataset.phaseId,
-        target: "edit-action",
-    });
-
-    try {
-        editorState.closePhaseNameEdit();
-    } finally {
-        setPendingPhaseNameFocus(undefined);
-    }
+    closePhaseNameEditor(phaseElement.dataset.phaseId, editorState, setPendingPhaseNameFocus);
 }
 
 /** Expands or collapses a phase while preserving toggle focus. */
@@ -173,20 +154,11 @@ function togglePhase(actionElement, protocolModel, editorState, setPendingToggle
     }
 }
 
-/** Commits the active phase-name draft when it contains a non-empty name. */
+/** Commits the active phase-name draft and restores edit-action focus. */
 function savePhaseName(protocolTree, protocolModel, editorState, setPendingPhaseNameFocus) {
-    const snapshot = editorState.getSnapshot();
+    const { applied, phaseId } = applyPhaseNameDraft(protocolModel, editorState);
 
-    const phaseId = snapshot.editingPhaseId;
-    const draftName = snapshot.phaseNameDraft;
-
-    if (phaseId === undefined || typeof draftName !== "string") {
-        throw new Error("Cannot save a phase name without an active phase-name edit.");
-    }
-
-    const name = draftName.trim();
-
-    if (name === "") {
+    if (!applied) {
         const phaseElement = Array.from(protocolTree.querySelectorAll("[data-phase-id]")).find(
             (element) => element.dataset.phaseId === phaseId,
         );
@@ -202,10 +174,11 @@ function savePhaseName(protocolTree, protocolModel, editorState, setPendingPhase
         return;
     }
 
-    protocolModel.updatePhase(phaseId, {
-        name,
-    });
+    closePhaseNameEditor(phaseId, editorState, setPendingPhaseNameFocus);
+}
 
+/** Closes phase-name editing while restoring focus to its edit action. */
+function closePhaseNameEditor(phaseId, editorState, setPendingPhaseNameFocus) {
     setPendingPhaseNameFocus({
         phaseId,
         target: "edit-action",
