@@ -18,7 +18,11 @@ export function wireProtocolSelectionEvents({ protocolTree, editorState }) {
                 return;
             }
 
-            editorState.selectBlock(blockElement.dataset.blockId);
+            selectStructuralItem(editorState, {
+                type: "block",
+                id: blockElement.dataset.blockId,
+            });
+
             protocolTree.focus();
             return;
         }
@@ -26,7 +30,11 @@ export function wireProtocolSelectionEvents({ protocolTree, editorState }) {
         const phaseElement = event.target.closest("[data-phase-id]");
 
         if (phaseElement !== null) {
-            editorState.selectPhase(phaseElement.dataset.phaseId);
+            selectStructuralItem(editorState, {
+                type: "phase",
+                id: phaseElement.dataset.phaseId,
+            });
+
             protocolTree.focus();
         }
     });
@@ -51,14 +59,21 @@ export function wireProtocolSelectionEvents({ protocolTree, editorState }) {
                 return;
             }
 
-            editorState.selectBlock(blockElement.dataset.blockId);
+            selectStructuralItem(editorState, {
+                type: "block",
+                id: blockElement.dataset.blockId,
+            });
+
             return;
         }
 
         const phaseElement = actionElement.closest("[data-phase-id]");
 
         if (phaseElement !== null) {
-            editorState.selectPhase(phaseElement.dataset.phaseId);
+            selectStructuralItem(editorState, {
+                type: "phase",
+                id: phaseElement.dataset.phaseId,
+            });
         }
     });
 
@@ -95,6 +110,16 @@ function isInteractiveTarget(target) {
             'button, input, select, textarea, a, [contenteditable="true"], [data-action]',
         ) !== null
     );
+}
+
+/** Applies one structural phase or block selection. */
+function selectStructuralItem(editorState, item) {
+    if (item.type === "phase") {
+        editorState.selectPhase(item.id);
+        return;
+    }
+
+    editorState.selectBlock(item.id);
 }
 
 /** Finds one rendered structural card by type and ID. */
@@ -181,14 +206,7 @@ function moveStructuralSelection(event, protocolTree, editorState) {
 
     event.preventDefault();
 
-    const nextItem = items[nextIndex];
-
-    if (nextItem.type === "phase") {
-        editorState.selectPhase(nextItem.id);
-    } else {
-        editorState.selectBlock(nextItem.id);
-    }
-
+    selectStructuralItem(editorState, items[nextIndex]);
     protocolTree.focus();
 }
 
