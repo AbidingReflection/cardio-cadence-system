@@ -50,6 +50,28 @@ export class ProtocolExpander {
         return structuredClone([...this.#blockRanges.values()]);
     }
 
+    /** Returns structural block context at an absolute workout time. */
+    contextAt(timeMs) {
+        ProtocolExpander.#validateTime(timeMs);
+
+        const blockEntry = this.#findBlockAtTime(timeMs);
+
+        if (blockEntry === undefined) {
+            return undefined;
+        }
+
+        const { range } = blockEntry;
+
+        return {
+            phaseId: range.phaseId,
+            blockId: range.id,
+            startTimeMs: range.startTimeMs,
+            endTimeMs: range.endTimeMs,
+            elapsedTimeMs: timeMs - range.startTimeMs,
+            durationMs: range.endTimeMs - range.startTimeMs,
+        };
+    }
+
     /** Returns a variable target at an absolute workout time. */
     valueAt(variableId, timeMs) {
         ProtocolExpander.#validateTime(timeMs);
