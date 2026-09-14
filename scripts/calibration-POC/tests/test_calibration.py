@@ -27,15 +27,6 @@ VARIABLES = [
     "resistance",
 ]
 
-EXPECTED_COEFFICIENTS = np.array(
-    [
-        0.0515331192882177,
-        0.000194655458016884,
-        1.5120309992374e-07,
-        -5.59456873731358e-11,
-    ]
-)
-
 
 class CalibrationDataTests(unittest.TestCase):
     def test_friendly_headers_are_normalized(self):
@@ -157,27 +148,31 @@ class CalibrationModelTests(unittest.TestCase):
             expected,
         )
 
-    def test_true_elliptical_regression_coefficients_are_unchanged(self):
-        input_file = PROJECT_DIR / "data" / "2026-09-08 True Elliptical.ods"
-
-        raw_data = load_calibration_data(
-            input_file,
+    def test_product_polynomial_fit_recovers_known_coefficients(self):
+        data = pd.DataFrame(
+            {
+                "cadence": [1, 1, 1, 1, 1, 1],
+                "resistance": [1, 2, 3, 4, 5, 6],
+            }
         )
 
-        calibration_data = prepare_calibration_data(
-            raw_data,
-            VARIABLES,
-        )
-
-        target = calibration_data["kcal_per_second"].to_numpy(
+        expected_coefficients = np.array(
+            [
+                0.5,
+                2.0,
+                -0.25,
+                0.1,
+            ],
             dtype=float,
         )
 
         features = build_product_features(
-            calibration_data,
+            data,
             variables=VARIABLES,
             degree=3,
         )
+
+        target = features @ expected_coefficients
 
         coefficients = fit_least_squares(
             features,
@@ -186,7 +181,7 @@ class CalibrationModelTests(unittest.TestCase):
 
         np.testing.assert_allclose(
             coefficients,
-            EXPECTED_COEFFICIENTS,
+            expected_coefficients,
             rtol=1e-10,
             atol=1e-12,
         )
