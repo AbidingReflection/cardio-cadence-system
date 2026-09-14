@@ -352,6 +352,7 @@ def extract_class(
     source: bytes,
     node: Node,
     exported: bool,
+    jsdoc_node: Node | None = None,
 ) -> list[str]:
     """Format one class declaration and its supported members."""
     body = node.child_by_field_name("body")
@@ -367,6 +368,15 @@ def extract_class(
         "-" * (len(declaration_prefix) + len(name) + 2),
         "",
     ]
+
+    if jsdoc_node is not None:
+        lines.extend(
+            [
+                f"[L{line_number(source, jsdoc_node)}] "
+                f"{normalize_jsdoc(node_text(source, jsdoc_node))}",
+                "",
+            ]
+        )
 
     children = list(body.named_children)
     public_methods = []
@@ -401,7 +411,6 @@ def extract_class(
 
     return lines
 
-
 def extract_imports(source: bytes, root: Node) -> list[str]:
     """Return top-level import statements in source order."""
     imports = []
@@ -415,15 +424,19 @@ def extract_imports(source: bytes, root: Node) -> list[str]:
 
 def extract_classes(source: bytes, root: Node) -> list[list[str]]:
     """Return formatted top-level classes in source order."""
+    children = list(root.named_children)
     classes = []
 
-    for child in root.named_children:
+    for index, child in enumerate(children):
         if child.type == "class_declaration":
+            jsdoc_node = immediate_jsdoc(source, children, index)
+
             classes.append(
                 extract_class(
                     source,
                     child,
                     exported=False,
+                    jsdoc_node=jsdoc_node,
                 )
             )
             continue
@@ -431,20 +444,28 @@ def extract_classes(source: bytes, root: Node) -> list[list[str]]:
         if child.type != "export_statement":
             continue
 
-        for exported_child in child.named_children:
-            if exported_child.type != "class_declaration":
-                continue
+        class_node = None
 
-            classes.append(
-                extract_class(
-                    source,
-                    exported_child,
-                    exported=True,
-                )
+        for exported_child in child.named_children:
+            if exported_child.type == "class_declaration":
+                class_node = exported_child
+                break
+
+        if class_node is None:
+            continue
+
+        jsdoc_node = immediate_jsdoc(source, children, index)
+
+        classes.append(
+            extract_class(
+                source,
+                class_node,
+                exported=True,
+                jsdoc_node=jsdoc_node,
             )
+        )
 
     return classes
-
 
 def export_source(
     path: Path,
