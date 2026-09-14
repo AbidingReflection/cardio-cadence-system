@@ -5,7 +5,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { createPlannedProtocolVersionRepository } from "../planned-protocol-version-repository.js";
+import { PlannedProtocolVersionRepository } from "../planned-protocol-version-repository.js";
 
 const FAMILY_ID = "family-1";
 
@@ -36,7 +36,7 @@ const VERSION_2 = {
 };
 
 test("planned-protocol-version-repository", "adds and retrieves a planned protocol version", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     repository.add(VERSION_1);
 
@@ -44,13 +44,13 @@ test("planned-protocol-version-repository", "adds and retrieves a planned protoc
 });
 
 test("planned-protocol-version-repository", "returns undefined for an unknown ID", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     assertEqual(repository.getById("missing"), undefined);
 });
 
 test("planned-protocol-version-repository", "rejects an invalid planned protocol version", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     assertThrows(
         () =>
@@ -63,7 +63,7 @@ test("planned-protocol-version-repository", "rejects an invalid planned protocol
 });
 
 test("planned-protocol-version-repository", "rejects a duplicate record ID", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     repository.add(VERSION_1);
 
@@ -82,7 +82,7 @@ test(
     "planned-protocol-version-repository",
     "rejects a duplicate version number within a protocol family",
     () => {
-        const repository = createPlannedProtocolVersionRepository();
+        const repository = new PlannedProtocolVersionRepository();
 
         repository.add(VERSION_1);
 
@@ -98,7 +98,7 @@ test(
 );
 
 test("planned-protocol-version-repository", "requires the parent version to exist", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     assertThrows(() => repository.add(VERSION_2), /parentVersionId/);
 });
@@ -107,7 +107,7 @@ test(
     "planned-protocol-version-repository",
     "accepts a later version when its parent exists",
     () => {
-        const repository = createPlannedProtocolVersionRepository();
+        const repository = new PlannedProtocolVersionRepository();
 
         repository.add(VERSION_1);
         repository.add(VERSION_2);
@@ -120,7 +120,7 @@ test(
     "planned-protocol-version-repository",
     "requires the parent to belong to the same family",
     () => {
-        const repository = createPlannedProtocolVersionRepository();
+        const repository = new PlannedProtocolVersionRepository();
 
         repository.add({
             ...VERSION_1,
@@ -143,7 +143,7 @@ test(
     "planned-protocol-version-repository",
     "lists family versions in ascending version order",
     () => {
-        const repository = createPlannedProtocolVersionRepository();
+        const repository = new PlannedProtocolVersionRepository();
 
         repository.add(VERSION_1);
         repository.add(VERSION_2);
@@ -153,7 +153,7 @@ test(
 );
 
 test("planned-protocol-version-repository", "returns an empty list for an unknown family", () => {
-    const repository = createPlannedProtocolVersionRepository();
+    const repository = new PlannedProtocolVersionRepository();
 
     assertDeepEqual(repository.listByFamilyId("missing-family"), []);
 });
@@ -162,7 +162,7 @@ test(
     "planned-protocol-version-repository",
     "requires the parent to be the immediately preceding version",
     () => {
-        const repository = createPlannedProtocolVersionRepository();
+        const repository = new PlannedProtocolVersionRepository();
 
         repository.add(VERSION_1);
 
@@ -181,5 +181,43 @@ test(
                 }),
             /parentVersionId/,
         );
+    },
+);
+
+test("planned-protocol-version-repository", "deletes an unreferenced planned version", () => {
+    const repository = new PlannedProtocolVersionRepository({
+        isReferenced: () => false,
+    });
+
+    repository.add(VERSION_1);
+
+    repository.delete(VERSION_1.id);
+
+    assertEqual(repository.getById(VERSION_1.id), undefined);
+});
+
+test(
+    "planned-protocol-version-repository",
+    "rejects deletion of a referenced planned version",
+    () => {
+        const repository = new PlannedProtocolVersionRepository({
+            isReferenced: (id) => id === VERSION_1.id,
+        });
+
+        repository.add(VERSION_1);
+
+        assertThrows(() => repository.delete(VERSION_1.id), /referenced/);
+    },
+);
+
+test(
+    "planned-protocol-version-repository",
+    "returns false when deleting an unknown version",
+    () => {
+        const repository = new PlannedProtocolVersionRepository({
+            isReferenced: () => false,
+        });
+
+        assertEqual(repository.delete("missing-version"), false);
     },
 );

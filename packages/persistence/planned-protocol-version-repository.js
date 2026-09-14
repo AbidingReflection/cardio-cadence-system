@@ -1,24 +1,22 @@
 import { validatePlannedProtocolVersion } from "./planned-protocol-version.js";
 
-/** Creates an in-memory planned-protocol-version repository. */
-export function createPlannedProtocolVersionRepository() {
-    const versionsById = new Map();
+export class PlannedProtocolVersionRepository {
+    #versionsById = new Map();
+    #isReferenced;
 
-    return {
-        add,
-        getById,
-        listByFamilyId,
-    };
+    constructor({ isReferenced = () => false } = {}) {
+        this.#isReferenced = isReferenced;
+    }
 
     /** Adds a planned protocol version to the repository. */
-    function add(version) {
+    add(version) {
         validatePlannedProtocolVersion(version);
 
-        if (versionsById.has(version.id)) {
+        if (this.#versionsById.has(version.id)) {
             throw new Error(`PlannedProtocolVersion id "${version.id}" already exists.`);
         }
 
-        const familyVersions = listByFamilyId(version.protocolFamilyId);
+        const familyVersions = this.listByFamilyId(version.protocolFamilyId);
 
         if (
             familyVersions.some(
@@ -30,30 +28,59 @@ export function createPlannedProtocolVersionRepository() {
             );
         }
 
-        validateParent(version);
+        this.#validateParent(version);
 
-        versionsById.set(version.id, version);
+        this.#versionsById.set(version.id, version);
     }
 
     /** Returns a planned protocol version by ID. */
-    function getById(id) {
-        return versionsById.get(id);
+    getById(id) {
+        return this.#versionsById.get(id);
     }
 
     /** Returns all planned protocol versions for a family in version order. */
-    function listByFamilyId(protocolFamilyId) {
-        return [...versionsById.values()]
+    listByFamilyId(protocolFamilyId) {
+        return [...this.#versionsById.values()]
             .filter((version) => version.protocolFamilyId === protocolFamilyId)
             .sort((a, b) => a.versionNumber - b.versionNumber);
     }
 
+    /** Deletes an unreferenced planned protocol version. */
+    delete(id) {
+        const version = this.#versionsById.get(id);
+
+        if (version === undefined) {
+            return false;
+        }
+
+        if (this.#isReferenced(id)) {
+            throw new Error(
+                `PlannedProtocolVersion "${id}" cannot be deleted because it is referenced.`,
+            );
+        }
+
+        const hasChildVersion = [...this.#versionsById.values()].some(
+            (candidate) => candidate.parentVersionId === id,
+        );
+
+        if (hasChildVersion) {
+            throw new Error(
+                `PlannedProtocolVersion "${id}" cannot be deleted because a later version references it.`,
+            );
+        }
+
+        this.#versionsById.delete(id);
+
+        return true;
+    }
+
     /** Validates repository-level parent relationships. */
-    function validateParent(version) {
+    #validateParent(version) {
         if (version.parentVersionId === undefined) {
             return;
         }
 
-        const parentVersion = versionsById.get(version.parentVersionId);
+        const parentVersion = this.#versionsById.get(version.parentVersionId);
 
         if (parentVersion === undefined) {
             throw new Error(
