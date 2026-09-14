@@ -2,6 +2,8 @@ import { requireNonEmptyString, requireObject, requireUnixTimestamp } from "./re
 
 const EXECUTION_STATUSES = new Set(["in-progress", "completed", "ended-early", "interrupted"]);
 
+const NAVIGATION_ACTIONS = new Set(["skip-block", "skip-phase", "early-cooldown", "jump"]);
+
 /** Creates a validated executed-protocol record. */
 export function createExecutedProtocol({
     id,
@@ -59,9 +61,7 @@ export function validateExecutedProtocol(executedProtocol) {
 
     validateCompletionReason(executedProtocol.status, executedProtocol.completionReason);
 
-    if (!Array.isArray(executedProtocol.events)) {
-        throw new TypeError("ExecutedProtocol events must be an array.");
-    }
+    validateEvents(executedProtocol.events);
 }
 
 /** Validates the execution status. */
@@ -123,4 +123,73 @@ function validateTimestampOrder({ startedAtUnixMs, lastKnownActiveAtUnixMs, ende
             "ExecutedProtocol endedAtUnixMs must not precede lastKnownActiveAtUnixMs.",
         );
     }
+}
+
+/** Validates all execution events. */
+function validateEvents(events) {
+    if (!Array.isArray(events)) {
+        throw new TypeError("ExecutedProtocol events must be an array.");
+    }
+
+    for (const event of events) {
+        validateEvent(event);
+    }
+}
+
+/** Validates one execution event. */
+function validateEvent(event) {
+    requireObject(event, "ExecutedProtocol event");
+
+    requireNonEmptyString(event.type, "ExecutedProtocol event type");
+
+    requireUnixTimestamp(event.occurredAtUnixMs, "ExecutedProtocol event occurredAtUnixMs");
+
+    switch (event.type) {
+        case "pause":
+        case "resume":
+            return;
+
+        case "navigate":
+            validateNavigationEvent(event);
+            return;
+
+        case "recovery":
+            validateRecoveryEvent(event);
+            return;
+
+        default:
+            throw new TypeError(`ExecutedProtocol event type "${event.type}" is not supported.`);
+    }
+}
+
+/** Validates a navigation event. */
+function validateNavigationEvent(event) {
+    requireObject(event.target, "ExecutedProtocol navigation event target");
+
+    requireNonEmptyString(event.target.phaseId, "ExecutedProtocol navigation event target phaseId");
+
+    if (event.target.blockId !== undefined) {
+        requireNonEmptyString(
+            event.target.blockId,
+            "ExecutedProtocol navigation event target blockId",
+        );
+    }
+
+    requireNonEmptyString(event.action, "ExecutedProtocol navigation event action");
+
+    if (!NAVIGATION_ACTIONS.has(event.action)) {
+        throw new TypeError(
+            `ExecutedProtocol navigation event action must be one of: ${[
+                ...NAVIGATION_ACTIONS,
+            ].join(", ")}.`,
+        );
+    }
+}
+
+/** Validates a recovery event. */
+function validateRecoveryEvent(event) {
+    requireUnixTimestamp(
+        event.lastKnownActiveAtUnixMs,
+        "ExecutedProtocol recovery event lastKnownActiveAtUnixMs",
+    );
 }
