@@ -6,7 +6,7 @@ import {
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { PlannedProtocolVersionRepository } from "../planned-protocol-version-repository.js";
-import { createExecutedProtocolRepository } from "../executed-protocol-repository.js";
+import { ExecutedProtocolRepository } from "../executed-protocol-repository.js";
 
 const PLANNED_VERSION = {
     id: "planned-version-1",
@@ -48,7 +48,7 @@ const EXECUTION_2 = {
 function createRepositories() {
     const plannedProtocolVersionRepository = new PlannedProtocolVersionRepository();
 
-    const executedProtocolRepository = createExecutedProtocolRepository({
+    const executedProtocolRepository = new ExecutedProtocolRepository({
         plannedProtocolVersionRepository,
     });
 

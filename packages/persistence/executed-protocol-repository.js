@@ -1,24 +1,22 @@
 import { validateExecutionHistory } from "./executed-protocol.js";
 
-/** Creates an in-memory executed-protocol repository. */
-export function createExecutedProtocolRepository({ plannedProtocolVersionRepository }) {
-    const executionsById = new Map();
+export class ExecutedProtocolRepository {
+    #executionsById = new Map();
+    #plannedProtocolVersionRepository;
 
-    return {
-        add,
-        getById,
-        listByPlannedProtocolVersionId,
-    };
+    constructor({ plannedProtocolVersionRepository }) {
+        this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
+    }
 
     /** Adds an executed protocol to the repository. */
-    function add(executedProtocol) {
+    add(executedProtocol) {
         validateExecutionHistory(executedProtocol);
 
-        if (executionsById.has(executedProtocol.id)) {
+        if (this.#executionsById.has(executedProtocol.id)) {
             throw new Error(`ExecutedProtocol id "${executedProtocol.id}" already exists.`);
         }
 
-        const plannedVersion = plannedProtocolVersionRepository.getById(
+        const plannedVersion = this.#plannedProtocolVersionRepository.getById(
             executedProtocol.plannedProtocolVersionId,
         );
 
@@ -28,17 +26,17 @@ export function createExecutedProtocolRepository({ plannedProtocolVersionReposit
             );
         }
 
-        executionsById.set(executedProtocol.id, executedProtocol);
+        this.#executionsById.set(executedProtocol.id, executedProtocol);
     }
 
     /** Returns an executed protocol by ID. */
-    function getById(id) {
-        return executionsById.get(id);
+    getById(id) {
+        return this.#executionsById.get(id);
     }
 
     /** Returns executions for a planned protocol version in start-time order. */
-    function listByPlannedProtocolVersionId(plannedProtocolVersionId) {
-        return [...executionsById.values()]
+    listByPlannedProtocolVersionId(plannedProtocolVersionId) {
+        return [...this.#executionsById.values()]
             .filter((execution) => execution.plannedProtocolVersionId === plannedProtocolVersionId)
             .sort((a, b) => a.startedAtUnixMs - b.startedAtUnixMs);
     }
