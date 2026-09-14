@@ -5,3 +5,4 @@ scripts/calibration-POC/output/
 .~lock.*#
 scripts/
 scripts/context_export/output/
+*.kate-swp
