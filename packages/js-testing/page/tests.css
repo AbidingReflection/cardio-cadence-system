@@ -44,8 +44,8 @@ th {
 }
 
 .test-summary {
-    width: auto;
-    min-width: 420px;
+    width: 45%;
+    table-layout: fixed;
 }
 
 .test-summary th,
@@ -55,6 +55,16 @@ th {
 
 .test-summary td {
     font-weight: 600;
+}
+
+.test-summary th:first-child,
+.test-summary td:first-child {
+    width: 24%;
+}
+
+.test-summary th:not(:first-child),
+.test-summary td:not(:first-child) {
+    width: 19%;
 }
 
 .test-result__status {

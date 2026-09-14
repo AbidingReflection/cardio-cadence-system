@@ -17,21 +17,39 @@ export function renderTestSuites(tests) {
 
 /** Renders all completed test results. */
 export function renderTestResults(results) {
-    for (const result of results) {
+    const sortedResults = [...results].sort(compareResultStatus);
+
+    for (const result of sortedResults) {
         renderTestResult(result);
     }
+}
+
+function compareResultStatus(a, b) {
+    return getStatusPriority(a.status) - getStatusPriority(b.status);
+}
+
+function getStatusPriority(status) {
+    if (status === "FAILED") {
+        return 0;
+    }
+
+    if (status === "PASSED") {
+        return 1;
+    }
+
+    throw new Error(`Unknown test result status "${status}".`);
 }
 
 /** Updates the overall test summary from completed results. */
 export function renderSummary(results) {
     const passed = results.filter((result) => result.status === "PASSED").length;
-
     const failed = results.filter((result) => result.status === "FAILED").length;
-
     const total = results.length;
+    const suites = new Set(results.map((result) => result.suite)).size;
 
     const statusElement = getRequiredElement("#test-summary-status");
 
+    getRequiredElement("#test-summary-suites").textContent = suites;
     getRequiredElement("#test-summary-total").textContent = total;
     getRequiredElement("#test-summary-passed").textContent = passed;
     getRequiredElement("#test-summary-failed").textContent = failed;
@@ -57,11 +75,28 @@ export function renderSuiteSummary(results) {
 
     tableBody.replaceChildren();
 
-    const suites = groupResultsBySuite(results);
+    const suites = [...groupResultsBySuite(results).entries()].sort(compareSuiteStatus);
 
     for (const [suite, suiteResults] of suites) {
         tableBody.append(createSuiteSummaryItem(suite, suiteResults));
     }
+}
+
+function compareSuiteStatus([suiteA, resultsA], [suiteB, resultsB]) {
+    const statusA = getSuiteStatus(resultsA);
+    const statusB = getSuiteStatus(resultsB);
+
+    const priorityDifference = getStatusPriority(statusA) - getStatusPriority(statusB);
+
+    if (priorityDifference !== 0) {
+        return priorityDifference;
+    }
+
+    return suiteA.localeCompare(suiteB);
+}
+
+function getSuiteStatus(results) {
+    return results.some((result) => result.status === "FAILED") ? "FAILED" : "PASSED";
 }
 
 /** Creates the result table for a single test suite. */
@@ -101,7 +136,7 @@ function createSuiteSummaryItem(suite, results) {
     const failed = results.filter((result) => result.status === "FAILED").length;
 
     const total = results.length;
-    const status = failed === 0 ? "PASSED" : "FAILED";
+    const status = getSuiteStatus(results);
 
     const row = document.createElement("tr");
 
