@@ -44,8 +44,16 @@ def exporter_for(path: Path):
             f"Unsupported file type: {path}"
         ) from exc
 
-def discover_source_files(path: Path) -> list[Path]:
-    """Return supported source files while pruning ignored directories."""
+def discover_source_files(
+    path: Path,
+    *,
+    recursive: bool = False,
+    excluded_directories: list[str] | None = None,
+) -> list[Path]:
+    """Return supported source files while pruning ignored and excluded directories."""
+    excluded_directories = excluded_directories or []
+    pruned_directories = IGNORED_DIRECTORIES | set(excluded_directories)
+
     if path.is_file():
         if is_ignored_path(path):
             raise ValueError(f"Path is inside an ignored directory: {path}")
@@ -62,8 +70,11 @@ def discover_source_files(path: Path) -> list[Path]:
         directories[:] = [
             directory
             for directory in directories
-            if directory not in IGNORED_DIRECTORIES
+            if directory not in pruned_directories
         ]
+
+        if not recursive:
+            directories[:] = []
 
         root_path = Path(root)
 
@@ -74,7 +85,6 @@ def discover_source_files(path: Path) -> list[Path]:
                 files.append(candidate)
 
     return sorted(files)
-
 
 def project_relative_path(path: Path, project_root: Path) -> Path:
     """Return a path relative to the project root when possible."""
@@ -127,12 +137,33 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Export compact structural context from source files."
     )
+
     parser.add_argument(
         "paths",
         nargs="+",
         type=Path,
         help="One or more supported source files or directories to export.",
     )
+
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        help="Recursively include supported files beneath directory targets.",
+    )
+
+    parser.add_argument(
+        "-x",
+        "--exclude-dir",
+        action="append",
+        default=[],
+        metavar="DIR",
+        help=(
+            "Exclude directories named DIR while discovering source files. "
+            "May be supplied multiple times."
+        ),
+    )
+
     parser.add_argument(
         "--inspect",
         action="store_true",
@@ -140,7 +171,6 @@ def parse_args() -> argparse.Namespace:
     )
 
     return parser.parse_args()
-
 
 def main() -> int:
     """Run the source context exporter."""
@@ -151,7 +181,13 @@ def main() -> int:
 
     try:
         for path in args.paths:
-            source_files.extend(discover_source_files(path))
+            source_files.extend(
+                discover_source_files(
+                    path,
+                    recursive=args.recursive,
+                    excluded_directories=args.exclude_dir,
+                )
+            )
     except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}")
         return 1
