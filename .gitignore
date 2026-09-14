@@ -1,8 +1,12 @@
+# Python environments and caches
 .venv/
 __pycache__/
 *.pyc
+
+# Generated script output
 scripts/calibration-POC/output/
-.~lock.*#
-scripts/
 scripts/context_export/output/
+
+# Editor / temporary files
 *.kate-swp
+.~lock.*#
