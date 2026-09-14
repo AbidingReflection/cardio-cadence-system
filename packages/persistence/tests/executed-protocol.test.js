@@ -4,7 +4,11 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { createExecutedProtocol, validateExecutedProtocol } from "../executed-protocol.js";
+import {
+    createExecutedProtocol,
+    validateExecutedProtocol,
+    validateExecutionHistory,
+} from "../executed-protocol.js";
 
 const STARTED_AT = 1_789_360_000_000;
 const ACTIVE_AT = 1_789_360_300_000;
@@ -534,4 +538,188 @@ test("executed-protocol", "requires a recovery last active timestamp", () => {
             }),
         /lastKnownActiveAtUnixMs/,
     );
+});
+
+test("executed-protocol", "accepts an empty execution history", () => {
+    validateExecutionHistory({
+        id: "execution-1",
+        plannedProtocolVersionId: "planned-version-1",
+        status: "in-progress",
+        startedAtUnixMs: STARTED_AT,
+        lastKnownActiveAtUnixMs: ACTIVE_AT,
+        events: [],
+    });
+});
+
+test("executed-protocol", "accepts a currently paused execution", () => {
+    validateExecutionHistory({
+        id: "execution-1",
+        plannedProtocolVersionId: "planned-version-1",
+        status: "in-progress",
+        startedAtUnixMs: STARTED_AT,
+        lastKnownActiveAtUnixMs: ACTIVE_AT,
+        events: [
+            {
+                type: "pause",
+                occurredAtUnixMs: STARTED_AT + 100_000,
+            },
+        ],
+    });
+});
+
+test("executed-protocol", "accepts alternating pause and resume events", () => {
+    validateExecutionHistory({
+        id: "execution-1",
+        plannedProtocolVersionId: "planned-version-1",
+        status: "in-progress",
+        startedAtUnixMs: STARTED_AT,
+        lastKnownActiveAtUnixMs: ACTIVE_AT,
+        events: [
+            {
+                type: "pause",
+                occurredAtUnixMs: STARTED_AT + 100_000,
+            },
+            {
+                type: "resume",
+                occurredAtUnixMs: STARTED_AT + 200_000,
+            },
+            {
+                type: "pause",
+                occurredAtUnixMs: STARTED_AT + 250_000,
+            },
+        ],
+    });
+});
+
+test("executed-protocol", "rejects resume before pause", () => {
+    assertThrows(
+        () =>
+            validateExecutionHistory({
+                id: "execution-1",
+                plannedProtocolVersionId: "planned-version-1",
+                status: "in-progress",
+                startedAtUnixMs: STARTED_AT,
+                lastKnownActiveAtUnixMs: ACTIVE_AT,
+                events: [
+                    {
+                        type: "resume",
+                        occurredAtUnixMs: STARTED_AT + 100_000,
+                    },
+                ],
+            }),
+        /resume/,
+    );
+});
+
+test("executed-protocol", "rejects consecutive pause events", () => {
+    assertThrows(
+        () =>
+            validateExecutionHistory({
+                id: "execution-1",
+                plannedProtocolVersionId: "planned-version-1",
+                status: "in-progress",
+                startedAtUnixMs: STARTED_AT,
+                lastKnownActiveAtUnixMs: ACTIVE_AT,
+                events: [
+                    {
+                        type: "pause",
+                        occurredAtUnixMs: STARTED_AT + 100_000,
+                    },
+                    {
+                        type: "pause",
+                        occurredAtUnixMs: STARTED_AT + 200_000,
+                    },
+                ],
+            }),
+        /pause/,
+    );
+});
+
+test("executed-protocol", "rejects consecutive resume events", () => {
+    assertThrows(
+        () =>
+            validateExecutionHistory({
+                id: "execution-1",
+                plannedProtocolVersionId: "planned-version-1",
+                status: "in-progress",
+                startedAtUnixMs: STARTED_AT,
+                lastKnownActiveAtUnixMs: ACTIVE_AT,
+                events: [
+                    {
+                        type: "pause",
+                        occurredAtUnixMs: STARTED_AT + 100_000,
+                    },
+                    {
+                        type: "resume",
+                        occurredAtUnixMs: STARTED_AT + 200_000,
+                    },
+                    {
+                        type: "resume",
+                        occurredAtUnixMs: STARTED_AT + 250_000,
+                    },
+                ],
+            }),
+        /resume/,
+    );
+});
+
+test("executed-protocol", "rejects an event before execution start", () => {
+    assertThrows(
+        () =>
+            validateExecutionHistory({
+                id: "execution-1",
+                plannedProtocolVersionId: "planned-version-1",
+                status: "in-progress",
+                startedAtUnixMs: STARTED_AT,
+                lastKnownActiveAtUnixMs: ACTIVE_AT,
+                events: [
+                    {
+                        type: "pause",
+                        occurredAtUnixMs: STARTED_AT - 1,
+                    },
+                ],
+            }),
+        /occurredAtUnixMs/,
+    );
+});
+
+test("executed-protocol", "rejects an event after finalized execution end", () => {
+    assertThrows(
+        () =>
+            validateExecutionHistory({
+                id: "execution-1",
+                plannedProtocolVersionId: "planned-version-1",
+                status: "completed",
+                startedAtUnixMs: STARTED_AT,
+                endedAtUnixMs: ENDED_AT,
+                lastKnownActiveAtUnixMs: ACTIVE_AT,
+                events: [
+                    {
+                        type: "pause",
+                        occurredAtUnixMs: ENDED_AT + 1,
+                    },
+                ],
+            }),
+        /occurredAtUnixMs/,
+    );
+});
+
+test("executed-protocol", "does not require event timestamps to be monotonic", () => {
+    validateExecutionHistory({
+        id: "execution-1",
+        plannedProtocolVersionId: "planned-version-1",
+        status: "in-progress",
+        startedAtUnixMs: STARTED_AT,
+        lastKnownActiveAtUnixMs: ACTIVE_AT,
+        events: [
+            {
+                type: "pause",
+                occurredAtUnixMs: STARTED_AT + 200_000,
+            },
+            {
+                type: "resume",
+                occurredAtUnixMs: STARTED_AT + 150_000,
+            },
+        ],
+    });
 });

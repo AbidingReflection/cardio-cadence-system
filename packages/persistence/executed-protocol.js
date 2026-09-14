@@ -64,6 +64,62 @@ export function validateExecutedProtocol(executedProtocol) {
     validateEvents(executedProtocol.events);
 }
 
+/** Validates execution-history semantics. */
+export function validateExecutionHistory(executedProtocol) {
+    validateExecutedProtocol(executedProtocol);
+
+    validateEventTimeRanges(executedProtocol);
+    validatePauseResumeSequence(executedProtocol.events);
+}
+
+/** Validates execution events against the execution time range. */
+function validateEventTimeRanges(executedProtocol) {
+    for (const event of executedProtocol.events) {
+        if (event.occurredAtUnixMs < executedProtocol.startedAtUnixMs) {
+            throw new TypeError(
+                "ExecutedProtocol event occurredAtUnixMs must not precede startedAtUnixMs.",
+            );
+        }
+
+        if (
+            executedProtocol.endedAtUnixMs !== undefined &&
+            event.occurredAtUnixMs > executedProtocol.endedAtUnixMs
+        ) {
+            throw new TypeError(
+                "ExecutedProtocol event occurredAtUnixMs must not follow endedAtUnixMs.",
+            );
+        }
+    }
+}
+
+/** Validates pause and resume sequencing in array order. */
+function validatePauseResumeSequence(events) {
+    let paused = false;
+
+    for (const event of events) {
+        if (event.type === "pause") {
+            if (paused) {
+                throw new TypeError(
+                    "ExecutedProtocol history cannot contain consecutive pause events.",
+                );
+            }
+
+            paused = true;
+            continue;
+        }
+
+        if (event.type === "resume") {
+            if (!paused) {
+                throw new TypeError(
+                    "ExecutedProtocol history cannot contain a resume event while running.",
+                );
+            }
+
+            paused = false;
+        }
+    }
+}
+
 /** Validates the execution status. */
 function validateStatus(status) {
     if (!EXECUTION_STATUSES.has(status)) {
