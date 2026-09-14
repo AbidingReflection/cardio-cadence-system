@@ -5,7 +5,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ProtocolFamilyRepository } from "../protocol-family-repository.js";
+import { ProtocolFamilyRepository } from "../repositories/protocol-family-repository.js";
 
 const FAMILY_1 = {
     id: "family-1",

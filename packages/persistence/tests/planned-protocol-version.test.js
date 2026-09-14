@@ -7,7 +7,7 @@ import {
 import {
     createPlannedProtocolVersion,
     validatePlannedProtocolVersion,
-} from "../planned-protocol-version.js";
+} from "../records/planned-protocol-version.js";
 
 const VALID_PROTOCOL = {
     id: "protocol-1",

@@ -4,7 +4,7 @@ import {
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { createProtocolFamily, validateProtocolFamily } from "../protocol-family.js";
+import { createProtocolFamily, validateProtocolFamily } from "../records/protocol-family.js";
 
 test("protocol-family", "creates a valid protocol family", () => {
     const family = createProtocolFamily({

@@ -5,7 +5,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { PlannedProtocolVersionRepository } from "../planned-protocol-version-repository.js";
+import { PlannedProtocolVersionRepository } from "../repositories/planned-protocol-version-repository.js";
 
 const FAMILY_ID = "family-1";
 

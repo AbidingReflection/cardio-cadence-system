@@ -5,8 +5,8 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { PlannedProtocolVersionRepository } from "../planned-protocol-version-repository.js";
-import { ExecutedProtocolRepository } from "../executed-protocol-repository.js";
+import { PlannedProtocolVersionRepository } from "../repositories/planned-protocol-version-repository.js";
+import { ExecutedProtocolRepository } from "../repositories/executed-protocol-repository.js";
 
 const PLANNED_VERSION = {
     id: "planned-version-1",

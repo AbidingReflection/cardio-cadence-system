@@ -1,12 +1,16 @@
-import { ProtocolFamilyRepository } from "./protocol-family-repository.js";
-import { PlannedProtocolVersionRepository } from "./planned-protocol-version-repository.js";
-import { ExecutedProtocolRepository } from "./executed-protocol-repository.js";
+/** Constructs and wires the persistence repositories and their reference checks. */
 
+import { ProtocolFamilyRepository } from "./repositories/protocol-family-repository.js";
+import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
+import { ExecutedProtocolRepository } from "./repositories/executed-protocol-repository.js";
+
+/** Provides the configured persistence repositories for the application. */
 export class PersistenceContext {
     protocolFamilies;
     plannedProtocolVersions;
     executedProtocols;
 
+    /** Constructs and wires the persistence repositories. */
     constructor() {
         let executedProtocolRepository;
 

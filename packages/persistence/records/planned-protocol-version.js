@@ -1,3 +1,5 @@
+/** Defines and validates immutable planned protocol version records. */
+
 import { requireNonEmptyString, requireObject, requireUnixTimestamp } from "./record-validation.js";
 
 /** Creates a validated planned-protocol-version record. */

@@ -1,9 +1,13 @@
-import { validateProtocolFamily } from "./protocol-family.js";
+/** Stores protocol families and protects referenced families from deletion. */
 
+import { validateProtocolFamily } from "../records/protocol-family.js";
+
+/** Repository for protocol family records and mutable family metadata. */
 export class ProtocolFamilyRepository {
     #familiesById = new Map();
     #isReferenced;
 
+    /** Creates a repository with an optional external reference check. */
     constructor({ isReferenced = () => false } = {}) {
         this.#isReferenced = isReferenced;
     }

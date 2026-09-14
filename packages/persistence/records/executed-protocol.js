@@ -1,3 +1,5 @@
+/** Defines and validates executed protocol records and execution-history semantics. */
+
 import { requireNonEmptyString, requireObject, requireUnixTimestamp } from "./record-validation.js";
 
 const EXECUTION_STATUSES = new Set(["in-progress", "completed", "ended-early", "interrupted"]);
@@ -159,6 +161,7 @@ function validateCompletionReason(status, completionReason) {
     }
 }
 
+/** Validates chronological ordering of execution timestamps. */
 function validateTimestampOrder({ startedAtUnixMs, lastKnownActiveAtUnixMs, endedAtUnixMs }) {
     if (lastKnownActiveAtUnixMs < startedAtUnixMs) {
         throw new TypeError(

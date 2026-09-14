@@ -1,3 +1,5 @@
+/** Defines and validates protocol family records. */
+
 import { requireNonEmptyString, requireObject, requireUnixTimestamp } from "./record-validation.js";
 
 /** Creates a validated protocol-family record. */

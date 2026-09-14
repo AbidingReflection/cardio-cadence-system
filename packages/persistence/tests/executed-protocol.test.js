@@ -8,7 +8,7 @@ import {
     createExecutedProtocol,
     validateExecutedProtocol,
     validateExecutionHistory,
-} from "../executed-protocol.js";
+} from "../records/executed-protocol.js";
 
 const STARTED_AT = 1_789_360_000_000;
 const ACTIVE_AT = 1_789_360_300_000;

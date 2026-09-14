@@ -1,9 +1,13 @@
-import { validateExecutionHistory } from "./executed-protocol.js";
+/** Stores executed protocols and enforces references to planned protocol versions. */
 
+import { validateExecutionHistory } from "../records/executed-protocol.js";
+
+/** Repository for executed protocol records. */
 export class ExecutedProtocolRepository {
     #executionsById = new Map();
     #plannedProtocolVersionRepository;
 
+    /** Creates a repository backed by the supplied planned protocol version repository. */
     constructor({ plannedProtocolVersionRepository }) {
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
     }

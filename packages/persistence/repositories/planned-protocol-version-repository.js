@@ -1,9 +1,13 @@
-import { validatePlannedProtocolVersion } from "./planned-protocol-version.js";
+/** Stores planned protocol versions and enforces version lineage and reference safety. */
 
+import { validatePlannedProtocolVersion } from "../records/planned-protocol-version.js";
+
+/** Repository for planned protocol version records. */
 export class PlannedProtocolVersionRepository {
     #versionsById = new Map();
     #isReferenced;
 
+    /** Creates a repository with an optional external reference check. */
     constructor({ isReferenced = () => false } = {}) {
         this.#isReferenced = isReferenced;
     }
@@ -52,7 +56,7 @@ export class PlannedProtocolVersionRepository {
         );
     }
 
-    /** Deletes an unreferenced planned protocol version. */
+    /** Deletes an unreferenced planned protocol version without child versions. */
     delete(id) {
         const version = this.#versionsById.get(id);
 
@@ -81,7 +85,7 @@ export class PlannedProtocolVersionRepository {
         return true;
     }
 
-    /** Validates repository-level parent relationships. */
+    /** Validates repository-level parent-version relationships. */
     #validateParent(version) {
         if (version.parentVersionId === undefined) {
             return;

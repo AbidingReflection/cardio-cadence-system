@@ -8,7 +8,7 @@ import {
 import {
     createInitialPlannedProtocolVersion,
     createNextPlannedProtocolVersion,
-} from "../planned-protocol-versioning.js";
+} from "../services/planned-protocol-versioning.js";
 
 const CREATED_AT = 1_789_360_000_000;
 

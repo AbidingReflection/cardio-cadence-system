@@ -1,7 +1,9 @@
+/** Creates planned protocol versions while preserving family and parent-version lineage. */
+
 import {
     createPlannedProtocolVersion,
     validatePlannedProtocolVersion,
-} from "./planned-protocol-version.js";
+} from "../records/planned-protocol-version.js";
 
 /** Creates the first planned protocol version in a protocol family. */
 export function createInitialPlannedProtocolVersion({
