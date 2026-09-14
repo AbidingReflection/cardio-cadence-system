@@ -45,6 +45,13 @@ export class PlannedProtocolVersionRepository {
             .sort((a, b) => a.versionNumber - b.versionNumber);
     }
 
+    /** Returns whether any planned version references the protocol family. */
+    hasProtocolFamilyReference(protocolFamilyId) {
+        return [...this.#versionsById.values()].some(
+            (version) => version.protocolFamilyId === protocolFamilyId,
+        );
+    }
+
     /** Deletes an unreferenced planned protocol version. */
     delete(id) {
         const version = this.#versionsById.get(id);

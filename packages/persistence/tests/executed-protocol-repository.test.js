@@ -164,3 +164,35 @@ test(
         );
     },
 );
+
+test(
+    "executed-protocol-repository",
+    "reports when a planned protocol version is referenced",
+    () => {
+        const { plannedProtocolVersionRepository, executedProtocolRepository } =
+            createRepositories();
+
+        plannedProtocolVersionRepository.add(PLANNED_VERSION);
+        executedProtocolRepository.add(EXECUTION_1);
+
+        assertEqual(
+            executedProtocolRepository.hasPlannedProtocolVersionReference(
+                EXECUTION_1.plannedProtocolVersionId,
+            ),
+            true,
+        );
+    },
+);
+
+test(
+    "executed-protocol-repository",
+    "reports when a planned protocol version is not referenced",
+    () => {
+        const { executedProtocolRepository } = createRepositories();
+
+        assertEqual(
+            executedProtocolRepository.hasPlannedProtocolVersionReference("missing-version"),
+            false,
+        );
+    },
+);

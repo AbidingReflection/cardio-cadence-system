@@ -40,4 +40,11 @@ export class ExecutedProtocolRepository {
             .filter((execution) => execution.plannedProtocolVersionId === plannedProtocolVersionId)
             .sort((a, b) => a.startedAtUnixMs - b.startedAtUnixMs);
     }
+
+    /** Returns whether any execution references the planned protocol version. */
+    hasPlannedProtocolVersionReference(plannedProtocolVersionId) {
+        return [...this.#executionsById.values()].some(
+            (execution) => execution.plannedProtocolVersionId === plannedProtocolVersionId,
+        );
+    }
 }

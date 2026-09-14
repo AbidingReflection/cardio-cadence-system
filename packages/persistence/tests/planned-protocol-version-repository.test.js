@@ -221,3 +221,23 @@ test(
         assertEqual(repository.delete("missing-version"), false);
     },
 );
+
+test("planned-protocol-version-repository", "reports when a protocol family is referenced", () => {
+    const repository = new PlannedProtocolVersionRepository();
+
+    repository.add(VERSION_1);
+
+    assertEqual(repository.hasProtocolFamilyReference(VERSION_1.protocolFamilyId), true);
+});
+
+test(
+    "planned-protocol-version-repository",
+    "reports when a protocol family is not referenced",
+    () => {
+        const repository = new PlannedProtocolVersionRepository();
+
+        repository.add(VERSION_1);
+
+        assertEqual(repository.hasProtocolFamilyReference("missing-family"), false);
+    },
+);
