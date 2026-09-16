@@ -4,7 +4,7 @@ import { ProtocolFamilyRepository } from "./repositories/protocol-family-reposit
 import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
 import { ExecutedProtocolRepository } from "./repositories/executed-protocol-repository.js";
 
-/** Provides the configured persistence repositories for the application. */
+/** Constructs and wires the persistence infrastructure. */
 export class PersistenceContext {
     protocolFamilies;
     plannedProtocolVersions;
