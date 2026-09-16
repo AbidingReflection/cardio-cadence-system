@@ -11,18 +11,27 @@ import {
 export class LibraryPersistence {
     #protocolFamilyRepository;
     #plannedProtocolVersionRepository;
+    #idGenerator;
+    #clock;
 
-    /** Creates library persistence backed by the supplied repositories. */
-    constructor({ protocolFamilyRepository, plannedProtocolVersionRepository }) {
+    /** Creates library persistence backed by the supplied repositories and generators. */
+    constructor({
+        protocolFamilyRepository,
+        plannedProtocolVersionRepository,
+        idGenerator,
+        clock,
+    }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
+        this.#idGenerator = idGenerator;
+        this.#clock = clock;
     }
 
     /** Creates and persists a protocol family. */
-    async createProtocolFamily({ id, createdAtUnixMs, displayName, archived = false }) {
+    async createProtocolFamily({ displayName, archived = false }) {
         const protocolFamily = createProtocolFamily({
-            id,
-            createdAtUnixMs,
+            id: this.#idGenerator(),
+            createdAtUnixMs: this.#clock(),
             displayName,
             archived,
         });
@@ -49,9 +58,7 @@ export class LibraryPersistence {
 
     /** Creates and persists the first planned version for a protocol family. */
     async createInitialPlannedProtocolVersion({
-        id,
         protocolFamilyId,
-        createdAtUnixMs,
         protocol,
         dependencies,
         changeSummary,
@@ -63,9 +70,9 @@ export class LibraryPersistence {
         }
 
         const version = createInitialPlannedProtocolVersion({
-            id,
+            id: this.#idGenerator(),
             protocolFamilyId,
-            createdAtUnixMs,
+            createdAtUnixMs: this.#clock(),
             protocol,
             dependencies,
             changeSummary,
@@ -78,9 +85,7 @@ export class LibraryPersistence {
 
     /** Creates and persists the next planned version from an explicit parent. */
     async createNextPlannedProtocolVersion({
-        id,
         parentVersionId,
-        createdAtUnixMs,
         protocol,
         dependencies,
         changeSummary,
@@ -92,9 +97,9 @@ export class LibraryPersistence {
         }
 
         const version = createNextPlannedProtocolVersion({
-            id,
+            id: this.#idGenerator(),
             parentVersion,
-            createdAtUnixMs,
+            createdAtUnixMs: this.#clock(),
             protocol,
             dependencies,
             changeSummary,

@@ -20,46 +20,31 @@ const DEPENDENCIES = {
     calibrationProfileVersionId: undefined,
 };
 
-function createLibraryPersistence() {
+function createLibraryPersistence({ ids = [], times = [CREATED_AT] } = {}) {
     const context = new PersistenceContext();
+
+    let idIndex = 0;
+    let timeIndex = 0;
 
     return new LibraryPersistence({
         protocolFamilyRepository: context.protocolFamilies,
         plannedProtocolVersionRepository: context.plannedProtocolVersions,
+        idGenerator: () => ids[idIndex++],
+        clock: () => times[timeIndex++],
     });
 }
 
-test("library-persistence", "creates and retrieves a protocol family", async () => {
-    const persistence = createLibraryPersistence();
-
-    const family = await persistence.createProtocolFamily({
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
-        displayName: "Threshold Intervals",
-    });
-
-    assertDeepEqual(family, {
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
-        displayName: "Threshold Intervals",
-        archived: false,
-    });
-
-    assertDeepEqual(await persistence.getProtocolFamily("family-1"), family);
-});
-
 test("library-persistence", "lists protocol families", async () => {
-    const persistence = createLibraryPersistence();
+    const persistence = createLibraryPersistence({
+        ids: ["family-1", "family-2"],
+        times: [CREATED_AT, CREATED_AT + 1_000],
+    });
 
     const family1 = await persistence.createProtocolFamily({
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
         displayName: "Threshold Intervals",
     });
 
     const family2 = await persistence.createProtocolFamily({
-        id: "family-2",
-        createdAtUnixMs: CREATED_AT + 1_000,
         displayName: "Tempo Intervals",
     });
 
@@ -67,11 +52,11 @@ test("library-persistence", "lists protocol families", async () => {
 });
 
 test("library-persistence", "updates protocol family metadata", async () => {
-    const persistence = createLibraryPersistence();
+    const persistence = createLibraryPersistence({
+        ids: ["family-1"],
+    });
 
     await persistence.createProtocolFamily({
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
         displayName: "Threshold Intervals",
     });
 
@@ -85,18 +70,17 @@ test("library-persistence", "updates protocol family metadata", async () => {
 });
 
 test("library-persistence", "creates an initial planned protocol version", async () => {
-    const persistence = createLibraryPersistence();
+    const persistence = createLibraryPersistence({
+        ids: ["family-1", "planned-version-1"],
+        times: [CREATED_AT, CREATED_AT + 1_000],
+    });
 
     await persistence.createProtocolFamily({
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
         displayName: "Threshold Intervals",
     });
 
     const version = await persistence.createInitialPlannedProtocolVersion({
-        id: "planned-version-1",
         protocolFamilyId: "family-1",
-        createdAtUnixMs: CREATED_AT + 1_000,
         protocol: PROTOCOL,
         dependencies: DEPENDENCIES,
         changeSummary: "Initial version.",
@@ -120,26 +104,23 @@ test(
     "library-persistence",
     "creates the next planned protocol version from an explicit parent",
     async () => {
-        const persistence = createLibraryPersistence();
+        const persistence = createLibraryPersistence({
+            ids: ["family-1", "planned-version-1", "planned-version-2"],
+            times: [CREATED_AT, CREATED_AT + 1_000, CREATED_AT + 2_000],
+        });
 
         await persistence.createProtocolFamily({
-            id: "family-1",
-            createdAtUnixMs: CREATED_AT,
             displayName: "Threshold Intervals",
         });
 
         const parent = await persistence.createInitialPlannedProtocolVersion({
-            id: "planned-version-1",
             protocolFamilyId: "family-1",
-            createdAtUnixMs: CREATED_AT + 1_000,
             protocol: PROTOCOL,
             dependencies: DEPENDENCIES,
         });
 
         const version = await persistence.createNextPlannedProtocolVersion({
-            id: "planned-version-2",
             parentVersionId: parent.id,
-            createdAtUnixMs: CREATED_AT + 2_000,
             protocol: {
                 ...PROTOCOL,
                 name: "Threshold Intervals v2",
@@ -165,26 +146,23 @@ test(
 );
 
 test("library-persistence", "lists planned protocol versions in version order", async () => {
-    const persistence = createLibraryPersistence();
+    const persistence = createLibraryPersistence({
+        ids: ["family-1", "planned-version-1", "planned-version-2"],
+        times: [CREATED_AT, CREATED_AT + 1_000, CREATED_AT + 2_000],
+    });
 
     await persistence.createProtocolFamily({
-        id: "family-1",
-        createdAtUnixMs: CREATED_AT,
         displayName: "Threshold Intervals",
     });
 
     const version1 = await persistence.createInitialPlannedProtocolVersion({
-        id: "planned-version-1",
         protocolFamilyId: "family-1",
-        createdAtUnixMs: CREATED_AT + 1_000,
         protocol: PROTOCOL,
         dependencies: DEPENDENCIES,
     });
 
     const version2 = await persistence.createNextPlannedProtocolVersion({
-        id: "planned-version-2",
         parentVersionId: version1.id,
-        createdAtUnixMs: CREATED_AT + 2_000,
         protocol: PROTOCOL,
         dependencies: DEPENDENCIES,
     });
@@ -240,3 +218,106 @@ test(
         assertEqual(/ProtocolFamily/.test(error.message), true);
     },
 );
+
+test(
+    "library-persistence",
+    "generates initial planned version identity and creation time",
+    async () => {
+        const persistence = createLibraryPersistence({
+            ids: ["family-1", "planned-version-1"],
+            times: [CREATED_AT, CREATED_AT],
+        });
+
+        const family = await persistence.createProtocolFamily({
+            displayName: "Threshold Intervals",
+        });
+
+        const version = await persistence.createInitialPlannedProtocolVersion({
+            protocolFamilyId: family.id,
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Initial version.",
+        });
+
+        assertDeepEqual(version, {
+            id: "planned-version-1",
+            protocolFamilyId: "family-1",
+            versionNumber: 1,
+            parentVersionId: undefined,
+            createdAtUnixMs: CREATED_AT,
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Initial version.",
+        });
+    },
+);
+
+test(
+    "library-persistence",
+    "generates next planned version identity and creation time",
+    async () => {
+        const persistence = createLibraryPersistence({
+            ids: ["family-1", "planned-version-1", "planned-version-2"],
+            times: [CREATED_AT, CREATED_AT, CREATED_AT],
+        });
+
+        const family = await persistence.createProtocolFamily({
+            displayName: "Threshold Intervals",
+        });
+
+        const parent = await persistence.createInitialPlannedProtocolVersion({
+            protocolFamilyId: family.id,
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+        });
+
+        const version = await persistence.createNextPlannedProtocolVersion({
+            parentVersionId: parent.id,
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Raised interval cadence.",
+        });
+
+        assertDeepEqual(version, {
+            id: "planned-version-2",
+            protocolFamilyId: "family-1",
+            versionNumber: 2,
+            parentVersionId: "planned-version-1",
+            createdAtUnixMs: CREATED_AT,
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Raised interval cadence.",
+        });
+    },
+);
+
+test("library-persistence", "uses the clock for each created record", async () => {
+    const context = new PersistenceContext();
+
+    const times = [CREATED_AT, CREATED_AT + 1_000];
+
+    let timeIndex = 0;
+    let idIndex = 0;
+
+    const ids = ["family-1", "planned-version-1"];
+
+    const persistence = new LibraryPersistence({
+        protocolFamilyRepository: context.protocolFamilies,
+        plannedProtocolVersionRepository: context.plannedProtocolVersions,
+        idGenerator: () => ids[idIndex++],
+        clock: () => times[timeIndex++],
+    });
+
+    const family = await persistence.createProtocolFamily({
+        displayName: "Threshold Intervals",
+    });
+
+    const version = await persistence.createInitialPlannedProtocolVersion({
+        protocolFamilyId: family.id,
+        protocol: PROTOCOL,
+        dependencies: DEPENDENCIES,
+    });
+
+    assertEqual(family.createdAtUnixMs, CREATED_AT);
+    assertEqual(version.createdAtUnixMs, CREATED_AT + 1_000);
+});
