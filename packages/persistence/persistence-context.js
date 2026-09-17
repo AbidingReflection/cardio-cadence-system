@@ -2,6 +2,7 @@
 
 import { ActivityTypeVersionRepository } from "./repositories/activity-type-version-repository.js";
 import { ExecutedProtocolRepository } from "./repositories/executed-protocol-repository.js";
+import { MachineProfileVersionRepository } from "./repositories/machine-profile-version-repository.js";
 import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
 import { ProtocolFamilyRepository } from "./repositories/protocol-family-repository.js";
 
@@ -11,12 +12,14 @@ export class PersistenceContext {
     plannedProtocolVersions;
     executedProtocols;
     activityTypeVersions;
+    machineProfileVersions;
 
     /** Constructs and wires the persistence repositories. */
     constructor() {
         let executedProtocolRepository;
 
         this.activityTypeVersions = new ActivityTypeVersionRepository();
+        this.machineProfileVersions = new MachineProfileVersionRepository();
 
         this.plannedProtocolVersions = new PlannedProtocolVersionRepository({
             isReferenced: (plannedProtocolVersionId) =>

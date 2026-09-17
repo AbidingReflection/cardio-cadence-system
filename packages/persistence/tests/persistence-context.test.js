@@ -2,6 +2,7 @@ import { assertEqual, assertThrows, test } from "/packages/js-testing/framework/
 
 import { PersistenceContext } from "../persistence-context.js";
 import { ActivityTypeVersionRepository } from "../repositories/activity-type-version-repository.js";
+import { MachineProfileVersionRepository } from "../repositories/machine-profile-version-repository.js";
 
 const FAMILY = {
     id: "family-1",
@@ -43,6 +44,7 @@ test("persistence-context", "exposes all repositories", () => {
     assertEqual(persistence.plannedProtocolVersions !== undefined, true);
     assertEqual(persistence.executedProtocols !== undefined, true);
     assertEqual(persistence.activityTypeVersions !== undefined, true);
+    assertEqual(persistence.machineProfileVersions !== undefined, true);
 });
 
 test(
@@ -89,4 +91,10 @@ test("persistence-context", "deletes an unreferenced planned version", () => {
     persistence.plannedProtocolVersions.add(PLANNED_VERSION);
 
     assertEqual(persistence.plannedProtocolVersions.delete(PLANNED_VERSION.id), true);
+});
+
+test("persistence-context", "exposes a machine profile version repository", () => {
+    const context = new PersistenceContext();
+
+    assertEqual(context.machineProfileVersions instanceof MachineProfileVersionRepository, true);
 });

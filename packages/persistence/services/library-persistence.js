@@ -13,6 +13,11 @@ import {
     createNextActivityTypeVersion,
 } from "./activity-type-versioning.js";
 
+import {
+    createInitialMachineProfileVersion,
+    createNextMachineProfileVersion,
+} from "./machine-profile-versioning.js";
+
 /** Coordinates protocol-family, planned-version, and execution persistence operations. */
 export class LibraryPersistence {
     #protocolFamilyRepository;
@@ -21,6 +26,7 @@ export class LibraryPersistence {
     #idGenerator;
     #clock;
     #activityTypeVersionRepository;
+    #machineProfileVersionRepository;
 
     /** Creates library persistence backed by the supplied repositories and generators. */
     constructor({
@@ -28,6 +34,7 @@ export class LibraryPersistence {
         plannedProtocolVersionRepository,
         executedProtocolRepository,
         activityTypeVersionRepository,
+        machineProfileVersionRepository,
         idGenerator,
         clock,
     }) {
@@ -35,6 +42,7 @@ export class LibraryPersistence {
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
         this.#executedProtocolRepository = executedProtocolRepository;
         this.#activityTypeVersionRepository = activityTypeVersionRepository;
+        this.#machineProfileVersionRepository = machineProfileVersionRepository;
         this.#idGenerator = idGenerator;
         this.#clock = clock;
     }
@@ -216,5 +224,66 @@ export class LibraryPersistence {
     /** Returns activity type versions for one activity type in version order. */
     async listActivityTypeVersions(activityTypeId) {
         return this.#activityTypeVersionRepository.listByActivityTypeId(activityTypeId);
+    }
+
+    /** Creates and persists the first version for a machine profile definition. */
+    async createInitialMachineProfileVersion({ activityTypeVersionId, definition }) {
+        const activityTypeVersion =
+            this.#activityTypeVersionRepository.getById(activityTypeVersionId);
+
+        if (activityTypeVersion === undefined) {
+            throw new Error(`ActivityTypeVersion "${activityTypeVersionId}" does not exist.`);
+        }
+
+        const version = createInitialMachineProfileVersion({
+            id: this.#idGenerator(),
+            createdAtUnixMs: this.#clock(),
+            activityTypeVersionId,
+            activityTypeId: activityTypeVersion.activityTypeId,
+            definition,
+        });
+
+        this.#machineProfileVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Creates and persists the next machine profile version from an explicit parent. */
+    async createNextMachineProfileVersion({ parentVersionId, activityTypeVersionId, definition }) {
+        const parentVersion = this.#machineProfileVersionRepository.getById(parentVersionId);
+
+        if (parentVersion === undefined) {
+            throw new Error(`Parent MachineProfileVersion "${parentVersionId}" does not exist.`);
+        }
+
+        const activityTypeVersion =
+            this.#activityTypeVersionRepository.getById(activityTypeVersionId);
+
+        if (activityTypeVersion === undefined) {
+            throw new Error(`ActivityTypeVersion "${activityTypeVersionId}" does not exist.`);
+        }
+
+        const version = createNextMachineProfileVersion({
+            id: this.#idGenerator(),
+            parentVersion,
+            createdAtUnixMs: this.#clock(),
+            activityTypeVersionId,
+            activityTypeId: activityTypeVersion.activityTypeId,
+            definition,
+        });
+
+        this.#machineProfileVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Returns a machine profile version by ID. */
+    async getMachineProfileVersion(id) {
+        return this.#machineProfileVersionRepository.getById(id);
+    }
+
+    /** Returns machine profile versions for one machine profile in version order. */
+    async listMachineProfileVersions(machineProfileId) {
+        return this.#machineProfileVersionRepository.listByMachineProfileId(machineProfileId);
     }
 }
