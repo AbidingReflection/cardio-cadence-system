@@ -8,6 +8,11 @@ import {
     createNextPlannedProtocolVersion,
 } from "./planned-protocol-versioning.js";
 
+import {
+    createInitialActivityTypeVersion,
+    createNextActivityTypeVersion,
+} from "./activity-type-versioning.js";
+
 /** Coordinates protocol-family, planned-version, and execution persistence operations. */
 export class LibraryPersistence {
     #protocolFamilyRepository;
@@ -15,18 +20,21 @@ export class LibraryPersistence {
     #executedProtocolRepository;
     #idGenerator;
     #clock;
+    #activityTypeVersionRepository;
 
     /** Creates library persistence backed by the supplied repositories and generators. */
     constructor({
         protocolFamilyRepository,
         plannedProtocolVersionRepository,
         executedProtocolRepository,
+        activityTypeVersionRepository,
         idGenerator,
         clock,
     }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
         this.#executedProtocolRepository = executedProtocolRepository;
+        this.#activityTypeVersionRepository = activityTypeVersionRepository;
         this.#idGenerator = idGenerator;
         this.#clock = clock;
     }
@@ -165,5 +173,48 @@ export class LibraryPersistence {
         return this.#executedProtocolRepository.listByPlannedProtocolVersionId(
             plannedProtocolVersionId,
         );
+    }
+
+    /** Creates and persists the first version for an activity type definition. */
+    async createInitialActivityTypeVersion({ definition }) {
+        const version = createInitialActivityTypeVersion({
+            id: this.#idGenerator(),
+            createdAtUnixMs: this.#clock(),
+            definition,
+        });
+
+        this.#activityTypeVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Creates and persists the next activity type version from an explicit parent. */
+    async createNextActivityTypeVersion({ parentVersionId, definition }) {
+        const parentVersion = this.#activityTypeVersionRepository.getById(parentVersionId);
+
+        if (parentVersion === undefined) {
+            throw new Error(`Parent ActivityTypeVersion "${parentVersionId}" does not exist.`);
+        }
+
+        const version = createNextActivityTypeVersion({
+            id: this.#idGenerator(),
+            parentVersion,
+            createdAtUnixMs: this.#clock(),
+            definition,
+        });
+
+        this.#activityTypeVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Returns an activity type version by ID. */
+    async getActivityTypeVersion(id) {
+        return this.#activityTypeVersionRepository.getById(id);
+    }
+
+    /** Returns activity type versions for one activity type in version order. */
+    async listActivityTypeVersions(activityTypeId) {
+        return this.#activityTypeVersionRepository.listByActivityTypeId(activityTypeId);
     }
 }

@@ -1,18 +1,22 @@
 /** Constructs and wires the persistence repositories and their reference checks. */
 
-import { ProtocolFamilyRepository } from "./repositories/protocol-family-repository.js";
-import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
+import { ActivityTypeVersionRepository } from "./repositories/activity-type-version-repository.js";
 import { ExecutedProtocolRepository } from "./repositories/executed-protocol-repository.js";
+import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
+import { ProtocolFamilyRepository } from "./repositories/protocol-family-repository.js";
 
 /** Constructs and wires the persistence infrastructure. */
 export class PersistenceContext {
     protocolFamilies;
     plannedProtocolVersions;
     executedProtocols;
+    activityTypeVersions;
 
     /** Constructs and wires the persistence repositories. */
     constructor() {
         let executedProtocolRepository;
+
+        this.activityTypeVersions = new ActivityTypeVersionRepository();
 
         this.plannedProtocolVersions = new PlannedProtocolVersionRepository({
             isReferenced: (plannedProtocolVersionId) =>

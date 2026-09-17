@@ -1,6 +1,7 @@
 import { assertEqual, assertThrows, test } from "/packages/js-testing/framework/test-framework.js";
 
 import { PersistenceContext } from "../persistence-context.js";
+import { ActivityTypeVersionRepository } from "../repositories/activity-type-version-repository.js";
 
 const FAMILY = {
     id: "family-1",
@@ -39,10 +40,9 @@ test("persistence-context", "exposes all repositories", () => {
     const persistence = new PersistenceContext();
 
     assertEqual(persistence.protocolFamilies !== undefined, true);
-
     assertEqual(persistence.plannedProtocolVersions !== undefined, true);
-
     assertEqual(persistence.executedProtocols !== undefined, true);
+    assertEqual(persistence.activityTypeVersions !== undefined, true);
 });
 
 test(
