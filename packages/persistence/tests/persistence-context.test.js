@@ -3,6 +3,7 @@ import { assertEqual, assertThrows, test } from "/packages/js-testing/framework/
 import { PersistenceContext } from "../persistence-context.js";
 import { ActivityTypeVersionRepository } from "../repositories/activity-type-version-repository.js";
 import { MachineProfileVersionRepository } from "../repositories/machine-profile-version-repository.js";
+import { CalibrationProfileVersionRepository } from "../repositories/calibration-profile-version-repository.js";
 
 const FAMILY = {
     id: "family-1",
@@ -45,6 +46,7 @@ test("persistence-context", "exposes all repositories", () => {
     assertEqual(persistence.executedProtocols !== undefined, true);
     assertEqual(persistence.activityTypeVersions !== undefined, true);
     assertEqual(persistence.machineProfileVersions !== undefined, true);
+    assertEqual(persistence.calibrationProfileVersions !== undefined, true);
 });
 
 test(
@@ -97,4 +99,13 @@ test("persistence-context", "exposes a machine profile version repository", () =
     const context = new PersistenceContext();
 
     assertEqual(context.machineProfileVersions instanceof MachineProfileVersionRepository, true);
+});
+
+test("persistence-context", "exposes a calibration profile version repository", () => {
+    const context = new PersistenceContext();
+
+    assertEqual(
+        context.calibrationProfileVersions instanceof CalibrationProfileVersionRepository,
+        true,
+    );
 });

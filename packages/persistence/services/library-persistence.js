@@ -18,6 +18,11 @@ import {
     createNextMachineProfileVersion,
 } from "./machine-profile-versioning.js";
 
+import {
+    createInitialCalibrationProfileVersion,
+    createNextCalibrationProfileVersion,
+} from "./calibration-profile-versioning.js";
+
 /** Coordinates protocol-family, planned-version, and execution persistence operations. */
 export class LibraryPersistence {
     #protocolFamilyRepository;
@@ -27,6 +32,7 @@ export class LibraryPersistence {
     #clock;
     #activityTypeVersionRepository;
     #machineProfileVersionRepository;
+    #calibrationProfileVersionRepository;
 
     /** Creates library persistence backed by the supplied repositories and generators. */
     constructor({
@@ -35,6 +41,7 @@ export class LibraryPersistence {
         executedProtocolRepository,
         activityTypeVersionRepository,
         machineProfileVersionRepository,
+        calibrationProfileVersionRepository,
         idGenerator,
         clock,
     }) {
@@ -43,6 +50,7 @@ export class LibraryPersistence {
         this.#executedProtocolRepository = executedProtocolRepository;
         this.#activityTypeVersionRepository = activityTypeVersionRepository;
         this.#machineProfileVersionRepository = machineProfileVersionRepository;
+        this.#calibrationProfileVersionRepository = calibrationProfileVersionRepository;
         this.#idGenerator = idGenerator;
         this.#clock = clock;
     }
@@ -285,5 +293,74 @@ export class LibraryPersistence {
     /** Returns machine profile versions for one machine profile in version order. */
     async listMachineProfileVersions(machineProfileId) {
         return this.#machineProfileVersionRepository.listByMachineProfileId(machineProfileId);
+    }
+
+    /** Creates and persists the first version for a calibration profile definition. */
+    async createInitialCalibrationProfileVersion({ machineProfileVersionId, definition }) {
+        const machineProfileVersion =
+            this.#machineProfileVersionRepository.getById(machineProfileVersionId);
+
+        if (machineProfileVersion === undefined) {
+            throw new Error(`MachineProfileVersion "${machineProfileVersionId}" does not exist.`);
+        }
+
+        const version = createInitialCalibrationProfileVersion({
+            id: this.#idGenerator(),
+            createdAtUnixMs: this.#clock(),
+            machineProfileVersionId,
+            machineProfileId: machineProfileVersion.machineProfileId,
+            definition,
+        });
+
+        this.#calibrationProfileVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Creates and persists the next calibration profile version from an explicit parent. */
+    async createNextCalibrationProfileVersion({
+        parentVersionId,
+        machineProfileVersionId,
+        definition,
+    }) {
+        const parentVersion = this.#calibrationProfileVersionRepository.getById(parentVersionId);
+
+        if (parentVersion === undefined) {
+            throw new Error(
+                `Parent CalibrationProfileVersion "${parentVersionId}" does not exist.`,
+            );
+        }
+
+        const machineProfileVersion =
+            this.#machineProfileVersionRepository.getById(machineProfileVersionId);
+
+        if (machineProfileVersion === undefined) {
+            throw new Error(`MachineProfileVersion "${machineProfileVersionId}" does not exist.`);
+        }
+
+        const version = createNextCalibrationProfileVersion({
+            id: this.#idGenerator(),
+            parentVersion,
+            createdAtUnixMs: this.#clock(),
+            machineProfileVersionId,
+            machineProfileId: machineProfileVersion.machineProfileId,
+            definition,
+        });
+
+        this.#calibrationProfileVersionRepository.add(version);
+
+        return version;
+    }
+
+    /** Returns a calibration profile version by ID. */
+    async getCalibrationProfileVersion(id) {
+        return this.#calibrationProfileVersionRepository.getById(id);
+    }
+
+    /** Returns calibration profile versions for one profile in version order. */
+    async listCalibrationProfileVersions(calibrationProfileId) {
+        return this.#calibrationProfileVersionRepository.listByCalibrationProfileId(
+            calibrationProfileId,
+        );
     }
 }

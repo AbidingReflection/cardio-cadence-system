@@ -1,6 +1,7 @@
 /** Constructs and wires the persistence repositories and their reference checks. */
 
 import { ActivityTypeVersionRepository } from "./repositories/activity-type-version-repository.js";
+import { CalibrationProfileVersionRepository } from "./repositories/calibration-profile-version-repository.js";
 import { ExecutedProtocolRepository } from "./repositories/executed-protocol-repository.js";
 import { MachineProfileVersionRepository } from "./repositories/machine-profile-version-repository.js";
 import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
@@ -13,6 +14,7 @@ export class PersistenceContext {
     executedProtocols;
     activityTypeVersions;
     machineProfileVersions;
+    calibrationProfileVersions;
 
     /** Constructs and wires the persistence repositories. */
     constructor() {
@@ -20,6 +22,7 @@ export class PersistenceContext {
 
         this.activityTypeVersions = new ActivityTypeVersionRepository();
         this.machineProfileVersions = new MachineProfileVersionRepository();
+        this.calibrationProfileVersions = new CalibrationProfileVersionRepository();
 
         this.plannedProtocolVersions = new PlannedProtocolVersionRepository({
             isReferenced: (plannedProtocolVersionId) =>
