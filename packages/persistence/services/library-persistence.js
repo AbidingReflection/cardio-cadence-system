@@ -1,5 +1,6 @@
 /** Provides async application-facing access to the durable protocol library. */
 
+import { createExecutedProtocol } from "../records/executed-protocol.js";
 import { createProtocolFamily } from "../records/protocol-family.js";
 
 import {
@@ -7,10 +8,11 @@ import {
     createNextPlannedProtocolVersion,
 } from "./planned-protocol-versioning.js";
 
-/** Coordinates protocol-family and planned-version persistence operations. */
+/** Coordinates protocol-family, planned-version, and execution persistence operations. */
 export class LibraryPersistence {
     #protocolFamilyRepository;
     #plannedProtocolVersionRepository;
+    #executedProtocolRepository;
     #idGenerator;
     #clock;
 
@@ -18,11 +20,13 @@ export class LibraryPersistence {
     constructor({
         protocolFamilyRepository,
         plannedProtocolVersionRepository,
+        executedProtocolRepository,
         idGenerator,
         clock,
     }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
+        this.#executedProtocolRepository = executedProtocolRepository;
         this.#idGenerator = idGenerator;
         this.#clock = clock;
     }
@@ -118,5 +122,48 @@ export class LibraryPersistence {
     /** Returns planned protocol versions for a family in version order. */
     async listPlannedProtocolVersions(protocolFamilyId) {
         return this.#plannedProtocolVersionRepository.listByFamilyId(protocolFamilyId);
+    }
+
+    /** Creates and persists an executed protocol for an existing planned version. */
+    async createExecutedProtocol({
+        plannedProtocolVersionId,
+        status,
+        startedAtUnixMs,
+        events,
+        lastKnownActiveAtUnixMs,
+        endedAtUnixMs,
+    }) {
+        const plannedVersion =
+            this.#plannedProtocolVersionRepository.getById(plannedProtocolVersionId);
+
+        if (plannedVersion === undefined) {
+            throw new Error(`PlannedProtocolVersion "${plannedProtocolVersionId}" does not exist.`);
+        }
+
+        const executedProtocol = createExecutedProtocol({
+            id: this.#idGenerator(),
+            plannedProtocolVersionId,
+            status,
+            startedAtUnixMs,
+            events,
+            lastKnownActiveAtUnixMs,
+            endedAtUnixMs,
+        });
+
+        this.#executedProtocolRepository.add(executedProtocol);
+
+        return executedProtocol;
+    }
+
+    /** Returns an executed protocol by ID. */
+    async getExecutedProtocol(id) {
+        return this.#executedProtocolRepository.getById(id);
+    }
+
+    /** Returns executed protocols for a planned protocol version. */
+    async listExecutedProtocols(plannedProtocolVersionId) {
+        return this.#executedProtocolRepository.listByPlannedProtocolVersionId(
+            plannedProtocolVersionId,
+        );
     }
 }
