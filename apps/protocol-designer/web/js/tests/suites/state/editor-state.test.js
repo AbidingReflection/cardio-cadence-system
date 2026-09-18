@@ -8,19 +8,21 @@ import {
 import { EditorState } from "../../../state/editor-state.js";
 
 test("editor-state", "starts with no expanded phases or block", () => {
-    const state = new EditorState();
+    const editorState = new EditorState();
 
-    assertDeepEqual(state.getSnapshot(), {
+    assertDeepEqual(editorState.getSnapshot(), {
         expandedPhaseIds: [],
         expandedBlockId: undefined,
         selectedPhaseId: undefined,
         selectedBlockId: undefined,
+        editingPhaseId: undefined,
+        phaseNameDraft: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
         insertionTarget: undefined,
-        editingPhaseId: undefined,
-        phaseNameDraft: undefined,
         editMode: undefined,
+        protocolFamilyId: undefined,
+        plannedProtocolVersionId: undefined,
     });
 });
 
@@ -97,12 +99,14 @@ test("editor-state", "notifies subscribers after state changes", () => {
         expandedBlockId: undefined,
         selectedPhaseId: undefined,
         selectedBlockId: undefined,
+        editingPhaseId: undefined,
+        phaseNameDraft: undefined,
         activeBlockDraft: undefined,
         validationErrors: [],
         insertionTarget: undefined,
-        editingPhaseId: undefined,
-        phaseNameDraft: undefined,
         editMode: undefined,
+        protocolFamilyId: undefined,
+        plannedProtocolVersionId: undefined,
     });
 });
 
@@ -1102,4 +1106,66 @@ test("editor-state", "clears structural selection", () => {
 
     assertEqual(snapshot.selectedPhaseId, undefined);
     assertEqual(snapshot.selectedBlockId, undefined);
+});
+
+test("editor-state", "starts with no protocol persistence identity", () => {
+    const editorState = new EditorState();
+
+    const snapshot = editorState.getSnapshot();
+
+    assertEqual(snapshot.protocolFamilyId, undefined);
+    assertEqual(snapshot.plannedProtocolVersionId, undefined);
+});
+
+test("editor-state", "sets protocol persistence identity", () => {
+    const editorState = new EditorState();
+
+    editorState.setProtocolPersistenceIdentity({
+        protocolFamilyId: "family-1",
+        plannedProtocolVersionId: "version-1",
+    });
+
+    const snapshot = editorState.getSnapshot();
+
+    assertEqual(snapshot.protocolFamilyId, "family-1");
+    assertEqual(snapshot.plannedProtocolVersionId, "version-1");
+});
+
+test(
+    "editor-state",
+    "updates the planned protocol version while preserving the protocol family",
+    () => {
+        const editorState = new EditorState();
+
+        editorState.setProtocolPersistenceIdentity({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        editorState.setProtocolPersistenceIdentity({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-2",
+        });
+
+        const snapshot = editorState.getSnapshot();
+
+        assertEqual(snapshot.protocolFamilyId, "family-1");
+        assertEqual(snapshot.plannedProtocolVersionId, "version-2");
+    },
+);
+
+test("editor-state", "clears protocol persistence identity", () => {
+    const editorState = new EditorState();
+
+    editorState.setProtocolPersistenceIdentity({
+        protocolFamilyId: "family-1",
+        plannedProtocolVersionId: "version-1",
+    });
+
+    editorState.clearProtocolPersistenceIdentity();
+
+    const snapshot = editorState.getSnapshot();
+
+    assertEqual(snapshot.protocolFamilyId, undefined);
+    assertEqual(snapshot.plannedProtocolVersionId, undefined);
 });

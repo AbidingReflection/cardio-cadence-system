@@ -22,6 +22,9 @@ export class EditorState {
     #insertionTarget;
     #editMode;
 
+    #protocolFamilyId;
+    #plannedProtocolVersionId;
+
     /** Returns a defensive snapshot of the current editor state. */
     getSnapshot() {
         return {
@@ -47,6 +50,8 @@ export class EditorState {
                     : structuredClone(this.#insertionTarget),
 
             editMode: this.#editMode,
+            protocolFamilyId: this.#protocolFamilyId,
+            plannedProtocolVersionId: this.#plannedProtocolVersionId,
         };
     }
 
@@ -315,6 +320,33 @@ export class EditorState {
         this.#activeBlockDraft = undefined;
         this.#blockDraftBaseline = undefined;
         this.#validationErrors = [];
+
+        this.#emit();
+    }
+
+    /** Sets the persistence identity of the protocol currently being edited. */
+    setProtocolPersistenceIdentity({ protocolFamilyId, plannedProtocolVersionId }) {
+        if (
+            protocolFamilyId === this.#protocolFamilyId &&
+            plannedProtocolVersionId === this.#plannedProtocolVersionId
+        ) {
+            return;
+        }
+
+        this.#protocolFamilyId = protocolFamilyId;
+        this.#plannedProtocolVersionId = plannedProtocolVersionId;
+
+        this.#emit();
+    }
+
+    /** Clears the persistence identity of the protocol currently being edited. */
+    clearProtocolPersistenceIdentity() {
+        if (this.#protocolFamilyId === undefined && this.#plannedProtocolVersionId === undefined) {
+            return;
+        }
+
+        this.#protocolFamilyId = undefined;
+        this.#plannedProtocolVersionId = undefined;
 
         this.#emit();
     }
