@@ -1,4 +1,4 @@
-/** Constructs and wires the persistence repositories and application service. */
+/** Constructs and wires the persistence repositories and application services. */
 
 import { ActivityTypeVersionRepository } from "./repositories/activity-type-version-repository.js";
 import { CalibrationProfileVersionRepository } from "./repositories/calibration-profile-version-repository.js";
@@ -6,6 +6,8 @@ import { ExecutedProtocolRepository } from "./repositories/executed-protocol-rep
 import { MachineProfileVersionRepository } from "./repositories/machine-profile-version-repository.js";
 import { PlannedProtocolVersionRepository } from "./repositories/planned-protocol-version-repository.js";
 import { ProtocolFamilyRepository } from "./repositories/protocol-family-repository.js";
+import { DomainVersionSync } from "./services/domain-version-sync.js";
+import { LibraryPersistence } from "./services/library-persistence.js";
 import { PersistenceService } from "./services/persistence-service.js";
 
 /** Constructs and wires the persistence infrastructure. */
@@ -17,8 +19,10 @@ export class PersistenceContext {
     machineProfileVersions;
     calibrationProfileVersions;
     service;
+    libraryPersistence;
+    domainVersionSync;
 
-    /** Constructs and wires the persistence repositories and service. */
+    /** Constructs and wires the persistence repositories and services. */
     constructor({ idGenerator, clock } = {}) {
         let executedProtocolRepository;
 
@@ -50,6 +54,21 @@ export class PersistenceContext {
             executedProtocolRepository: this.executedProtocols,
             idGenerator,
             clock,
+        });
+
+        this.libraryPersistence = new LibraryPersistence({
+            protocolFamilyRepository: this.protocolFamilies,
+            plannedProtocolVersionRepository: this.plannedProtocolVersions,
+            executedProtocolRepository: this.executedProtocols,
+            activityTypeVersionRepository: this.activityTypeVersions,
+            machineProfileVersionRepository: this.machineProfileVersions,
+            calibrationProfileVersionRepository: this.calibrationProfileVersions,
+            idGenerator,
+            clock,
+        });
+
+        this.domainVersionSync = new DomainVersionSync({
+            libraryPersistence: this.libraryPersistence,
         });
     }
 }

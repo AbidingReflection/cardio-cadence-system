@@ -42,8 +42,8 @@ export class LibraryPersistence {
         activityTypeVersionRepository,
         machineProfileVersionRepository,
         calibrationProfileVersionRepository,
-        idGenerator,
-        clock,
+        idGenerator = () => crypto.randomUUID(),
+        clock = () => Date.now(),
     }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
