@@ -32,6 +32,9 @@ import { EditorState } from "./state/editor-state.js";
 import { calculateProtocolCalories } from "/packages/protocol-expander/protocol-calorie-analysis.js";
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 
+import { ProtocolPersistenceController } from "./controllers/protocol-persistence-controller.js";
+import { PersistenceContext } from "/packages/persistence/persistence-context.js";
+
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
 /**
@@ -77,6 +80,13 @@ async function main() {
         machineProfile,
         calibrationProfile,
     );
+
+    const persistenceContext = new PersistenceContext();
+
+    const protocolPersistenceController = new ProtocolPersistenceController({
+        protocolModel,
+        persistenceService: persistenceContext.service,
+    });
 
     const editorState = new EditorState();
 
