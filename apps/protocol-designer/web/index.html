@@ -15,6 +15,8 @@
         <link rel="stylesheet" href="css/protocol-tree.css" />
         <link rel="stylesheet" href="css/totals-ribbon.css" />
         <link rel="stylesheet" href="css/protocol-setup.css" />
+        <link rel="stylesheet" href="css/dialog.css" />
+        <link rel="stylesheet" href="css/protocol-save.css" />
     </head>
 
     <body>
@@ -38,7 +40,11 @@
                         <span class="menu-button__caret" aria-hidden="true">▾</span>
                     </button>
 
-                    <button type="button" class="menu-button menu-button--dropdown">
+                    <button
+                        type="button"
+                        class="menu-button menu-button--dropdown"
+                        id="protocol-save-button"
+                    >
                         <span>Save</span>
                         <span class="menu-button__caret" aria-hidden="true">▾</span>
                     </button>
@@ -212,13 +218,93 @@
             </div>
         </aside>
 
-        <dialog class="protocol-setup-dialog" id="protocol-setup-dialog">
-            <div class="protocol-setup-dialog__content">
-                <header class="protocol-setup-dialog__header">
+        <dialog class="app-dialog protocol-save-dialog" id="protocol-save-dialog">
+            <div class="app-dialog__content protocol-save-dialog__content">
+                <header class="app-dialog__header protocol-save-dialog__header">
                     <div>
-                        <h2 class="protocol-setup-dialog__title">Current Protocol Setup</h2>
+                        <h2 class="app-dialog__title protocol-save-dialog__title">Save Protocol</h2>
 
-                        <p class="protocol-setup-dialog__description">
+                        <p class="app-dialog__description protocol-save-dialog__description">
+                            Save the current protocol to the protocol library.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="app-dialog__close-button protocol-save-dialog__close-button"
+                        id="protocol-save-close-button"
+                        aria-label="Close save protocol dialog"
+                    >
+                        ×
+                    </button>
+                </header>
+
+                <div class="app-dialog__section protocol-save-dialog__section">
+                    <div class="app-dialog__field protocol-save-dialog__field">
+                        <label
+                            class="app-dialog__label protocol-save-dialog__label"
+                            for="protocol-save-display-name"
+                        >
+                            Protocol Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="protocol-save-dialog__input"
+                            id="protocol-save-display-name"
+                        />
+
+                        <p class="app-dialog__hint protocol-save-dialog__hint">
+                            This name identifies the protocol in your library.
+                        </p>
+                    </div>
+
+                    <div class="app-dialog__field protocol-save-dialog__field">
+                        <label
+                            class="app-dialog__label protocol-save-dialog__label"
+                            for="protocol-save-change-summary"
+                        >
+                            Change Summary
+                        </label>
+
+                        <input
+                            type="text"
+                            class="protocol-save-dialog__input"
+                            id="protocol-save-change-summary"
+                            placeholder="Optional"
+                        />
+                    </div>
+                </div>
+
+                <footer class="app-dialog__footer protocol-save-dialog__footer">
+                    <button
+                        type="button"
+                        class="app-dialog__button protocol-save-dialog__button"
+                        id="protocol-save-cancel-button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="app-dialog__button app-dialog__button--primary protocol-save-dialog__button protocol-save-dialog__button--primary"
+                        id="protocol-save-confirm-button"
+                    >
+                        Save Protocol
+                    </button>
+                </footer>
+            </div>
+        </dialog>
+
+        <dialog class="app-dialog protocol-setup-dialog" id="protocol-setup-dialog">
+            <div class="app-dialog__content protocol-setup-dialog__content">
+                <header class="app-dialog__header protocol-setup-dialog__header">
+                    <div>
+                        <h2 class="app-dialog__title protocol-setup-dialog__title">
+                            Current Protocol Setup
+                        </h2>
+
+                        <p class="app-dialog__description protocol-setup-dialog__description">
                             Configure the activity type, machine profile, and calibration profile
                             for the current protocol.
                         </p>
@@ -226,7 +312,7 @@
 
                     <button
                         type="button"
-                        class="protocol-setup-dialog__close-button"
+                        class="app-dialog__close-button protocol-setup-dialog__close-button"
                         id="protocol-setup-close-button"
                         aria-label="Close protocol setup"
                     >
@@ -234,10 +320,10 @@
                     </button>
                 </header>
 
-                <div class="protocol-setup-dialog__section">
-                    <div class="protocol-setup-dialog__field">
+                <div class="app-dialog__section protocol-setup-dialog__section">
+                    <div class="app-dialog__field protocol-setup-dialog__field">
                         <label
-                            class="protocol-setup-dialog__label"
+                            class="app-dialog__label protocol-setup-dialog__label"
                             for="protocol-setup-activity-type"
                         >
                             Activity Type
@@ -250,12 +336,12 @@
                     </div>
                 </div>
 
-                <hr class="protocol-setup-dialog__divider" />
+                <hr class="app-dialog__divider protocol-setup-dialog__divider" />
 
-                <div class="protocol-setup-dialog__section">
-                    <div class="protocol-setup-dialog__field">
+                <div class="app-dialog__section protocol-setup-dialog__section">
+                    <div class="app-dialog__field protocol-setup-dialog__field">
                         <label
-                            class="protocol-setup-dialog__label"
+                            class="app-dialog__label protocol-setup-dialog__label"
                             for="protocol-setup-machine-profile"
                         >
                             Machine Profile
@@ -266,14 +352,14 @@
                             class="protocol-setup-dialog__select"
                         ></select>
 
-                        <p class="protocol-setup-dialog__hint">
+                        <p class="app-dialog__hint protocol-setup-dialog__hint">
                             Available machines depend on the selected activity type.
                         </p>
                     </div>
 
-                    <div class="protocol-setup-dialog__field">
+                    <div class="app-dialog__field protocol-setup-dialog__field">
                         <label
-                            class="protocol-setup-dialog__label"
+                            class="app-dialog__label protocol-setup-dialog__label"
                             for="protocol-setup-calibration-profile"
                         >
                             Calibration Profile
@@ -285,16 +371,16 @@
                             disabled
                         ></select>
 
-                        <p class="protocol-setup-dialog__hint">
+                        <p class="app-dialog__hint protocol-setup-dialog__hint">
                             Calibration profiles are specific to the selected machine.
                         </p>
                     </div>
                 </div>
 
-                <footer class="protocol-setup-dialog__footer">
+                <footer class="app-dialog__footer protocol-setup-dialog__footer">
                     <button
                         type="button"
-                        class="protocol-setup-dialog__button"
+                        class="app-dialog__button protocol-setup-dialog__button"
                         id="protocol-setup-cancel-button"
                     >
                         Cancel
@@ -302,7 +388,7 @@
 
                     <button
                         type="button"
-                        class="protocol-setup-dialog__button protocol-setup-dialog__button--primary"
+                        class="app-dialog__button app-dialog__button--primary protocol-setup-dialog__button protocol-setup-dialog__button--primary"
                         id="protocol-setup-apply-button"
                         disabled
                     >

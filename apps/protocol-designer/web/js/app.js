@@ -35,6 +35,8 @@ import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.
 import { ProtocolPersistenceController } from "./controllers/protocol-persistence-controller.js";
 import { PersistenceContext } from "/packages/persistence/persistence-context.js";
 
+import { wireProtocolSaveEvents } from "./interactions/protocol-save-events.js";
+
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
 /**
@@ -83,14 +85,14 @@ async function main() {
 
     const persistenceContext = new PersistenceContext();
 
+    const editorState = new EditorState();
+
     const protocolPersistenceController = new ProtocolPersistenceController({
         protocolModel,
         editorState,
         persistenceService: persistenceContext.service,
         domainVersionSync: persistenceContext.domainVersionSync,
     });
-
-    const editorState = new EditorState();
 
     window.protocolModel = protocolModel;
 
@@ -123,6 +125,15 @@ async function main() {
         '[data-graph-toggle="cumulative-calories"]',
     );
 
+    const protocolSaveButton = requireElement("#protocol-save-button");
+
+    const protocolSaveDialog = requireElement("#protocol-save-dialog");
+    const protocolSaveCloseButton = requireElement("#protocol-save-close-button");
+    const protocolSaveCancelButton = requireElement("#protocol-save-cancel-button");
+    const protocolSaveConfirmButton = requireElement("#protocol-save-confirm-button");
+    const protocolSaveDisplayNameInput = requireElement("#protocol-save-display-name");
+    const protocolSaveChangeSummaryInput = requireElement("#protocol-save-change-summary");
+
     // Protocol setup dialog
     const protocolSetupButton = requireElement("#protocol-setup-button");
     const protocolSetupDialog = requireElement("#protocol-setup-dialog");
@@ -134,6 +145,18 @@ async function main() {
     const protocolSetupCalibrationProfileSelect = requireElement(
         "#protocol-setup-calibration-profile",
     );
+
+    wireProtocolSaveEvents({
+        saveButton: protocolSaveButton,
+        saveDialog: protocolSaveDialog,
+        closeButton: protocolSaveCloseButton,
+        cancelButton: protocolSaveCancelButton,
+        confirmButton: protocolSaveConfirmButton,
+        displayNameInput: protocolSaveDisplayNameInput,
+        changeSummaryInput: protocolSaveChangeSummaryInput,
+        editorState,
+        protocolPersistenceController,
+    });
 
     const graphPaneController = new GraphPaneController([
         {
