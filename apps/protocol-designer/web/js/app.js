@@ -86,6 +86,7 @@ async function main() {
     const protocolPersistenceController = new ProtocolPersistenceController({
         protocolModel,
         persistenceService: persistenceContext.service,
+        domainVersionSync: persistenceContext.domainVersionSync,
     });
 
     const editorState = new EditorState();

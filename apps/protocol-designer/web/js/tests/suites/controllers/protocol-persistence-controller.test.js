@@ -14,19 +14,40 @@ const PROTOCOL = {
     phases: [],
 };
 
+const SETUP_CONTEXT = {
+    activityType: { id: "cycling" },
+    machineProfile: { id: "bike" },
+    calibrationProfile: { id: "calibration" },
+};
+
 const DEPENDENCIES = {
     activityTypeVersionId: "activity-type-version-1",
     machineProfileVersionId: "machine-profile-version-1",
     calibrationProfileVersionId: "calibration-profile-version-1",
 };
 
-/** Creates controller dependencies with observable persistence calls. */
+/** Creates controller dependencies with observable coordination calls. */
 function createFixture() {
     const calls = [];
 
     const protocolModel = {
         getSnapshot() {
             return structuredClone(PROTOCOL);
+        },
+
+        getSetupContext() {
+            return SETUP_CONTEXT;
+        },
+    };
+
+    const domainVersionSync = {
+        async resolveDependencies(setupContext) {
+            calls.push({
+                method: "resolveDependencies",
+                input: setupContext,
+            });
+
+            return DEPENDENCIES;
         },
     };
 
@@ -62,6 +83,7 @@ function createFixture() {
     const controller = new ProtocolPersistenceController({
         protocolModel,
         persistenceService,
+        domainVersionSync,
     });
 
     return {
@@ -72,94 +94,88 @@ function createFixture() {
 
 test(
     "protocol-persistence-controller",
-     "creates a persisted protocol from the committed protocol snapshot",
-     () => {
-         const { calls, controller } = createFixture();
+    "creates a persisted protocol from the committed protocol snapshot",
+    async () => {
+        const { calls, controller } = createFixture();
 
-         controller.createPersistedProtocol({
-             displayName: "Threshold Intervals",
-             dependencies: DEPENDENCIES,
-             changeSummary: "Initial version",
-         });
+        await controller.createPersistedProtocol({
+            displayName: "Threshold Intervals",
+            changeSummary: "Initial version",
+        });
 
-         assertEqual(calls.length, 1);
-         assertEqual(
-             calls[0].method,
-             "createProtocolFamilyWithInitialVersion",
-         );
+        assertEqual(calls.length, 2);
 
-         assertDeepEqual(calls[0].input, {
-             displayName: "Threshold Intervals",
-             protocol: PROTOCOL,
-             dependencies: DEPENDENCIES,
-             changeSummary: "Initial version",
-         });
-     },
+        assertDeepEqual(calls[0], {
+            method: "resolveDependencies",
+            input: SETUP_CONTEXT,
+        });
+
+        assertEqual(calls[1].method, "createProtocolFamilyWithInitialVersion");
+
+        assertDeepEqual(calls[1].input, {
+            displayName: "Threshold Intervals",
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Initial version",
+        });
+    },
 );
+
+test("protocol-persistence-controller", "returns the created persistence records", async () => {
+    const { controller } = createFixture();
+
+    const result = await controller.createPersistedProtocol({
+        displayName: "Threshold Intervals",
+        changeSummary: "Initial version",
+    });
+
+    assertDeepEqual(result, {
+        protocolFamily: {
+            id: "family-1",
+        },
+        plannedProtocolVersion: {
+            id: "version-1",
+        },
+    });
+});
 
 test(
     "protocol-persistence-controller",
-     "returns the created persistence records",
-     () => {
-         const { controller } = createFixture();
+    "saves the committed protocol as the next planned version",
+    async () => {
+        const { calls, controller } = createFixture();
 
-         const result = controller.createPersistedProtocol({
-             displayName: "Threshold Intervals",
-             dependencies: DEPENDENCIES,
-             changeSummary: "Initial version",
-         });
+        await controller.saveNextProtocolVersion({
+            protocolFamilyId: "family-1",
+            changeSummary: "Raised cadence target",
+        });
 
-         assertDeepEqual(result, {
-             protocolFamily: {
-                 id: "family-1",
-             },
-             plannedProtocolVersion: {
-                 id: "version-1",
-             },
-         });
-     },
+        assertEqual(calls.length, 2);
+
+        assertDeepEqual(calls[0], {
+            method: "resolveDependencies",
+            input: SETUP_CONTEXT,
+        });
+
+        assertEqual(calls[1].method, "createNextPlannedProtocolVersion");
+
+        assertDeepEqual(calls[1].input, {
+            protocolFamilyId: "family-1",
+            protocol: PROTOCOL,
+            dependencies: DEPENDENCIES,
+            changeSummary: "Raised cadence target",
+        });
+    },
 );
 
-test(
-    "protocol-persistence-controller",
-     "saves the committed protocol as the next planned version",
-     () => {
-         const { calls, controller } = createFixture();
+test("protocol-persistence-controller", "returns the created next planned version", async () => {
+    const { controller } = createFixture();
 
-         controller.saveNextProtocolVersion({
-             protocolFamilyId: "family-1",
-             dependencies: DEPENDENCIES,
-             changeSummary: "Raised cadence target",
-         });
+    const result = await controller.saveNextProtocolVersion({
+        protocolFamilyId: "family-1",
+    });
 
-         assertEqual(calls.length, 1);
-         assertEqual(
-             calls[0].method,
-             "createNextPlannedProtocolVersion",
-         );
-
-         assertDeepEqual(calls[0].input, {
-             protocolFamilyId: "family-1",
-             protocol: PROTOCOL,
-             dependencies: DEPENDENCIES,
-             changeSummary: "Raised cadence target",
-         });
-     },
-);
-
-test(
-    "protocol-persistence-controller",
-     "returns the created next planned version",
-     () => {
-         const { controller } = createFixture();
-
-         const result = controller.saveNextProtocolVersion({
-             protocolFamilyId: "family-1",
-             dependencies: DEPENDENCIES,
-         });
-
-         assertDeepEqual(result, {
-             id: "version-2",
-         });
-     },
-);
+    assertDeepEqual(result, {
+        id: "version-2",
+    });
+});
