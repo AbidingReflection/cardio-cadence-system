@@ -7,22 +7,27 @@ import {
     createNextPlannedProtocolVersion,
 } from "./planned-protocol-versioning.js";
 
+import { createExecutedProtocol } from "../records/executed-protocol.js";
+
 /** Coordinates protocol-family and planned-version persistence operations. */
 export class PersistenceService {
     #protocolFamilyRepository;
     #plannedProtocolVersionRepository;
     #idGenerator;
     #clock;
+    #executedProtocolRepository;
 
     /** Creates a service with repositories and persistence value generators. */
     constructor({
         protocolFamilyRepository,
         plannedProtocolVersionRepository,
+        executedProtocolRepository,
         idGenerator,
         clock,
     }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;
+        this.#executedProtocolRepository = executedProtocolRepository;
         this.#idGenerator = idGenerator;
         this.#clock = clock;
     }
@@ -136,5 +141,127 @@ export class PersistenceService {
         return this.#protocolFamilyRepository.update(id, {
             archived: false,
         });
+    }
+
+    /** Starts and persists an execution for an existing planned protocol version. */
+    startExecution({ plannedProtocolVersionId }) {
+        const plannedProtocolVersion =
+            this.#plannedProtocolVersionRepository.getById(plannedProtocolVersionId);
+
+        if (plannedProtocolVersion === undefined) {
+            throw new Error(`PlannedProtocolVersion "${plannedProtocolVersionId}" does not exist.`);
+        }
+
+        const startedAtUnixMs = this.#clock();
+
+        const execution = createExecutedProtocol({
+            id: this.#idGenerator(),
+            plannedProtocolVersionId,
+            status: "in-progress",
+            startedAtUnixMs,
+            lastKnownActiveAtUnixMs: startedAtUnixMs,
+            events: [],
+        });
+
+        this.#executedProtocolRepository.add(execution);
+
+        return execution;
+    }
+
+    /** Appends a timestamped event to an in-progress execution. */
+    appendExecutionEvent(executionId, eventInput) {
+        const execution = this.#getInProgressExecution(executionId);
+
+        const event = {
+            ...eventInput,
+            occurredAtUnixMs: this.#clock(),
+        };
+
+        const updatedExecution = {
+            ...execution,
+            events: [...execution.events, event],
+        };
+
+        this.#executedProtocolRepository.replace(updatedExecution);
+
+        return updatedExecution;
+    }
+
+    /** Updates the last-known activity timestamp for an in-progress execution. */
+    updateExecutionActivity(executionId) {
+        const execution = this.#getInProgressExecution(executionId);
+
+        const updatedExecution = {
+            ...execution,
+            lastKnownActiveAtUnixMs: this.#clock(),
+        };
+
+        this.#executedProtocolRepository.replace(updatedExecution);
+
+        return updatedExecution;
+    }
+
+    /** Completes an in-progress execution. */
+    completeExecution(executionId) {
+        return this.#finalizeExecution(executionId, {
+            status: "completed",
+            completionReason: undefined,
+            updateLastKnownActive: true,
+        });
+    }
+
+    /** Ends an in-progress execution early with a reason. */
+    endExecutionEarly(executionId, reason) {
+        return this.#finalizeExecution(executionId, {
+            status: "ended-early",
+            completionReason: reason,
+            updateLastKnownActive: true,
+        });
+    }
+
+    /** Marks an in-progress execution as interrupted with a reason. */
+    interruptExecution(executionId, reason) {
+        return this.#finalizeExecution(executionId, {
+            status: "interrupted",
+            completionReason: reason,
+            updateLastKnownActive: false,
+        });
+    }
+
+    /** Returns an in-progress execution or throws when it cannot be mutated. */
+    #getInProgressExecution(executionId) {
+        const execution = this.#executedProtocolRepository.getById(executionId);
+
+        if (execution === undefined) {
+            throw new Error(`ExecutedProtocol "${executionId}" does not exist.`);
+        }
+
+        if (execution.status !== "in-progress") {
+            throw new Error(
+                `ExecutedProtocol "${executionId}" must be in-progress to be modified.`,
+            );
+        }
+
+        return execution;
+    }
+
+    /** Finalizes an in-progress execution with the supplied terminal state. */
+    #finalizeExecution(executionId, { status, completionReason, updateLastKnownActive }) {
+        const execution = this.#getInProgressExecution(executionId);
+        const endedAtUnixMs = this.#clock();
+
+        const updatedExecution = {
+            ...execution,
+            status,
+            endedAtUnixMs,
+            lastKnownActiveAtUnixMs: updateLastKnownActive
+                ? endedAtUnixMs
+                : execution.lastKnownActiveAtUnixMs,
+            completionReason,
+        };
+
+        this.#executedProtocolRepository.replace(updatedExecution);
+
+        return updatedExecution;
     }
 }

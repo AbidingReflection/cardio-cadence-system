@@ -47,6 +47,7 @@ export class PersistenceContext {
         this.service = new PersistenceService({
             protocolFamilyRepository: this.protocolFamilies,
             plannedProtocolVersionRepository: this.plannedProtocolVersions,
+            executedProtocolRepository: this.executedProtocols,
             idGenerator,
             clock,
         });

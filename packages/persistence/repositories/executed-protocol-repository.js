@@ -51,4 +51,27 @@ export class ExecutedProtocolRepository {
             (execution) => execution.plannedProtocolVersionId === plannedProtocolVersionId,
         );
     }
+
+    /** Replaces an existing executed protocol with a validated updated record. */
+    replace(executedProtocol) {
+        validateExecutionHistory(executedProtocol);
+
+        if (!this.#executionsById.has(executedProtocol.id)) {
+            throw new Error(`ExecutedProtocol id "${executedProtocol.id}" does not exist.`);
+        }
+
+        const plannedVersion = this.#plannedProtocolVersionRepository.getById(
+            executedProtocol.plannedProtocolVersionId,
+        );
+
+        if (plannedVersion === undefined) {
+            throw new Error(
+                `ExecutedProtocol plannedProtocolVersionId "${executedProtocol.plannedProtocolVersionId}" does not exist.`,
+            );
+        }
+
+        this.#executionsById.set(executedProtocol.id, executedProtocol);
+
+        return executedProtocol;
+    }
 }

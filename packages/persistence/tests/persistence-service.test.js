@@ -34,6 +34,7 @@ function createTestService({
     const service = new PersistenceService({
         protocolFamilyRepository: context.protocolFamilies,
         plannedProtocolVersionRepository: context.plannedProtocolVersions,
+        executedProtocolRepository: context.executedProtocols,
         idGenerator,
         clock,
     });
@@ -42,6 +43,19 @@ function createTestService({
         context,
         service,
     };
+}
+
+/** Creates and starts a protocol execution for service tests. */
+function createStartedExecution(service) {
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    return service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
 }
 
 test("persistence-service", "creates a protocol family with an initial planned version", () => {
@@ -338,3 +352,417 @@ test(
         assertEqual(context.protocolFamilies.getById("family-1"), undefined);
     },
 );
+
+test("persistence-service", "starts an execution for a planned protocol version", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    assertEqual(execution.id, "execution-1");
+    assertEqual(execution.plannedProtocolVersionId, created.plannedProtocolVersion.id);
+    assertEqual(execution.status, "in-progress");
+    assertEqual(execution.startedAtUnixMs, 3000);
+    assertEqual(execution.lastKnownActiveAtUnixMs, 3000);
+    assertEqual(execution.endedAtUnixMs, undefined);
+    assertEqual(execution.completionReason, undefined);
+    assertDeepEqual(execution.events, []);
+});
+
+test("persistence-service", "persists a started execution", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    assertDeepEqual(context.executedProtocols.getById("execution-1"), execution);
+});
+
+test("persistence-service", "uses a single timestamp when starting an execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3456],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    assertEqual(execution.startedAtUnixMs, 3456);
+    assertEqual(execution.lastKnownActiveAtUnixMs, 3456);
+});
+
+test(
+    "persistence-service",
+    "rejects execution start for an unknown planned protocol version",
+    () => {
+        const { service } = createTestService({
+            ids: ["execution-1"],
+            timestamps: [1000],
+        });
+
+        assertThrows(
+            () =>
+                service.startExecution({
+                    plannedProtocolVersionId: "missing-version",
+                }),
+            /does not exist/,
+        );
+    },
+);
+
+test("persistence-service", "appends a timestamped execution event", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const updated = service.appendExecutionEvent(execution.id, {
+        type: "pause",
+    });
+
+    assertEqual(updated.events.length, 1);
+    assertEqual(updated.events[0].type, "pause");
+    assertEqual(updated.events[0].occurredAtUnixMs, 4000);
+});
+
+test("persistence-service", "preserves existing execution events when appending", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    service.appendExecutionEvent(execution.id, {
+        type: "pause",
+    });
+
+    const updated = service.appendExecutionEvent(execution.id, {
+        type: "resume",
+    });
+
+    assertEqual(updated.events.length, 2);
+    assertEqual(updated.events[0].type, "pause");
+    assertEqual(updated.events[0].occurredAtUnixMs, 4000);
+    assertEqual(updated.events[1].type, "resume");
+    assertEqual(updated.events[1].occurredAtUnixMs, 5000);
+});
+
+test("persistence-service", "persists appended execution events", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const updated = service.appendExecutionEvent(execution.id, {
+        type: "pause",
+    });
+
+    assertDeepEqual(context.executedProtocols.getById(execution.id), updated);
+});
+
+test("persistence-service", "rejects appending an event to an unknown execution", () => {
+    const { service } = createTestService({
+        timestamps: [1000],
+    });
+
+    assertThrows(
+        () =>
+            service.appendExecutionEvent("missing-execution", {
+                type: "pause",
+            }),
+        /does not exist/,
+    );
+});
+
+test("persistence-service", "rejects invalid pause and resume sequencing", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    assertThrows(
+        () =>
+            service.appendExecutionEvent(execution.id, {
+                type: "resume",
+            }),
+        /resume event while running/,
+    );
+});
+
+test("persistence-service", "updates execution activity timestamp", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const updated = service.updateExecutionActivity(execution.id);
+
+    assertEqual(updated.lastKnownActiveAtUnixMs, 4000);
+});
+
+test("persistence-service", "persists updated execution activity", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const updated = service.updateExecutionActivity(execution.id);
+
+    assertDeepEqual(context.executedProtocols.getById(execution.id), updated);
+});
+
+test("persistence-service", "preserves execution history when updating activity", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const execution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    service.appendExecutionEvent(execution.id, {
+        type: "pause",
+    });
+
+    const updated = service.updateExecutionActivity(execution.id);
+
+    assertEqual(updated.lastKnownActiveAtUnixMs, 5000);
+    assertEqual(updated.events.length, 1);
+    assertEqual(updated.events[0].type, "pause");
+    assertEqual(updated.events[0].occurredAtUnixMs, 4000);
+});
+
+test("persistence-service", "rejects activity updates for an unknown execution", () => {
+    const { service } = createTestService({
+        timestamps: [1000],
+    });
+
+    assertThrows(() => service.updateExecutionActivity("missing-execution"), /does not exist/);
+});
+
+test("persistence-service", "completes an in-progress execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const completed = service.completeExecution(execution.id);
+
+    assertEqual(completed.status, "completed");
+    assertEqual(completed.endedAtUnixMs, 4000);
+    assertEqual(completed.lastKnownActiveAtUnixMs, 4000);
+    assertEqual(completed.completionReason, undefined);
+});
+
+test("persistence-service", "ends an execution early with a reason", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const ended = service.endExecutionEarly(execution.id, "Workout shortened");
+
+    assertEqual(ended.status, "ended-early");
+    assertEqual(ended.endedAtUnixMs, 4000);
+    assertEqual(ended.lastKnownActiveAtUnixMs, 4000);
+    assertEqual(ended.completionReason, "Workout shortened");
+});
+
+test("persistence-service", "interrupts an execution with a reason", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const interrupted = service.interruptExecution(execution.id, "Controller disconnected");
+
+    assertEqual(interrupted.status, "interrupted");
+    assertEqual(interrupted.endedAtUnixMs, 4000);
+    assertEqual(interrupted.lastKnownActiveAtUnixMs, 3000);
+    assertEqual(interrupted.completionReason, "Controller disconnected");
+});
+
+test("persistence-service", "persists a finalized execution", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const completed = service.completeExecution(execution.id);
+
+    assertDeepEqual(context.executedProtocols.getById(execution.id), completed);
+});
+
+test("persistence-service", "rejects early ending without a completion reason", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    assertThrows(() => service.endExecutionEarly(execution.id, ""), /completionReason/);
+});
+
+test("persistence-service", "rejects interruption without a completion reason", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    assertThrows(() => service.interruptExecution(execution.id, ""), /completionReason/);
+});
+
+test("persistence-service", "rejects finalization of an unknown execution", () => {
+    const { service } = createTestService();
+
+    assertThrows(() => service.completeExecution("missing-execution"), /does not exist/);
+});
+
+test("persistence-service", "rejects finalizing an execution twice", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.completeExecution(execution.id);
+
+    assertThrows(() => service.endExecutionEarly(execution.id, "Too late"), /in-progress/);
+});
+
+test("persistence-service", "rejects appending events after execution finalization", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.completeExecution(execution.id);
+
+    assertThrows(
+        () =>
+            service.appendExecutionEvent(execution.id, {
+                type: "pause",
+            }),
+        /in-progress/,
+    );
+});
+
+test("persistence-service", "rejects activity updates after execution finalization", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.completeExecution(execution.id);
+
+    assertThrows(() => service.updateExecutionActivity(execution.id), /in-progress/);
+});
