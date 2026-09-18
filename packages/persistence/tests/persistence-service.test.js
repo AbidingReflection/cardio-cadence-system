@@ -766,3 +766,205 @@ test("persistence-service", "rejects activity updates after execution finalizati
 
     assertThrows(() => service.updateExecutionActivity(execution.id), /in-progress/);
 });
+
+test("persistence-service", "recovers an in-progress execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const recovered = service.recoverExecution(execution.id);
+
+    assertEqual(recovered.status, "in-progress");
+    assertEqual(recovered.lastKnownActiveAtUnixMs, 4000);
+});
+
+test("persistence-service", "appends a recovery event with prior activity time", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const recovered = service.recoverExecution(execution.id);
+
+    assertEqual(recovered.events.length, 1);
+    assertEqual(recovered.events[0].type, "recovery");
+    assertEqual(recovered.events[0].occurredAtUnixMs, 4000);
+    assertEqual(recovered.events[0].lastKnownActiveAtUnixMs, 3000);
+});
+
+test("persistence-service", "persists recovered execution state", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    const recovered = service.recoverExecution(execution.id);
+
+    assertDeepEqual(context.executedProtocols.getById(execution.id), recovered);
+});
+
+test("persistence-service", "preserves existing events during recovery", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.appendExecutionEvent(execution.id, {
+        type: "pause",
+    });
+
+    const recovered = service.recoverExecution(execution.id);
+
+    assertEqual(recovered.events.length, 2);
+
+    assertEqual(recovered.events[0].type, "pause");
+    assertEqual(recovered.events[0].occurredAtUnixMs, 4000);
+
+    assertEqual(recovered.events[1].type, "recovery");
+    assertEqual(recovered.events[1].occurredAtUnixMs, 5000);
+    assertEqual(recovered.events[1].lastKnownActiveAtUnixMs, 3000);
+});
+
+test("persistence-service", "rejects recovery of an unknown execution", () => {
+    const { service } = createTestService();
+
+    assertThrows(() => service.recoverExecution("missing-execution"), /does not exist/);
+});
+
+test("persistence-service", "rejects recovery of a completed execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.completeExecution(execution.id);
+
+    assertThrows(() => service.recoverExecution(execution.id), /in-progress/);
+});
+
+test("persistence-service", "rejects recovery of an early-ended execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.endExecutionEarly(execution.id, "Workout shortened");
+
+    assertThrows(() => service.recoverExecution(execution.id), /in-progress/);
+});
+
+test("persistence-service", "rejects recovery of an interrupted execution", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000, 4000, 5000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    service.interruptExecution(execution.id, "Controller disconnected");
+
+    assertThrows(() => service.recoverExecution(execution.id), /in-progress/);
+});
+
+test("persistence-service", "returns an execution by ID", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1"],
+        timestamps: [1000, 2000, 3000],
+    });
+
+    const execution = createStartedExecution(service);
+
+    assertDeepEqual(service.getExecution(execution.id), execution);
+});
+
+test("persistence-service", "returns undefined for a missing execution", () => {
+    const { service } = createTestService();
+
+    assertEqual(service.getExecution("missing-execution"), undefined);
+});
+
+test("persistence-service", "lists executions for a planned protocol version", () => {
+    const { service } = createTestService({
+        ids: ["family-1", "version-1", "execution-1", "execution-2"],
+        timestamps: [1000, 2000, 3000, 4000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    const firstExecution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const secondExecution = service.startExecution({
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+    });
+
+    const executions = service.listExecutionsForPlannedVersion(created.plannedProtocolVersion.id);
+
+    assertEqual(executions.length, 2);
+    assertDeepEqual(executions[0], firstExecution);
+    assertDeepEqual(executions[1], secondExecution);
+});
+
+test("persistence-service", "lists executions in start-time order", () => {
+    const { context, service } = createTestService({
+        ids: ["family-1", "version-1"],
+        timestamps: [1000, 2000],
+    });
+
+    const created = service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: BASE_PROTOCOL,
+        dependencies: BASE_DEPENDENCIES,
+    });
+
+    context.executedProtocols.add({
+        id: "execution-late",
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+        status: "in-progress",
+        startedAtUnixMs: 5000,
+        lastKnownActiveAtUnixMs: 5000,
+        endedAtUnixMs: undefined,
+        completionReason: undefined,
+        events: [],
+    });
+
+    context.executedProtocols.add({
+        id: "execution-early",
+        plannedProtocolVersionId: created.plannedProtocolVersion.id,
+        status: "in-progress",
+        startedAtUnixMs: 3000,
+        lastKnownActiveAtUnixMs: 3000,
+        endedAtUnixMs: undefined,
+        completionReason: undefined,
+        events: [],
+    });
+
+    const executions = service.listExecutionsForPlannedVersion(created.plannedProtocolVersion.id);
+
+    assertEqual(executions[0].id, "execution-early");
+    assertEqual(executions[1].id, "execution-late");
+});
+
+test("persistence-service", "returns an empty execution list when none exist", () => {
+    const { service } = createTestService();
+
+    assertDeepEqual(service.listExecutionsForPlannedVersion("missing-version"), []);
+});

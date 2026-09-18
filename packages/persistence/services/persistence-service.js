@@ -228,6 +228,40 @@ export class PersistenceService {
         });
     }
 
+    /** Recovers an in-progress execution and records the recovery event. */
+    recoverExecution(executionId) {
+        const execution = this.#getInProgressExecution(executionId);
+        const recoveredAtUnixMs = this.#clock();
+
+        const recoveryEvent = {
+            type: "recovery",
+            occurredAtUnixMs: recoveredAtUnixMs,
+            lastKnownActiveAtUnixMs: execution.lastKnownActiveAtUnixMs,
+        };
+
+        const updatedExecution = {
+            ...execution,
+            lastKnownActiveAtUnixMs: recoveredAtUnixMs,
+            events: [...execution.events, recoveryEvent],
+        };
+
+        this.#executedProtocolRepository.replace(updatedExecution);
+
+        return updatedExecution;
+    }
+
+    /** Returns an execution by ID. */
+    getExecution(id) {
+        return this.#executedProtocolRepository.getById(id);
+    }
+
+    /** Returns executions for a planned protocol version in start-time order. */
+    listExecutionsForPlannedVersion(plannedProtocolVersionId) {
+        return this.#executedProtocolRepository.listByPlannedProtocolVersionId(
+            plannedProtocolVersionId,
+        );
+    }
+
     /** Returns an in-progress execution or throws when it cannot be mutated. */
     #getInProgressExecution(executionId) {
         const execution = this.#executedProtocolRepository.getById(executionId);
