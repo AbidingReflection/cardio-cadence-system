@@ -10,6 +10,8 @@ import { ActivityTypeVersionRepository } from "../repositories/activity-type-ver
 import { MachineProfileVersionRepository } from "../repositories/machine-profile-version-repository.js";
 import { CalibrationProfileVersionRepository } from "../repositories/calibration-profile-version-repository.js";
 import { PersistenceService } from "../services/persistence-service.js";
+import { DomainVersionSync } from "../services/domain-version-sync.js";
+import { LibraryPersistence } from "../services/library-persistence.js";
 
 const FAMILY = {
     id: "family-1",
@@ -154,3 +156,56 @@ test("persistence-context", "service operations persist through context reposito
         result.plannedProtocolVersion,
     );
 });
+
+test(
+    "persistence-context",
+    "exposes configured library persistence and domain version sync",
+    () => {
+        const context = new PersistenceContext({
+            idGenerator: () => "generated-id",
+            clock: () => 1000,
+        });
+
+        assertEqual(context.libraryPersistence instanceof LibraryPersistence, true);
+        assertEqual(context.domainVersionSync instanceof DomainVersionSync, true);
+    },
+);
+
+test(
+    "persistence-context",
+    "domain version sync persists through context repositories",
+    async () => {
+        const ids = [
+            "activity-type-version-1",
+            "machine-profile-version-1",
+            "calibration-profile-version-1",
+        ];
+
+        const context = new PersistenceContext({
+            idGenerator: () => ids.shift(),
+            clock: () => 1000,
+        });
+
+        const activityType = {
+            id: "cycling",
+            getDefinition() {
+                return {
+                    id: "cycling",
+                    name: "Cycling",
+                    variables: [],
+                };
+            },
+        };
+
+        const dependencies = await context.domainVersionSync.resolveDependencies({
+            activityType,
+        });
+
+        assertEqual(dependencies.activityTypeVersionId, "activity-type-version-1");
+
+        assertEqual(
+            context.activityTypeVersions.getById("activity-type-version-1").id,
+            "activity-type-version-1",
+        );
+    },
+);
