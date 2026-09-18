@@ -6,6 +6,7 @@ import {
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { ActivityType } from "../../../models/activity-type.js";
+import { MachineProfile } from "../../../models/machine-profile.js";
 
 const VALID_ACTIVITY_TYPE = {
     id: "elliptical",
@@ -166,4 +167,37 @@ test("activity-type", "allows a null variable unit", () => {
     const activityType = new ActivityType(data);
 
     assertEqual(activityType.getVariable("cadence").unit, null);
+});
+
+test("activity-type", "returns a defensive copy of the full definition", () => {
+    const definition = {
+        id: "elliptical",
+        name: "Elliptical",
+        variables: [
+            {
+                id: "cadence",
+                name: "Cadence",
+                unit: "RPM",
+                role: "cadence",
+            },
+            {
+                id: "resistance",
+                name: "Resistance",
+                unit: "level",
+                role: "load",
+            },
+        ],
+    };
+
+    const activityType = new ActivityType(definition);
+
+    const returnedDefinition = activityType.getDefinition();
+
+    assertDeepEqual(returnedDefinition, definition);
+
+    returnedDefinition.name = "Changed";
+    returnedDefinition.variables[0].name = "Changed";
+
+    assertEqual(activityType.name, "Elliptical");
+    assertEqual(activityType.variables[0].name, "Cadence");
 });

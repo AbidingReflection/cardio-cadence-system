@@ -32,6 +32,11 @@ export class MachineProfile {
         return structuredClone(this.#data.variables);
     }
 
+    /** Returns a defensive copy of the complete validated definition. */
+    getDefinition() {
+        return structuredClone(this.#data);
+    }
+
     /** Returns a defensive copy of a machine variable configuration by ID, or undefined if absent. */
     getVariable(variableId) {
         const variable = this.#data.variables[variableId];

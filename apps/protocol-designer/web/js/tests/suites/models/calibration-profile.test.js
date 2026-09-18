@@ -411,3 +411,17 @@ test("calibration-profile", "allows an empty calibration domain", () => {
 
     assertDeepEqual(calibrationProfile.domain, {});
 });
+
+test("calibration-profile", "returns a defensive copy of the full definition", () => {
+    const definition = createCalibrationData();
+
+    const calibrationProfile = new CalibrationProfile(definition, MACHINE_PROFILE);
+
+    const returnedDefinition = calibrationProfile.getDefinition();
+
+    assertDeepEqual(returnedDefinition, definition);
+
+    returnedDefinition.name = "Changed";
+
+    assertEqual(calibrationProfile.name, definition.name);
+});

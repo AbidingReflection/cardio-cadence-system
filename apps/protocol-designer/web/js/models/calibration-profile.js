@@ -40,6 +40,11 @@ export class CalibrationProfile {
             ? undefined
             : structuredClone(this.#data.validation);
     }
+
+    /** Returns a defensive copy of the complete validated definition. */
+    getDefinition() {
+        return structuredClone(this.#data);
+    }
 }
 
 /** Validates calibration-profile data against its referenced MachineProfile. */

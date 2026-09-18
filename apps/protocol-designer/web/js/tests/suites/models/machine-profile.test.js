@@ -272,3 +272,20 @@ test("machine-profile", "rejects duplicate progression types", () => {
         /duplicate progression type "steady"/,
     );
 });
+
+test("machine-profile", "returns a defensive copy of the full definition", () => {
+    const machineProfile = new MachineProfile(VALID_MACHINE_PROFILE, ELLIPTICAL_ACTIVITY_TYPE);
+
+    const returnedDefinition = machineProfile.getDefinition();
+
+    assertDeepEqual(returnedDefinition, VALID_MACHINE_PROFILE);
+
+    returnedDefinition.name = "Changed";
+    returnedDefinition.variables.resistance.controlMode = "user-produced";
+
+    assertEqual(machineProfile.name, VALID_MACHINE_PROFILE.name);
+    assertEqual(
+        machineProfile.variables.resistance.controlMode,
+        VALID_MACHINE_PROFILE.variables.resistance.controlMode,
+    );
+});
