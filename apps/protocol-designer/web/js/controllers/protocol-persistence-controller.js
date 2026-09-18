@@ -73,4 +73,20 @@ export class ProtocolPersistenceController {
             calibrationProfile,
         });
     }
+
+    /** Persists the current protocol, creating a family or next version as needed. */
+    async saveProtocol({ displayName, changeSummary }) {
+        const { protocolFamilyId } = this.#editorState.getSnapshot();
+
+        if (protocolFamilyId === undefined) {
+            return this.createPersistedProtocol({
+                displayName,
+                changeSummary,
+            });
+        }
+
+        return this.saveNextProtocolVersion({
+            changeSummary,
+        });
+    }
 }

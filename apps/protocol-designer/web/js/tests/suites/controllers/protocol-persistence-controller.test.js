@@ -295,3 +295,75 @@ test(
         );
     },
 );
+
+test(
+    "protocol-persistence-controller",
+    "saveProtocol creates a persisted protocol when no family is active",
+    async () => {
+        const { calls, controller } = createFixture();
+
+        const result = await controller.saveProtocol({
+            displayName: "Threshold Intervals",
+            changeSummary: "Initial version",
+        });
+
+        assertEqual(
+            calls.some((call) => call.method === "createProtocolFamilyWithInitialVersion"),
+            true,
+        );
+
+        assertDeepEqual(result, {
+            protocolFamily: {
+                id: "family-1",
+            },
+            plannedProtocolVersion: {
+                id: "version-1",
+            },
+        });
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "saveProtocol creates the next version when a family is active",
+    async () => {
+        const { calls, controller } = createFixture({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        const result = await controller.saveProtocol({
+            displayName: "Ignored for existing family",
+            changeSummary: "Raised cadence target",
+        });
+
+        assertEqual(
+            calls.some((call) => call.method === "createNextPlannedProtocolVersion"),
+            true,
+        );
+
+        assertDeepEqual(result, {
+            id: "version-2",
+        });
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "saveProtocol does not create a new family when one is already active",
+    async () => {
+        const { calls, controller } = createFixture({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        await controller.saveProtocol({
+            displayName: "Threshold Intervals",
+        });
+
+        assertEqual(
+            calls.some((call) => call.method === "createProtocolFamilyWithInitialVersion"),
+            false,
+        );
+    },
+);
