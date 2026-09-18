@@ -2,12 +2,14 @@
 
 export class ProtocolPersistenceController {
     #protocolModel;
+    #editorState;
     #persistenceService;
     #domainVersionSync;
 
     /** Creates a controller for protocol-model persistence coordination. */
-    constructor({ protocolModel, persistenceService, domainVersionSync }) {
+    constructor({ protocolModel, editorState, persistenceService, domainVersionSync }) {
         this.#protocolModel = protocolModel;
+        this.#editorState = editorState;
         this.#persistenceService = persistenceService;
         this.#domainVersionSync = domainVersionSync;
     }
@@ -17,25 +19,47 @@ export class ProtocolPersistenceController {
         const protocol = this.#protocolModel.getSnapshot();
         const dependencies = await this.#resolveDependencies();
 
-        return this.#persistenceService.createProtocolFamilyWithInitialVersion({
+        const result = this.#persistenceService.createProtocolFamilyWithInitialVersion({
             displayName,
             protocol,
             dependencies,
             changeSummary,
         });
+
+        this.#editorState.setProtocolPersistenceIdentity({
+            protocolFamilyId: result.protocolFamily.id,
+            plannedProtocolVersionId: result.plannedProtocolVersion.id,
+        });
+
+        return result;
     }
 
-    /** Persists the committed protocol as the next version in a protocol family. */
-    async saveNextProtocolVersion({ protocolFamilyId, changeSummary }) {
+    /** Persists the committed protocol as the next version in the current protocol family. */
+    async saveNextProtocolVersion({ changeSummary } = {}) {
+        const { protocolFamilyId } = this.#editorState.getSnapshot();
+
+        if (protocolFamilyId === undefined) {
+            throw new Error(
+                "Cannot save a next protocol version without an active protocol family.",
+            );
+        }
+
         const protocol = this.#protocolModel.getSnapshot();
         const dependencies = await this.#resolveDependencies();
 
-        return this.#persistenceService.createNextPlannedProtocolVersion({
+        const plannedProtocolVersion = this.#persistenceService.createNextPlannedProtocolVersion({
             protocolFamilyId,
             protocol,
             dependencies,
             changeSummary,
         });
+
+        this.#editorState.setProtocolPersistenceIdentity({
+            protocolFamilyId,
+            plannedProtocolVersionId: plannedProtocolVersion.id,
+        });
+
+        return plannedProtocolVersion;
     }
 
     /** Resolves persisted version IDs for the protocol's current setup context. */
