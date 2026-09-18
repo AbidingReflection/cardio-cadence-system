@@ -1,9 +1,15 @@
-import { assertEqual, assertThrows, test } from "/packages/js-testing/framework/test-framework.js";
+import {
+    assertEqual,
+    assertDeepEqual,
+    assertThrows,
+    test,
+} from "/packages/js-testing/framework/test-framework.js";
 
 import { PersistenceContext } from "../persistence-context.js";
 import { ActivityTypeVersionRepository } from "../repositories/activity-type-version-repository.js";
 import { MachineProfileVersionRepository } from "../repositories/machine-profile-version-repository.js";
 import { CalibrationProfileVersionRepository } from "../repositories/calibration-profile-version-repository.js";
+import { PersistenceService } from "../services/persistence-service.js";
 
 const FAMILY = {
     id: "family-1",
@@ -107,5 +113,44 @@ test("persistence-context", "exposes a calibration profile version repository", 
     assertEqual(
         context.calibrationProfileVersions instanceof CalibrationProfileVersionRepository,
         true,
+    );
+});
+
+test("persistence-context", "exposes a configured persistence service", () => {
+    const context = new PersistenceContext({
+        idGenerator: () => "id-1",
+        clock: () => 1000,
+    });
+
+    assertEqual(context.service instanceof PersistenceService, true);
+});
+
+test("persistence-context", "service operations persist through context repositories", () => {
+    const ids = ["family-1", "version-1"];
+    const timestamps = [1000, 2000];
+
+    let idIndex = 0;
+    let timestampIndex = 0;
+
+    const context = new PersistenceContext({
+        idGenerator: () => ids[idIndex++],
+        clock: () => timestamps[timestampIndex++],
+    });
+
+    const result = context.service.createProtocolFamilyWithInitialVersion({
+        displayName: "Threshold Intervals",
+        protocol: {
+            name: "Base Protocol",
+        },
+        dependencies: {
+            activityTypeVersionId: "activity-type-version-1",
+        },
+    });
+
+    assertDeepEqual(context.protocolFamilies.getById("family-1"), result.protocolFamily);
+
+    assertDeepEqual(
+        context.plannedProtocolVersions.getById("version-1"),
+        result.plannedProtocolVersion,
     );
 });
