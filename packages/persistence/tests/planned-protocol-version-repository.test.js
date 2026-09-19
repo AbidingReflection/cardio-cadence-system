@@ -241,3 +241,23 @@ test(
         assertEqual(repository.hasProtocolFamilyReference("missing-family"), false);
     },
 );
+
+test("planned-protocol-version-repository", "lists all versions in version order", () => {
+    const repository = new PlannedProtocolVersionRepository();
+
+    const version2 = {
+        ...VERSION_1,
+        id: "planned-version-2",
+        versionNumber: 2,
+        parentVersionId: VERSION_1.id,
+        createdAtUnixMs: VERSION_1.createdAtUnixMs + 1,
+    };
+
+    repository.add(VERSION_1);
+    repository.add(version2);
+
+    assertDeepEqual(
+        repository.listAll().map((version) => version.id),
+        [VERSION_1.id, version2.id],
+    );
+});

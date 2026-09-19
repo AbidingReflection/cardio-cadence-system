@@ -308,3 +308,23 @@ test(
         assertEqual(repository.hasCalibrationProfileReference("rower-calibration"), false);
     },
 );
+
+test("calibration-profile-version-repository", "lists all versions in version order", () => {
+    const repository = new CalibrationProfileVersionRepository();
+
+    const version1 = createVersion();
+    const version2 = createVersion({
+        id: "calibration-profile-version-2",
+        versionNumber: 2,
+        parentVersionId: version1.id,
+        createdAtUnixMs: 2000,
+    });
+
+    repository.add(version1);
+    repository.add(version2);
+
+    assertDeepEqual(
+        repository.listAll().map((version) => version.id),
+        [version1.id, version2.id],
+    );
+});

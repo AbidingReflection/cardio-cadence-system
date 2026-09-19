@@ -196,3 +196,27 @@ test(
         );
     },
 );
+
+test("executed-protocol-repository", "lists all executions in deterministic order", () => {
+    const { plannedProtocolVersionRepository, executedProtocolRepository } = createRepositories();
+
+    plannedProtocolVersionRepository.add(PLANNED_VERSION);
+
+    const executionB = {
+        ...EXECUTION_1,
+        id: "execution-b",
+    };
+
+    const executionA = {
+        ...EXECUTION_1,
+        id: "execution-a",
+    };
+
+    executedProtocolRepository.add(executionB);
+    executedProtocolRepository.add(executionA);
+
+    assertDeepEqual(
+        executedProtocolRepository.listAll().map((execution) => execution.id),
+        ["execution-a", "execution-b"],
+    );
+});

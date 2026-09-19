@@ -266,3 +266,23 @@ test("activity-type-version-repository", "reports references to an activity type
     assertEqual(repository.hasActivityTypeReference("cycling"), true);
     assertEqual(repository.hasActivityTypeReference("running"), false);
 });
+
+test("activity-type-version-repository", "lists all versions in version order", () => {
+    const repository = new ActivityTypeVersionRepository();
+
+    const version1 = createVersion();
+    const version2 = createVersion({
+        id: "activity-type-version-2",
+        versionNumber: 2,
+        parentVersionId: version1.id,
+        createdAtUnixMs: 2000,
+    });
+
+    repository.add(version1);
+    repository.add(version2);
+
+    assertDeepEqual(
+        repository.listAll().map((version) => version.id),
+        [version1.id, version2.id],
+    );
+});

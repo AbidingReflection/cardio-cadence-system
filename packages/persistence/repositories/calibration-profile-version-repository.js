@@ -38,6 +38,16 @@ export class CalibrationProfileVersionRepository {
         return version === undefined ? undefined : structuredClone(version);
     }
 
+    /** Returns all calibration profile versions in deterministic order. */
+    listAll() {
+        return [...this.#versions.values()].sort(
+            (a, b) =>
+                a.calibrationProfileId.localeCompare(b.calibrationProfileId) ||
+                a.versionNumber - b.versionNumber ||
+                a.id.localeCompare(b.id),
+        );
+    }
+
     /** Returns calibration profile versions for one profile in version order. */
     listByCalibrationProfileId(calibrationProfileId) {
         return [...this.#versions.values()]

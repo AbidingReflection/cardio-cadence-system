@@ -289,3 +289,23 @@ test(
         assertEqual(repository.hasMachineProfileReference("concept2-rower"), false);
     },
 );
+
+test("machine-profile-version-repository", "lists all versions in version order", () => {
+    const repository = new MachineProfileVersionRepository();
+
+    const version1 = createVersion();
+    const version2 = createVersion({
+        id: "machine-profile-version-2",
+        versionNumber: 2,
+        parentVersionId: version1.id,
+        createdAtUnixMs: 2000,
+    });
+
+    repository.add(version1);
+    repository.add(version2);
+
+    assertDeepEqual(
+        repository.listAll().map((version) => version.id),
+        [version1.id, version2.id],
+    );
+});

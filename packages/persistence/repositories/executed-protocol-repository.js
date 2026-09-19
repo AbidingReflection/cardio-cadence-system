@@ -38,6 +38,13 @@ export class ExecutedProtocolRepository {
         return this.#executionsById.get(id);
     }
 
+    /** Returns all executed protocols in deterministic start-time order. */
+    listAll() {
+        return [...this.#executionsById.values()].sort(
+            (a, b) => a.startedAtUnixMs - b.startedAtUnixMs || a.id.localeCompare(b.id),
+        );
+    }
+
     /** Returns executions for a planned protocol version in start-time order. */
     listByPlannedProtocolVersionId(plannedProtocolVersionId) {
         return [...this.#executionsById.values()]

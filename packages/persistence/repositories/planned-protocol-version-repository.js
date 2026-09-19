@@ -42,6 +42,16 @@ export class PlannedProtocolVersionRepository {
         return this.#versionsById.get(id);
     }
 
+    /** Returns all planned protocol versions in deterministic order. */
+    listAll() {
+        return [...this.#versionsById.values()].sort(
+            (a, b) =>
+                a.protocolFamilyId.localeCompare(b.protocolFamilyId) ||
+                a.versionNumber - b.versionNumber ||
+                a.id.localeCompare(b.id),
+        );
+    }
+
     /** Returns all planned protocol versions for a family in version order. */
     listByFamilyId(protocolFamilyId) {
         return [...this.#versionsById.values()]

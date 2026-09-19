@@ -38,6 +38,16 @@ export class MachineProfileVersionRepository {
         return version === undefined ? undefined : structuredClone(version);
     }
 
+    /** Returns all machine profile versions in deterministic order. */
+    listAll() {
+        return [...this.#versions.values()].sort(
+            (a, b) =>
+                a.machineProfileId.localeCompare(b.machineProfileId) ||
+                a.versionNumber - b.versionNumber ||
+                a.id.localeCompare(b.id),
+        );
+    }
+
     /** Returns machine profile versions for one machine profile in version order. */
     listByMachineProfileId(machineProfileId) {
         return [...this.#versions.values()]

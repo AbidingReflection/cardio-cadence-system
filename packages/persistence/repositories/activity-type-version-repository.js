@@ -38,6 +38,16 @@ export class ActivityTypeVersionRepository {
         return version === undefined ? undefined : structuredClone(version);
     }
 
+    /** Returns all activity type versions in deterministic order. */
+    listAll() {
+        return [...this.#versions.values()].sort(
+            (a, b) =>
+                a.activityTypeId.localeCompare(b.activityTypeId) ||
+                a.versionNumber - b.versionNumber ||
+                a.id.localeCompare(b.id),
+        );
+    }
+
     /** Returns activity type versions for one activity type in version order. */
     listByActivityTypeId(activityTypeId) {
         return [...this.#versions.values()]
