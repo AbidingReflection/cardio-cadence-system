@@ -30,6 +30,7 @@ const DEPENDENCIES = {
 function createFixture({
     protocolFamilyId = undefined,
     plannedProtocolVersionId = undefined,
+    commitError = undefined,
 } = {}) {
     const calls = [];
 
@@ -102,11 +103,24 @@ function createFixture({
         },
     };
 
+    const durablePersistence = {
+        async commit() {
+            calls.push({
+                method: "commit",
+            });
+
+            if (commitError !== undefined) {
+                throw commitError;
+            }
+        },
+    };
+
     const controller = new ProtocolPersistenceController({
         protocolModel,
         editorState,
         persistenceService,
         domainVersionSync,
+        durablePersistence,
     });
 
     return {
@@ -127,7 +141,7 @@ test(
             changeSummary: "Initial version",
         });
 
-        assertEqual(calls.length, 3);
+        assertEqual(calls.length, 4);
 
         assertDeepEqual(calls[0], {
             method: "resolveDependencies",
@@ -175,7 +189,7 @@ test(
             changeSummary: "Raised cadence target",
         });
 
-        assertEqual(calls.length, 3);
+        assertEqual(calls.length, 4);
 
         assertDeepEqual(calls[0], {
             method: "resolveDependencies",
@@ -191,7 +205,7 @@ test(
             changeSummary: "Raised cadence target",
         });
 
-        assertDeepEqual(calls[2], {
+        assertDeepEqual(calls[3], {
             method: "setProtocolPersistenceIdentity",
             input: {
                 protocolFamilyId: "family-1",
@@ -225,7 +239,7 @@ test(
             changeSummary: "Initial version",
         });
 
-        assertDeepEqual(calls[2], {
+        assertDeepEqual(calls[3], {
             method: "setProtocolPersistenceIdentity",
             input: {
                 protocolFamilyId: "family-1",
@@ -248,7 +262,7 @@ test(
             changeSummary: "Raised cadence target",
         });
 
-        assertEqual(calls.length, 3);
+        assertEqual(calls.length, 4);
 
         assertDeepEqual(calls[0], {
             method: "resolveDependencies",
@@ -265,7 +279,7 @@ test(
             },
         });
 
-        assertDeepEqual(calls[2], {
+        assertDeepEqual(calls[3], {
             method: "setProtocolPersistenceIdentity",
             input: {
                 protocolFamilyId: "family-1",
@@ -364,6 +378,82 @@ test(
         assertEqual(
             calls.some((call) => call.method === "createProtocolFamilyWithInitialVersion"),
             false,
+        );
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "commits durable state after creating a protocol",
+    async () => {
+        const { calls, controller } = createFixture();
+
+        await controller.createPersistedProtocol({
+            displayName: "Threshold Intervals",
+            changeSummary: "Initial version",
+        });
+
+        assertDeepEqual(
+            calls.map((call) => call.method),
+            [
+                "resolveDependencies",
+                "createProtocolFamilyWithInitialVersion",
+                "commit",
+                "setProtocolPersistenceIdentity",
+            ],
+        );
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "commits durable state after saving a next version",
+    async () => {
+        const { calls, controller } = createFixture({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        await controller.saveNextProtocolVersion({
+            changeSummary: "Raised cadence target",
+        });
+
+        assertDeepEqual(
+            calls.map((call) => call.method),
+            [
+                "resolveDependencies",
+                "createNextPlannedProtocolVersion",
+                "commit",
+                "setProtocolPersistenceIdentity",
+            ],
+        );
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "does not update persistence identity when durable commit fails",
+    async () => {
+        const { calls, controller } = createFixture({
+            commitError: new Error("Commit failed."),
+        });
+
+        let error;
+
+        try {
+            await controller.createPersistedProtocol({
+                displayName: "Threshold Intervals",
+                changeSummary: "Initial version",
+            });
+        } catch (caughtError) {
+            error = caughtError;
+        }
+
+        assertEqual(error?.message, "Commit failed.");
+
+        assertDeepEqual(
+            calls.map((call) => call.method),
+            ["resolveDependencies", "createProtocolFamilyWithInitialVersion", "commit"],
         );
     },
 );

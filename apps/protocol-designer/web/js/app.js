@@ -34,6 +34,8 @@ import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.
 
 import { ProtocolPersistenceController } from "./controllers/protocol-persistence-controller.js";
 import { PersistenceContext } from "/packages/persistence/persistence-context.js";
+import { DurablePersistence } from "/packages/persistence/storage/durable-persistence.js";
+import { IndexedDbStore } from "/packages/persistence/storage/indexed-db-store.js";
 
 import { wireProtocolSaveEvents } from "./interactions/protocol-save-events.js";
 
@@ -85,6 +87,15 @@ async function main() {
 
     const persistenceContext = new PersistenceContext();
 
+    const indexedDbStore = new IndexedDbStore();
+
+    const durablePersistence = new DurablePersistence({
+        store: indexedDbStore,
+        persistenceContext,
+    });
+
+    await durablePersistence.hydrate();
+
     const editorState = new EditorState();
 
     const protocolPersistenceController = new ProtocolPersistenceController({
@@ -92,9 +103,11 @@ async function main() {
         editorState,
         persistenceService: persistenceContext.service,
         domainVersionSync: persistenceContext.domainVersionSync,
+        durablePersistence,
     });
 
     window.protocolModel = protocolModel;
+    window.persistenceContext = persistenceContext;
 
     // Protocol tree and management controls
     const protocolPane = requireElement(".protocol-pane");

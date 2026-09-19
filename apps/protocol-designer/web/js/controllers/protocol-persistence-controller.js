@@ -5,13 +5,21 @@ export class ProtocolPersistenceController {
     #editorState;
     #persistenceService;
     #domainVersionSync;
+    #durablePersistence;
 
     /** Creates a controller for protocol-model persistence coordination. */
-    constructor({ protocolModel, editorState, persistenceService, domainVersionSync }) {
+    constructor({
+        protocolModel,
+        editorState,
+        persistenceService,
+        domainVersionSync,
+        durablePersistence,
+    }) {
         this.#protocolModel = protocolModel;
         this.#editorState = editorState;
         this.#persistenceService = persistenceService;
         this.#domainVersionSync = domainVersionSync;
+        this.#durablePersistence = durablePersistence;
     }
 
     /** Persists the committed protocol as a new protocol family and initial version. */
@@ -25,6 +33,8 @@ export class ProtocolPersistenceController {
             dependencies,
             changeSummary,
         });
+
+        await this.#durablePersistence.commit();
 
         this.#editorState.setProtocolPersistenceIdentity({
             protocolFamilyId: result.protocolFamily.id,
@@ -53,6 +63,8 @@ export class ProtocolPersistenceController {
             dependencies,
             changeSummary,
         });
+
+        await this.#durablePersistence.commit();
 
         this.#editorState.setProtocolPersistenceIdentity({
             protocolFamilyId,
