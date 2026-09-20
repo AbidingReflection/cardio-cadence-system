@@ -40,6 +40,25 @@ export class ProtocolModel {
         };
     }
 
+    /** Atomically replaces the committed protocol and resolved domain context. */
+    replaceProtocol(
+        protocol,
+        activityType,
+        machineProfile = undefined,
+        calibrationProfile = undefined,
+    ) {
+        const normalizedProtocol = normalizeProtocol(protocol);
+
+        validateProtocol(normalizedProtocol, activityType, machineProfile, calibrationProfile);
+
+        this.#protocol = structuredClone(normalizedProtocol);
+        this.#activityType = activityType;
+        this.#machineProfile = machineProfile;
+        this.#calibrationProfile = calibrationProfile;
+
+        this.#emit();
+    }
+
     /** Atomically updates the protocol's domain setup and resolved references. */
     updateSetup({
         activityType,

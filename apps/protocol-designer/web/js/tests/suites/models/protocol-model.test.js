@@ -1692,3 +1692,91 @@ test("protocol-model", "moves a block when calibration context is present", () =
     assertEqual(movedPhase.blocks.at(-1).id, originalBlockId);
     assertEqual(after.calibrationProfileId, CALIBRATION_PROFILE.id);
 });
+
+test("protocol-model", "replaces the committed protocol and setup context", () => {
+    const model = createProtocolModel();
+    const replacementProtocol = createProtocol();
+
+    replacementProtocol.machineProfileId = OTHER_MACHINE_PROFILE.id;
+    replacementProtocol.calibrationProfileId = OTHER_CALIBRATION_PROFILE.id;
+    replacementProtocol.phases[0].name = "Opened Protocol";
+
+    model.replaceProtocol(
+        replacementProtocol,
+        ACTIVITY_TYPE,
+        OTHER_MACHINE_PROFILE,
+        OTHER_CALIBRATION_PROFILE,
+    );
+
+    assertDeepEqual(model.getSnapshot(), replacementProtocol);
+    assertDeepEqual(model.getSetupContext(), {
+        activityType: ACTIVITY_TYPE,
+        machineProfile: OTHER_MACHINE_PROFILE,
+        calibrationProfile: OTHER_CALIBRATION_PROFILE,
+    });
+});
+
+test("protocol-model", "protocol replacement notifies subscribers once", () => {
+    const model = createProtocolModel();
+    const notifications = [];
+
+    model.subscribe((snapshot) => {
+        notifications.push(snapshot);
+    });
+
+    const replacementProtocol = {
+        activityTypeId: ACTIVITY_TYPE.id,
+        machineProfileId: OTHER_MACHINE_PROFILE.id,
+        calibrationProfileId: OTHER_CALIBRATION_PROFILE.id,
+        phases: [],
+    };
+
+    model.replaceProtocol(
+        replacementProtocol,
+        ACTIVITY_TYPE,
+        OTHER_MACHINE_PROFILE,
+        OTHER_CALIBRATION_PROFILE,
+    );
+
+    assertEqual(notifications.length, 1);
+    assertDeepEqual(notifications[0], replacementProtocol);
+});
+
+test("protocol-model", "failed protocol replacement leaves model state unchanged", () => {
+    const model = createProtocolModel();
+
+    const originalProtocol = model.getSnapshot();
+    const originalSetupContext = model.getSetupContext();
+
+    const invalidReplacement = {
+        activityTypeId: OTHER_ACTIVITY_TYPE.id,
+        machineProfileId: MACHINE_PROFILE.id,
+        phases: [],
+    };
+
+    assertThrows(() => {
+        model.replaceProtocol(invalidReplacement, OTHER_ACTIVITY_TYPE, MACHINE_PROFILE);
+    }, /MachineProfile/);
+
+    assertDeepEqual(model.getSnapshot(), originalProtocol);
+    assertDeepEqual(model.getSetupContext(), originalSetupContext);
+});
+
+test("protocol-model", "normalizes replacement protocol data", () => {
+    const model = createProtocolModel();
+    const replacementProtocol = createProtocol();
+
+    replacementProtocol.phases[0].blocks[0].variables.incline = {
+        type: "steady",
+        start: 2,
+        end: 5,
+        step: 1,
+    };
+
+    model.replaceProtocol(replacementProtocol, ACTIVITY_TYPE, MACHINE_PROFILE);
+
+    assertDeepEqual(model.getSnapshot().phases[0].blocks[0].variables.incline, {
+        type: "steady",
+        start: 2,
+    });
+});
