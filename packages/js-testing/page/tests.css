@@ -100,6 +100,10 @@ th {
     margin-top: 12px;
 }
 
+.test-suite-summary th {
+    padding: 0;
+}
+
 .test-suite-summary th:not(:first-child),
 .test-suite-summary td:not(:first-child) {
     width: 110px;
@@ -108,6 +112,51 @@ th {
 
 .test-suite-summary td:not(:first-child) {
     font-weight: 600;
+}
+
+.test-suite-summary th button {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    width: 100%;
+    padding: 9px 12px;
+
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+}
+
+.test-suite-summary th:first-child button {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.test-suite-summary th:not(:first-child) button {
+    justify-content: center;
+    text-align: center;
+}
+
+.test-suite-summary th button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.test-suite-summary th button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+}
+
+.test-suite-summary th[aria-sort="ascending"] button::after {
+    content: "▲";
+    font-size: 0.7em;
+}
+
+.test-suite-summary th[aria-sort="descending"] button::after {
+    content: "▼";
+    font-size: 0.7em;
 }
 
 .test-suite-summary a {

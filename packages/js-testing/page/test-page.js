@@ -2,8 +2,12 @@
  * Boots the shared browser test page for the application identified by the URL.
  */
 
+import { initializeSuiteSummarySorting } from "./suite-summary-sort.js";
+
 /** Starts the test page for the current application route. */
 async function main() {
+    initializeSuiteSummarySorting();
+
     const appPath = getAppPath(window.location.pathname);
     const runnerUrl = `${appPath}/js/tests/test-runner.js`;
 
@@ -18,19 +22,13 @@ function getAppPath(pathname) {
     const testIndex = normalizedPath.indexOf(testSegment);
 
     if (testIndex === -1) {
-        throw new Error(
-            `Test page route must contain "/tests": "${pathname}".`
-        );
+        throw new Error(`Test page route must contain "/tests": "${pathname}".`);
     }
 
-    const suffix = normalizedPath.slice(
-        testIndex + testSegment.length
-    );
+    const suffix = normalizedPath.slice(testIndex + testSegment.length);
 
     if (suffix && !/^\/[^/]+$/.test(suffix)) {
-        throw new Error(
-            `Test page route may contain at most one test target: "${pathname}".`
-        );
+        throw new Error(`Test page route may contain at most one test target: "${pathname}".`);
     }
 
     return normalizedPath.slice(0, testIndex);
