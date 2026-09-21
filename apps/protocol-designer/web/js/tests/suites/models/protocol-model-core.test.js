@@ -1,7 +1,5 @@
 import {
     test,
-    assert,
-    assertEqual,
     assertDeepEqual,
     assertThrows,
 } from "/packages/js-testing/framework/test-framework.js";
