@@ -165,6 +165,9 @@ export class ProtocolGraphRenderer {
 
         this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
 
+        const emptyStateValueMin = valueMax > valueMin ? valueMin : valueMin - 0.5;
+        const emptyStateValueMax = valueMax > valueMin ? valueMax : valueMax + 0.5;
+
         if (this.#unavailableMessage !== undefined) {
             const layout = this.#createLayout({
                 startTimeMs: 0,
@@ -172,8 +175,8 @@ export class ProtocolGraphRenderer {
                 widthPx,
                 heightPx,
                 margins,
-                valueMin,
-                valueMax,
+                valueMin: emptyStateValueMin,
+                valueMax: emptyStateValueMax,
             });
 
             this.#renderAxes({
@@ -210,8 +213,8 @@ export class ProtocolGraphRenderer {
                 widthPx,
                 heightPx,
                 margins,
-                valueMin,
-                valueMax,
+                valueMin: emptyStateValueMin,
+                valueMax: emptyStateValueMax,
             });
 
             this.#renderAxes({
