@@ -4,22 +4,52 @@ set -euo pipefail
 
 echo "=== PRODUCTION CODE ==="
 
+echo
+echo "--- APP ---"
+
 cloc \
     apps/protocol-designer \
-    packages \
-    scripts \
     --exclude-dir=tests,test,__pycache__,output,venv,.venv \
     --by-file \
-    --include-lang=JavaScript,CSS,HTML,Python
+    --include-lang=JavaScript,CSS,Python
+
+echo
+echo "--- PACKAGES ---"
+
+cloc \
+    packages \
+    --exclude-dir=tests,test,__pycache__,output,venv,.venv \
+    --by-file \
+    --include-lang=JavaScript,CSS,Python
 
 echo
 echo "=== TEST CODE ==="
 
+echo
+echo "--- APP ---"
+
 cloc \
     apps/protocol-designer \
-    packages \
-    scripts \
     --match-d='(^|/)(tests|test)(/|$)' \
     --exclude-dir=venv,.venv,__pycache__,output \
+    --by-file \
+    --include-lang=JavaScript,CSS,HTML,Python
+
+echo
+echo "--- PACKAGES ---"
+
+cloc \
+    packages \
+    --match-d='(^|/)(tests|test)(/|$)' \
+    --exclude-dir=venv,.venv,__pycache__,output \
+    --by-file \
+    --include-lang=JavaScript,CSS,HTML,Python
+
+echo
+echo "=== SCRIPTS ==="
+
+cloc \
+    scripts \
+    --exclude-dir=tests,test,__pycache__,output,venv,.venv \
     --by-file \
     --include-lang=JavaScript,CSS,HTML,Python
