@@ -17,6 +17,7 @@
         <link rel="stylesheet" href="css/protocol-setup.css" />
         <link rel="stylesheet" href="css/dialog.css" />
         <link rel="stylesheet" href="css/protocol-save.css" />
+        <link rel="stylesheet" href="css/protocol-open.css" />
     </head>
 
     <body>
@@ -35,7 +36,11 @@
                 <div class="top-ribbon__menu-group">
                     <button type="button" class="menu-button">New</button>
 
-                    <button type="button" class="menu-button menu-button--dropdown">
+                    <button
+                        type="button"
+                        class="menu-button menu-button--dropdown"
+                        id="protocol-open-button"
+                    >
                         <span>Open</span>
                         <span class="menu-button__caret" aria-hidden="true">▾</span>
                     </button>
@@ -217,6 +222,52 @@
                 <span class="total__value" id="protocol-total-calories">—</span>
             </div>
         </aside>
+
+        <dialog class="app-dialog protocol-open-dialog" id="protocol-open-dialog">
+            <div class="app-dialog__content protocol-open-dialog__content">
+                <header class="app-dialog__header protocol-open-dialog__header">
+                    <div>
+                        <h2 class="app-dialog__title protocol-open-dialog__title">Open Protocol</h2>
+
+                        <p class="app-dialog__description protocol-open-dialog__description">
+                            Select a protocol from your library.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="app-dialog__close-button protocol-open-dialog__close-button"
+                        id="protocol-open-close-button"
+                        aria-label="Close open protocol dialog"
+                    >
+                        ×
+                    </button>
+                </header>
+
+                <div class="app-dialog__section protocol-open-dialog__section">
+                    <div class="protocol-open-dialog__list" id="protocol-open-list"></div>
+                </div>
+
+                <footer class="app-dialog__footer protocol-open-dialog__footer">
+                    <button
+                        type="button"
+                        class="app-dialog__button protocol-open-dialog__button"
+                        id="protocol-open-cancel-button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="app-dialog__button app-dialog__button--primary protocol-open-dialog__button protocol-open-dialog__button--primary"
+                        id="protocol-open-confirm-button"
+                        disabled
+                    >
+                        Open Protocol
+                    </button>
+                </footer>
+            </div>
+        </dialog>
 
         <dialog class="app-dialog protocol-save-dialog" id="protocol-save-dialog">
             <div class="app-dialog__content protocol-save-dialog__content">

@@ -1,5 +1,8 @@
-/** Coordinates opening persisted protocol families into the Protocol Designer. */
+import { ActivityType } from "../models/activity-type.js";
+import { CalibrationProfile } from "../models/calibration-profile.js";
+import { MachineProfile } from "../models/machine-profile.js";
 
+/** Coordinates opening persisted protocol families into the Protocol Designer. */
 export class ProtocolOpenController {
     #protocolModel;
     #editorState;
@@ -84,11 +87,23 @@ export class ProtocolOpenController {
             }
         }
 
+        const activityType = new ActivityType(activityTypeVersion.definition);
+
+        const machineProfile =
+            machineProfileVersion === undefined
+                ? undefined
+                : new MachineProfile(machineProfileVersion.definition, activityType);
+
+        const calibrationProfile =
+            calibrationProfileVersion === undefined
+                ? undefined
+                : new CalibrationProfile(calibrationProfileVersion.definition, machineProfile);
+
         this.#protocolModel.replaceProtocol(
             latestVersion.protocol,
-            activityTypeVersion.definition,
-            machineProfileVersion?.definition,
-            calibrationProfileVersion?.definition,
+            activityType,
+            machineProfile,
+            calibrationProfile,
         );
 
         this.#editorState.setProtocolPersistenceIdentity({

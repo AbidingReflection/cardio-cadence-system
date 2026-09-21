@@ -38,6 +38,8 @@ import { DurablePersistence } from "/packages/persistence/storage/durable-persis
 import { IndexedDbStore } from "/packages/persistence/storage/indexed-db-store.js";
 
 import { wireProtocolSaveEvents } from "./interactions/protocol-save-events.js";
+import { ProtocolOpenController } from "./controllers/protocol-open-controller.js";
+import { wireProtocolOpenEvents } from "./interactions/protocol-open-events.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
@@ -139,13 +141,19 @@ async function main() {
     );
 
     const protocolSaveButton = requireElement("#protocol-save-button");
-
     const protocolSaveDialog = requireElement("#protocol-save-dialog");
     const protocolSaveCloseButton = requireElement("#protocol-save-close-button");
     const protocolSaveCancelButton = requireElement("#protocol-save-cancel-button");
     const protocolSaveConfirmButton = requireElement("#protocol-save-confirm-button");
     const protocolSaveDisplayNameInput = requireElement("#protocol-save-display-name");
     const protocolSaveChangeSummaryInput = requireElement("#protocol-save-change-summary");
+
+    const protocolOpenButton = requireElement("#protocol-open-button");
+    const protocolOpenDialog = requireElement("#protocol-open-dialog");
+    const protocolOpenCloseButton = requireElement("#protocol-open-close-button");
+    const protocolOpenCancelButton = requireElement("#protocol-open-cancel-button");
+    const protocolOpenConfirmButton = requireElement("#protocol-open-confirm-button");
+    const protocolOpenList = requireElement("#protocol-open-list");
 
     // Protocol setup dialog
     const protocolSetupButton = requireElement("#protocol-setup-button");
@@ -159,6 +167,15 @@ async function main() {
         "#protocol-setup-calibration-profile",
     );
 
+    const protocolOpenController = new ProtocolOpenController({
+        protocolModel,
+        editorState,
+        persistenceService: persistenceContext.service,
+        activityTypeVersionRepository: persistenceContext.activityTypeVersions,
+        machineProfileVersionRepository: persistenceContext.machineProfileVersions,
+        calibrationProfileVersionRepository: persistenceContext.calibrationProfileVersions,
+    });
+
     wireProtocolSaveEvents({
         saveButton: protocolSaveButton,
         saveDialog: protocolSaveDialog,
@@ -169,6 +186,17 @@ async function main() {
         changeSummaryInput: protocolSaveChangeSummaryInput,
         editorState,
         protocolPersistenceController,
+    });
+
+    wireProtocolOpenEvents({
+        openButton: protocolOpenButton,
+        openDialog: protocolOpenDialog,
+        closeButton: protocolOpenCloseButton,
+        cancelButton: protocolOpenCancelButton,
+        confirmButton: protocolOpenConfirmButton,
+        protocolList: protocolOpenList,
+        persistenceService: persistenceContext.service,
+        protocolOpenController,
     });
 
     const graphPaneController = new GraphPaneController([
