@@ -1,0 +1,89 @@
+/** Wires Protocol Designer user interactions to application state and controllers. */
+
+import {
+    toggleProtocolManageMode,
+    wireProtocolManageKeyboardEvents,
+} from "../interactions/protocol-manage-keyboard-events.js";
+import { wireProtocolOpenEvents } from "../interactions/protocol-open-events.js";
+import { wireProtocolSaveEvents } from "../interactions/protocol-save-events.js";
+import { wireProtocolSetupEvents } from "../interactions/protocol-setup-events.js";
+import { wireProtocolTreeEvents } from "../interactions/protocol-tree-events.js";
+
+/** Wires Protocol Designer interaction handlers. */
+export function wireInteractions({
+    elements,
+    protocolModel,
+    editorState,
+    domainData,
+    persistenceContext,
+    protocolPersistenceController,
+    protocolOpenController,
+    setPendingFieldFocus,
+    setPendingToggleFocus,
+    setPendingPhaseNameFocus,
+    setPendingStructuralFocus,
+}) {
+    wireProtocolSaveEvents({
+        saveButton: elements.save.button,
+        saveDialog: elements.save.dialog,
+        closeButton: elements.save.closeButton,
+        cancelButton: elements.save.cancelButton,
+        confirmButton: elements.save.confirmButton,
+        displayNameInput: elements.save.displayNameInput,
+        changeSummaryInput: elements.save.changeSummaryInput,
+        editorState,
+        protocolPersistenceController,
+    });
+
+    wireProtocolOpenEvents({
+        openButton: elements.open.button,
+        openDialog: elements.open.dialog,
+        closeButton: elements.open.closeButton,
+        cancelButton: elements.open.cancelButton,
+        confirmButton: elements.open.confirmButton,
+        protocolList: elements.open.protocolList,
+        persistenceService: persistenceContext.service,
+        protocolOpenController,
+    });
+
+    wireProtocolTreeEvents({
+        protocolTree: elements.protocol.tree,
+        protocolModel,
+        editorState,
+
+        setPendingFieldFocus,
+        setPendingToggleFocus,
+        setPendingPhaseNameFocus,
+        setPendingStructuralFocus,
+    });
+
+    wireProtocolManageKeyboardEvents({
+        protocolPane: elements.protocol.pane,
+        protocolTree: elements.protocol.tree,
+        protocolModel,
+        editorState,
+    });
+
+    wireProtocolSetupEvents({
+        setupButton: elements.setup.button,
+        setupDialog: elements.setup.dialog,
+        closeButton: elements.setup.closeButton,
+        cancelButton: elements.setup.cancelButton,
+        applyButton: elements.setup.applyButton,
+        activityTypeSelect: elements.setup.activityTypeSelect,
+        machineProfileSelect: elements.setup.machineProfileSelect,
+        calibrationProfileSelect: elements.setup.calibrationProfileSelect,
+        domainData,
+        protocolModel,
+    });
+
+    elements.protocol.editPhaseButton.addEventListener("click", () => {
+        toggleProtocolManageMode(editorState, "phase");
+        elements.protocol.tree.focus();
+    });
+
+    elements.protocol.editBlockButton.addEventListener("click", () => {
+        toggleProtocolManageMode(editorState, "block");
+        elements.protocol.tree.focus();
+    });
+}
