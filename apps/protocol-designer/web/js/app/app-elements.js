@@ -60,7 +60,7 @@ export function getAppElements() {
             closeButton: requireElement("#protocol-open-close-button"),
             cancelButton: requireElement("#protocol-open-cancel-button"),
             confirmButton: requireElement("#protocol-open-confirm-button"),
-            protocolList: requireElement("#protocol-open-list"),
+            protocolTableContainer: requireElement("#protocol-open-table"),
         },
 
         setup: {

@@ -1,9 +1,18 @@
-.protocol-open-dialog__list {
+.protocol-open-dialog__table-container {
     max-height: 320px;
     overflow: auto;
 
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
+}
+
+.protocol-open-dialog {
+    width: min(1000px, calc(100vw - 32px));
+}
+
+.protocol-open-table th:last-child,
+.protocol-open-table td:last-child {
+    min-width: 170px;
 }
 
 .protocol-open-table {

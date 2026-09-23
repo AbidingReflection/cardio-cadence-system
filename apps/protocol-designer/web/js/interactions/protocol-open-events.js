@@ -15,7 +15,7 @@ export function wireProtocolOpenEvents({
     closeButton,
     cancelButton,
     confirmButton,
-    protocolList,
+    protocolTableContainer,
     persistenceService,
     activityTypeVersions,
     protocolOpenController,
@@ -33,7 +33,7 @@ export function wireProtocolOpenEvents({
         });
 
         renderProtocolOpenTable({
-            container: protocolList,
+            container: protocolTableContainer,
             rows: sortedRows,
             selectedProtocolFamilyId,
             sortKey,
@@ -59,7 +59,7 @@ export function wireProtocolOpenEvents({
         openDialog.showModal();
     });
 
-    protocolList.addEventListener("click", (event) => {
+    protocolTableContainer.addEventListener("click", (event) => {
         const sortButton = event.target.closest("button[data-sort-key]");
 
         if (sortButton !== null) {

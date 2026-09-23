@@ -141,7 +141,7 @@ function createHarness({
     const closeButton = document.createElement("button");
     const cancelButton = document.createElement("button");
     const confirmButton = document.createElement("button");
-    const protocolList = document.createElement("div");
+    const protocolTableContainer = document.createElement("div");
 
     const openDialog = {
         open: false,
@@ -189,7 +189,7 @@ function createHarness({
         closeButton,
         cancelButton,
         confirmButton,
-        protocolList,
+        protocolTableContainer,
         persistenceService,
         activityTypeVersions,
         protocolOpenController,
@@ -201,17 +201,17 @@ function createHarness({
         closeButton,
         cancelButton,
         confirmButton,
-        protocolList,
+        protocolTableContainer,
         openCalls,
     };
 }
 
 test("protocol-open-events", "opens the dialog and renders protocol rows", () => {
-    const { openButton, openDialog, protocolList, confirmButton } = createHarness();
+    const { openButton, openDialog, protocolTableContainer, confirmButton } = createHarness();
 
     openButton.click();
 
-    const rows = protocolList.querySelectorAll("tbody tr");
+    const rows = protocolTableContainer.querySelectorAll("tbody tr");
 
     assertEqual(openDialog.open, true);
     assertEqual(rows.length, 2);
@@ -219,35 +219,35 @@ test("protocol-open-events", "opens the dialog and renders protocol rows", () =>
 });
 
 test("protocol-open-events", "sorts protocols by updated time descending by default", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    const rows = [...protocolList.querySelectorAll("tbody tr")];
+    const rows = [...protocolTableContainer.querySelectorAll("tbody tr")];
 
     assertEqual(rows[0].dataset.protocolFamilyId, "family-2");
     assertEqual(rows[1].dataset.protocolFamilyId, "family-1");
 });
 
 test("protocol-open-events", "selecting a protocol row enables confirm", () => {
-    const { openButton, protocolList, confirmButton } = createHarness();
+    const { openButton, protocolTableContainer, confirmButton } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
 
     assertEqual(confirmButton.disabled, false);
 });
 
 test("protocol-open-events", "selecting a protocol row marks it selected", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
 
     assertEqual(
-        protocolList
+        protocolTableContainer
             .querySelector('tr[data-protocol-family-id="family-1"]')
             .getAttribute("aria-selected"),
         "true",
@@ -255,22 +255,22 @@ test("protocol-open-events", "selecting a protocol row marks it selected", () =>
 });
 
 test("protocol-open-events", "selecting another protocol moves selection", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
-    protocolList.querySelector('tr[data-protocol-family-id="family-2"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-2"]').click();
 
     assertEqual(
-        protocolList
+        protocolTableContainer
             .querySelector('tr[data-protocol-family-id="family-1"]')
             .getAttribute("aria-selected"),
         "false",
     );
 
     assertEqual(
-        protocolList
+        protocolTableContainer
             .querySelector('tr[data-protocol-family-id="family-2"]')
             .getAttribute("aria-selected"),
         "true",
@@ -278,44 +278,46 @@ test("protocol-open-events", "selecting another protocol moves selection", () =>
 });
 
 test("protocol-open-events", "clicking a sort header changes the sort column", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('button[data-sort-key="displayName"]').click();
+    protocolTableContainer.querySelector('button[data-sort-key="displayName"]').click();
 
-    const rows = [...protocolList.querySelectorAll("tbody tr")];
+    const rows = [...protocolTableContainer.querySelectorAll("tbody tr")];
 
     assertEqual(rows[0].dataset.protocolFamilyId, "family-2");
     assertEqual(rows[1].dataset.protocolFamilyId, "family-1");
 });
 
 test("protocol-open-events", "clicking the active sort header toggles direction", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    const updatedButton = protocolList.querySelector('button[data-sort-key="updatedAtUnixMs"]');
+    const updatedButton = protocolTableContainer.querySelector(
+        'button[data-sort-key="updatedAtUnixMs"]',
+    );
 
     updatedButton.click();
 
-    const rows = [...protocolList.querySelectorAll("tbody tr")];
+    const rows = [...protocolTableContainer.querySelectorAll("tbody tr")];
 
     assertEqual(rows[0].dataset.protocolFamilyId, "family-1");
     assertEqual(rows[1].dataset.protocolFamilyId, "family-2");
 });
 
 test("protocol-open-events", "selection survives sorting", () => {
-    const { openButton, protocolList } = createHarness();
+    const { openButton, protocolTableContainer } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
 
-    protocolList.querySelector('button[data-sort-key="displayName"]').click();
+    protocolTableContainer.querySelector('button[data-sort-key="displayName"]').click();
 
     assertEqual(
-        protocolList
+        protocolTableContainer
             .querySelector('tr[data-protocol-family-id="family-1"]')
             .getAttribute("aria-selected"),
         "true",
@@ -323,11 +325,11 @@ test("protocol-open-events", "selection survives sorting", () => {
 });
 
 test("protocol-open-events", "confirm opens the selected protocol family", async () => {
-    const { openButton, protocolList, confirmButton, openCalls } = createHarness();
+    const { openButton, protocolTableContainer, confirmButton, openCalls } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-2"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-2"]').click();
     confirmButton.click();
 
     await flushAsyncEvents();
@@ -336,11 +338,11 @@ test("protocol-open-events", "confirm opens the selected protocol family", async
 });
 
 test("protocol-open-events", "successful open closes the dialog", async () => {
-    const { openButton, openDialog, protocolList, confirmButton } = createHarness();
+    const { openButton, openDialog, protocolTableContainer, confirmButton } = createHarness();
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
     confirmButton.click();
 
     await flushAsyncEvents();
@@ -349,13 +351,13 @@ test("protocol-open-events", "successful open closes the dialog", async () => {
 });
 
 test("protocol-open-events", "failed open leaves the dialog open", async () => {
-    const { openButton, openDialog, protocolList, confirmButton } = createHarness({
+    const { openButton, openDialog, protocolTableContainer, confirmButton } = createHarness({
         openError: new Error("Open failed."),
     });
 
     openButton.click();
 
-    protocolList.querySelector('tr[data-protocol-family-id="family-1"]').click();
+    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
     confirmButton.click();
 
     await flushAsyncEvents();
@@ -382,7 +384,7 @@ test("protocol-open-events", "cancel button closes the dialog", () => {
 });
 
 test("protocol-open-events", "empty protocol library renders an empty state", () => {
-    const { openButton, protocolList, confirmButton } = createHarness({
+    const { openButton, protocolTableContainer, confirmButton } = createHarness({
         protocolFamilies: [],
         plannedVersions: new Map(),
     });
@@ -390,7 +392,7 @@ test("protocol-open-events", "empty protocol library renders an empty state", ()
     openButton.click();
 
     assertEqual(
-        protocolList.querySelector("[data-protocol-open-empty]").textContent.trim(),
+        protocolTableContainer.querySelector("[data-protocol-open-empty]").textContent.trim(),
         "No saved protocols yet.",
     );
 

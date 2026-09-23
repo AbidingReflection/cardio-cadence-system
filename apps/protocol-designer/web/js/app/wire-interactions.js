@@ -56,7 +56,7 @@ export function wireInteractions({
         closeButton: elements.open.closeButton,
         cancelButton: elements.open.cancelButton,
         confirmButton: elements.open.confirmButton,
-        protocolList: elements.open.protocolList,
+        protocolTableContainer: elements.open.protocolTableContainer,
         persistenceService: persistenceContext.service,
         activityTypeVersions: persistenceContext.activityTypeVersions,
         protocolOpenController,
