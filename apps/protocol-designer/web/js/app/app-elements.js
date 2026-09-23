@@ -37,11 +37,20 @@ export function getAppElements() {
 
         save: {
             button: requireElement("#protocol-save-button"),
+            menuButton: requireElement("#protocol-save-menu-button"),
+            menu: requireElement("#protocol-save-menu"),
+            saveAsButton: requireElement("#protocol-save-as-button"),
+            renameButton: requireElement("#protocol-rename-button"),
+
             dialog: requireElement("#protocol-save-dialog"),
+            title: requireElement("#protocol-save-dialog-title"),
+            description: requireElement("#protocol-save-dialog-description"),
             closeButton: requireElement("#protocol-save-close-button"),
             cancelButton: requireElement("#protocol-save-cancel-button"),
             confirmButton: requireElement("#protocol-save-confirm-button"),
             displayNameInput: requireElement("#protocol-save-display-name"),
+            nameHint: requireElement("#protocol-save-name-hint"),
+            changeSummaryField: requireElement("#protocol-save-change-summary-field"),
             changeSummaryInput: requireElement("#protocol-save-change-summary"),
         },
 

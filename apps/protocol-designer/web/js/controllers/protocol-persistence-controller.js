@@ -74,6 +74,24 @@ export class ProtocolPersistenceController {
         return plannedProtocolVersion;
     }
 
+    /** Renames the current persisted protocol without creating a new version. */
+    async renameProtocol({ displayName }) {
+        const { protocolFamilyId } = this.#editorState.getSnapshot();
+
+        if (protocolFamilyId === undefined) {
+            throw new Error("Cannot rename a protocol without an active protocol family.");
+        }
+
+        const protocolFamily = this.#persistenceService.renameProtocolFamily(
+            protocolFamilyId,
+            displayName,
+        );
+
+        await this.#durablePersistence.commit();
+
+        return protocolFamily;
+    }
+
     /** Resolves persisted version IDs for the protocol's current setup context. */
     async #resolveDependencies() {
         const { activityType, machineProfile, calibrationProfile } =
@@ -100,5 +118,23 @@ export class ProtocolPersistenceController {
         return this.saveNextProtocolVersion({
             changeSummary,
         });
+    }
+
+    /** Renames the current persisted protocol without creating a new version. */
+    async renameProtocol({ displayName }) {
+        const { protocolFamilyId } = this.#editorState.getSnapshot();
+
+        if (protocolFamilyId === undefined) {
+            throw new Error("Cannot rename a protocol without an active protocol family.");
+        }
+
+        const protocolFamily = this.#persistenceService.renameProtocolFamily(
+            protocolFamilyId,
+            displayName,
+        );
+
+        await this.#durablePersistence.commit();
+
+        return protocolFamily;
     }
 }

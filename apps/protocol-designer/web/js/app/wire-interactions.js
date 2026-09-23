@@ -6,6 +6,7 @@ import {
 } from "../interactions/protocol-manage-keyboard-events.js";
 import { wireProtocolOpenEvents } from "../interactions/protocol-open-events.js";
 import { wireProtocolSaveEvents } from "../interactions/protocol-save-events.js";
+import { wireProtocolSaveMenuEvents } from "../interactions/protocol-save-menu-events.js";
 import { wireProtocolSetupEvents } from "../interactions/protocol-setup-events.js";
 import { wireProtocolTreeEvents } from "../interactions/protocol-tree-events.js";
 
@@ -23,15 +24,29 @@ export function wireInteractions({
     setPendingPhaseNameFocus,
     setPendingStructuralFocus,
 }) {
+    wireProtocolSaveMenuEvents({
+        saveMenuButton: elements.save.menuButton,
+        saveMenu: elements.save.menu,
+    });
+
     wireProtocolSaveEvents({
         saveButton: elements.save.button,
+        saveAsButton: elements.save.saveAsButton,
+        renameButton: elements.save.renameButton,
+
         saveDialog: elements.save.dialog,
+        title: elements.save.title,
+        description: elements.save.description,
         closeButton: elements.save.closeButton,
         cancelButton: elements.save.cancelButton,
         confirmButton: elements.save.confirmButton,
         displayNameInput: elements.save.displayNameInput,
+        nameHint: elements.save.nameHint,
+        changeSummaryField: elements.save.changeSummaryField,
         changeSummaryInput: elements.save.changeSummaryInput,
+
         editorState,
+        persistenceService: persistenceContext.service,
         protocolPersistenceController,
     });
 

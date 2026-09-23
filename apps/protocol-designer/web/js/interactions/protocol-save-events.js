@@ -1,56 +1,137 @@
-/** Wires Protocol Designer save-dialog interactions. */
+import { renderProtocolSaveDialog } from "../renderers/protocol-save-dialog-renderer.js";
 
+/** Wires Protocol Designer save interactions. */
 export function wireProtocolSaveEvents({
     saveButton,
+    saveAsButton,
+    renameButton,
     saveDialog,
+    title,
+    description,
     closeButton,
     cancelButton,
     confirmButton,
     displayNameInput,
+    nameHint,
+    changeSummaryField,
     changeSummaryInput,
     editorState,
+    persistenceService,
     protocolPersistenceController,
 }) {
-    saveButton.addEventListener("click", () => {
+    let dialogMode;
+
+    const dialogElements = {
+        title,
+        description,
+        displayNameInput,
+        nameHint,
+        changeSummaryField,
+        changeSummaryInput,
+        confirmButton,
+    };
+
+    saveButton.addEventListener("click", async () => {
         const { protocolFamilyId } = editorState.getSnapshot();
 
-        displayNameInput.disabled = protocolFamilyId !== undefined;
-        displayNameInput.value = "";
-        changeSummaryInput.value = "";
+        if (protocolFamilyId !== undefined) {
+            try {
+                await protocolPersistenceController.saveNextProtocolVersion();
+            } catch {
+                // Leave the current editor state intact so the user can retry.
+            }
+
+            return;
+        }
+
+        dialogMode = "initial-save";
+
+        renderProtocolSaveDialog(dialogElements, {
+            mode: dialogMode,
+        });
 
         saveDialog.showModal();
-
-        if (protocolFamilyId === undefined) {
-            displayNameInput.focus();
-        } else {
-            changeSummaryInput.focus();
-        }
+        displayNameInput.focus();
     });
 
-    closeButton.addEventListener("click", () => {
-        saveDialog.close();
-    });
-
-    cancelButton.addEventListener("click", () => {
-        saveDialog.close();
-    });
-
-    confirmButton.addEventListener("click", async () => {
+    saveAsButton.addEventListener("click", () => {
         const { protocolFamilyId } = editorState.getSnapshot();
 
         const displayName =
             protocolFamilyId === undefined
-                ? normalizeOptionalText(displayNameInput.value)
-                : undefined;
+                ? ""
+                : (persistenceService.getProtocolFamily(protocolFamilyId)?.displayName ?? "");
 
+        dialogMode = "save-as";
+
+        renderProtocolSaveDialog(dialogElements, {
+            mode: dialogMode,
+            displayName,
+        });
+
+        saveDialog.showModal();
+        displayNameInput.focus();
+    });
+
+    renameButton.addEventListener("click", () => {
+        const { protocolFamilyId } = editorState.getSnapshot();
+
+        if (protocolFamilyId === undefined) {
+            return;
+        }
+
+        const protocolFamily = persistenceService.getProtocolFamily(protocolFamilyId);
+
+        if (protocolFamily === undefined) {
+            return;
+        }
+
+        dialogMode = "rename";
+
+        renderProtocolSaveDialog(dialogElements, {
+            mode: dialogMode,
+            displayName: protocolFamily.displayName,
+        });
+
+        saveDialog.showModal();
+        displayNameInput.focus();
+    });
+
+    closeButton.addEventListener("click", () => {
+        dialogMode = undefined;
+        saveDialog.close();
+    });
+
+    cancelButton.addEventListener("click", () => {
+        dialogMode = undefined;
+        saveDialog.close();
+    });
+
+    confirmButton.addEventListener("click", async () => {
+        const displayName = normalizeOptionalText(displayNameInput.value);
         const changeSummary = normalizeOptionalText(changeSummaryInput.value);
 
         try {
-            await protocolPersistenceController.saveProtocol({
-                displayName,
-                changeSummary,
-            });
+            switch (dialogMode) {
+                case "initial-save":
+                case "save-as":
+                    await protocolPersistenceController.createPersistedProtocol({
+                        displayName,
+                        changeSummary,
+                    });
+                    break;
 
+                case "rename":
+                    await protocolPersistenceController.renameProtocol({
+                        displayName,
+                    });
+                    break;
+
+                default:
+                    throw new Error("Cannot confirm protocol save dialog without an active mode.");
+            }
+
+            dialogMode = undefined;
             saveDialog.close();
         } catch {
             // Keep the dialog open so the user can retry.

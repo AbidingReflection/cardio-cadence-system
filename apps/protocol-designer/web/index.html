@@ -45,14 +45,47 @@
                         <span class="menu-button__caret" aria-hidden="true">▾</span>
                     </button>
 
-                    <button
-                        type="button"
-                        class="menu-button menu-button--dropdown"
-                        id="protocol-save-button"
-                    >
-                        <span>Save</span>
-                        <span class="menu-button__caret" aria-hidden="true">▾</span>
-                    </button>
+                    <div class="menu-split-button">
+                        <button
+                            type="button"
+                            class="menu-button menu-split-button__primary"
+                            id="protocol-save-button"
+                        >
+                            Save
+                        </button>
+
+                        <button
+                            type="button"
+                            class="menu-button menu-split-button__dropdown"
+                            id="protocol-save-menu-button"
+                            aria-label="Open save menu"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="protocol-save-menu"
+                        >
+                            <span class="menu-button__caret" aria-hidden="true">▾</span>
+                        </button>
+
+                        <div class="menu-dropdown" id="protocol-save-menu" role="menu" hidden>
+                            <button
+                                type="button"
+                                class="menu-dropdown__item"
+                                id="protocol-save-as-button"
+                                role="menuitem"
+                            >
+                                Save As…
+                            </button>
+
+                            <button
+                                type="button"
+                                class="menu-dropdown__item"
+                                id="protocol-rename-button"
+                                role="menuitem"
+                            >
+                                Rename…
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="top-ribbon__menu-group top-ribbon__menu-group--setup">
@@ -273,9 +306,17 @@
             <div class="app-dialog__content protocol-save-dialog__content">
                 <header class="app-dialog__header protocol-save-dialog__header">
                     <div>
-                        <h2 class="app-dialog__title protocol-save-dialog__title">Save Protocol</h2>
+                        <h2
+                            class="app-dialog__title protocol-save-dialog__title"
+                            id="protocol-save-dialog-title"
+                        >
+                            Save Protocol
+                        </h2>
 
-                        <p class="app-dialog__description protocol-save-dialog__description">
+                        <p
+                            class="app-dialog__description protocol-save-dialog__description"
+                            id="protocol-save-dialog-description"
+                        >
                             Save the current protocol to the protocol library.
                         </p>
                     </div>
@@ -284,7 +325,7 @@
                         type="button"
                         class="app-dialog__close-button protocol-save-dialog__close-button"
                         id="protocol-save-close-button"
-                        aria-label="Close save protocol dialog"
+                        aria-label="Close protocol save dialog"
                     >
                         ×
                     </button>
@@ -305,12 +346,18 @@
                             id="protocol-save-display-name"
                         />
 
-                        <p class="app-dialog__hint protocol-save-dialog__hint">
+                        <p
+                            class="app-dialog__hint protocol-save-dialog__hint"
+                            id="protocol-save-name-hint"
+                        >
                             This name identifies the protocol in your library.
                         </p>
                     </div>
 
-                    <div class="app-dialog__field protocol-save-dialog__field">
+                    <div
+                        class="app-dialog__field protocol-save-dialog__field"
+                        id="protocol-save-change-summary-field"
+                    >
                         <label
                             class="app-dialog__label protocol-save-dialog__label"
                             for="protocol-save-change-summary"
@@ -341,7 +388,7 @@
                         class="app-dialog__button app-dialog__button--primary protocol-save-dialog__button protocol-save-dialog__button--primary"
                         id="protocol-save-confirm-button"
                     >
-                        Save Protocol
+                        Save
                     </button>
                 </footer>
             </div>

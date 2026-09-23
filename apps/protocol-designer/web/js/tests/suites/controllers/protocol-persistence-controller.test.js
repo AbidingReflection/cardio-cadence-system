@@ -101,6 +101,21 @@ function createFixture({
                 id: "version-2",
             };
         },
+
+        renameProtocolFamily(id, displayName) {
+            calls.push({
+                method: "renameProtocolFamily",
+                input: {
+                    id,
+                    displayName,
+                },
+            });
+
+            return {
+                id,
+                displayName,
+            };
+        },
     };
 
     const durablePersistence = {
@@ -454,6 +469,106 @@ test(
         assertDeepEqual(
             calls.map((call) => call.method),
             ["resolveDependencies", "createProtocolFamilyWithInitialVersion", "commit"],
+        );
+    },
+);
+
+test("protocol-persistence-controller", "renames the current protocol family", async () => {
+    const { calls, controller } = createFixture({
+        protocolFamilyId: "family-1",
+        plannedProtocolVersionId: "version-1",
+    });
+
+    await controller.renameProtocol({
+        displayName: "Updated Protocol Name",
+    });
+
+    assertDeepEqual(
+        calls.filter((call) => call.method === "renameProtocolFamily"),
+        [
+            {
+                method: "renameProtocolFamily",
+                input: {
+                    id: "family-1",
+                    displayName: "Updated Protocol Name",
+                },
+            },
+        ],
+    );
+});
+
+test("protocol-persistence-controller", "returns the renamed protocol family", async () => {
+    const { controller } = createFixture({
+        protocolFamilyId: "family-1",
+        plannedProtocolVersionId: "version-1",
+    });
+
+    const result = await controller.renameProtocol({
+        displayName: "Updated Protocol Name",
+    });
+
+    assertDeepEqual(result, {
+        id: "family-1",
+        displayName: "Updated Protocol Name",
+    });
+});
+
+test("protocol-persistence-controller", "commits durable state after renaming", async () => {
+    const { calls, controller } = createFixture({
+        protocolFamilyId: "family-1",
+        plannedProtocolVersionId: "version-1",
+    });
+
+    await controller.renameProtocol({
+        displayName: "Updated Protocol Name",
+    });
+
+    const renameIndex = calls.findIndex((call) => call.method === "renameProtocolFamily");
+    const commitIndex = calls.findIndex((call) => call.method === "commit");
+
+    assertEqual(renameIndex >= 0, true);
+    assertEqual(commitIndex > renameIndex, true);
+});
+
+test(
+    "protocol-persistence-controller",
+    "rejects renaming when no protocol family is active",
+    async () => {
+        const { controller } = createFixture();
+
+        let thrownError;
+
+        try {
+            await controller.renameProtocol({
+                displayName: "Updated Protocol Name",
+            });
+        } catch (error) {
+            thrownError = error;
+        }
+
+        assertEqual(
+            thrownError?.message,
+            "Cannot rename a protocol without an active protocol family.",
+        );
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "rename does not update protocol persistence identity",
+    async () => {
+        const { calls, controller } = createFixture({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        await controller.renameProtocol({
+            displayName: "Updated Protocol Name",
+        });
+
+        assertEqual(
+            calls.some((call) => call.method === "setProtocolPersistenceIdentity"),
+            false,
         );
     },
 );
