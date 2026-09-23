@@ -206,6 +206,16 @@ function createHarness({
     };
 }
 
+/** Dispatches a keyboard event to the Protocol Open table container. */
+function pressKey(element, key) {
+    element.dispatchEvent(
+        new KeyboardEvent("keydown", {
+            key,
+            bubbles: true,
+        }),
+    );
+}
+
 test("protocol-open-events", "opens the dialog and renders protocol rows", () => {
     const { openButton, openDialog, protocolTableContainer, confirmButton } = createHarness();
 
@@ -397,4 +407,134 @@ test("protocol-open-events", "empty protocol library renders an empty state", ()
     );
 
     assertEqual(confirmButton.disabled, true);
+});
+
+test("protocol-open-events", "ArrowDown selects the first protocol when none is selected", () => {
+    const { openButton, protocolTableContainer, confirmButton } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "ArrowDown");
+
+    assertEqual(
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-2"]')
+            .getAttribute("aria-selected"),
+        "true",
+    );
+    assertEqual(confirmButton.disabled, false);
+});
+
+test("protocol-open-events", "ArrowDown moves selection to the next protocol", () => {
+    const { openButton, protocolTableContainer } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "ArrowDown");
+    pressKey(protocolTableContainer, "ArrowDown");
+
+    assertEqual(
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-1"]')
+            .getAttribute("aria-selected"),
+        "true",
+    );
+});
+
+test("protocol-open-events", "ArrowUp moves selection to the previous protocol", () => {
+    const { openButton, protocolTableContainer } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "ArrowDown");
+    pressKey(protocolTableContainer, "ArrowDown");
+    pressKey(protocolTableContainer, "ArrowUp");
+
+    assertEqual(
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-2"]')
+            .getAttribute("aria-selected"),
+        "true",
+    );
+});
+
+test("protocol-open-events", "Arrow navigation clamps at the first and last protocol", () => {
+    const { openButton, protocolTableContainer } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "ArrowUp");
+
+    assertEqual(
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-2"]')
+            .getAttribute("aria-selected"),
+        "true",
+    );
+
+    pressKey(protocolTableContainer, "ArrowDown");
+    pressKey(protocolTableContainer, "ArrowDown");
+
+    assertEqual(
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-1"]')
+            .getAttribute("aria-selected"),
+        "true",
+    );
+});
+
+test("protocol-open-events", "Enter opens the selected protocol family", async () => {
+    const { openButton, protocolTableContainer, openCalls } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "ArrowDown");
+    pressKey(protocolTableContainer, "Enter");
+
+    await flushAsyncEvents();
+
+    assertDeepEqual(openCalls, ["family-2"]);
+});
+
+test("protocol-open-events", "Enter does nothing when no protocol is selected", async () => {
+    const { openButton, protocolTableContainer, openCalls } = createHarness();
+
+    openButton.click();
+
+    pressKey(protocolTableContainer, "Enter");
+
+    await flushAsyncEvents();
+
+    assertDeepEqual(openCalls, []);
+});
+
+test("protocol-open-events", "selecting a protocol scrolls the selected row into view", () => {
+    const { openButton, protocolTableContainer } = createHarness();
+
+    const scrollCalls = [];
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+
+    Element.prototype.scrollIntoView = function (options) {
+        scrollCalls.push({
+            protocolFamilyId: this.dataset.protocolFamilyId,
+            options,
+        });
+    };
+
+    try {
+        openButton.click();
+
+        protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
+
+        assertDeepEqual(scrollCalls, [
+            {
+                protocolFamilyId: "family-1",
+                options: {
+                    block: "nearest",
+                },
+            },
+        ]);
+    } finally {
+        Element.prototype.scrollIntoView = originalScrollIntoView;
+    }
 });

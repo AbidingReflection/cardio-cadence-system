@@ -25,20 +25,74 @@ export function wireProtocolOpenEvents({
     let sortKey = "updatedAtUnixMs";
     let sortDirection = "desc";
 
-    /** Renders the current rows using the active selection and sort state. */
-    function renderTable() {
-        const sortedRows = sortProtocolOpenRows(rows, {
+    /** Returns the rows in their current visible sort order. */
+    function getSortedRows() {
+        return sortProtocolOpenRows(rows, {
             key: sortKey,
             direction: sortDirection,
         });
+    }
 
+    /** Renders the current rows using the active selection and sort state. */
+    function renderTable() {
         renderProtocolOpenTable({
             container: protocolTableContainer,
-            rows: sortedRows,
+            rows: getSortedRows(),
             selectedProtocolFamilyId,
             sortKey,
             sortDirection,
         });
+    }
+
+    /** Selects a protocol family and updates the dialog state. */
+    function selectProtocolFamily(protocolFamilyId) {
+        selectedProtocolFamilyId = protocolFamilyId;
+        confirmButton.disabled = false;
+        renderTable();
+
+        const selectedRow = [...protocolTableContainer.querySelectorAll("tbody tr")].find(
+            (row) => row.dataset.protocolFamilyId === protocolFamilyId,
+        );
+
+        selectedRow?.scrollIntoView({
+            block: "nearest",
+        });
+    }
+
+    /** Opens the currently selected protocol family. */
+    async function openSelectedProtocol() {
+        if (selectedProtocolFamilyId === undefined) {
+            return;
+        }
+
+        try {
+            await protocolOpenController.openProtocolFamily(selectedProtocolFamilyId);
+            openDialog.close();
+        } catch (error) {
+            console.error("Failed to open protocol.", error);
+        }
+    }
+
+    /** Moves selection one row in the supplied direction. */
+    function moveSelection(direction) {
+        const sortedRows = getSortedRows();
+
+        if (sortedRows.length === 0) {
+            return;
+        }
+
+        const selectedIndex = sortedRows.findIndex(
+            (row) => row.protocolFamilyId === selectedProtocolFamilyId,
+        );
+
+        if (selectedIndex === -1) {
+            selectProtocolFamily(sortedRows[0].protocolFamilyId);
+            return;
+        }
+
+        const nextIndex = Math.max(0, Math.min(sortedRows.length - 1, selectedIndex + direction));
+
+        selectProtocolFamily(sortedRows[nextIndex].protocolFamilyId);
     }
 
     openButton.addEventListener("click", () => {
@@ -82,10 +136,26 @@ export function wireProtocolOpenEvents({
             return;
         }
 
-        selectedProtocolFamilyId = protocolRow.dataset.protocolFamilyId;
-        confirmButton.disabled = false;
+        selectProtocolFamily(protocolRow.dataset.protocolFamilyId);
+    });
 
-        renderTable();
+    protocolTableContainer.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            moveSelection(1);
+            return;
+        }
+
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            moveSelection(-1);
+            return;
+        }
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+            void openSelectedProtocol();
+        }
     });
 
     closeButton.addEventListener("click", () => {
@@ -96,17 +166,7 @@ export function wireProtocolOpenEvents({
         openDialog.close();
     });
 
-    confirmButton.addEventListener("click", async () => {
-        if (selectedProtocolFamilyId === undefined) {
-            return;
-        }
-
-        try {
-            await protocolOpenController.openProtocolFamily(selectedProtocolFamilyId);
-
-            openDialog.close();
-        } catch (error) {
-            console.error("Failed to open protocol.", error);
-        }
+    confirmButton.addEventListener("click", () => {
+        void openSelectedProtocol();
     });
 }
