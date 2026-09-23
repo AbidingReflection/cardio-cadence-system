@@ -58,6 +58,7 @@ export function wireInteractions({
         confirmButton: elements.open.confirmButton,
         protocolList: elements.open.protocolList,
         persistenceService: persistenceContext.service,
+        activityTypeVersions: persistenceContext.activityTypeVersions,
         protocolOpenController,
     });
 

@@ -1,38 +1,105 @@
 .protocol-open-dialog__list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
     max-height: 320px;
-    overflow-y: auto;
-}
-
-.protocol-open-dialog__item {
-    width: 100%;
-
-    padding: 10px 12px;
+    overflow: auto;
 
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
+}
+
+.protocol-open-table {
+    width: 100%;
+    border-collapse: collapse;
 
     background: var(--color-surface);
     color: var(--color-text);
+}
+
+.protocol-open-table th,
+.protocol-open-table td {
+    padding: 10px 12px;
+
+    border-bottom: 1px solid var(--color-border);
+
+    text-align: left;
+    vertical-align: middle;
+}
+
+.protocol-open-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    background: var(--color-surface);
+}
+
+.protocol-open-table th:first-child,
+.protocol-open-table td:first-child {
+    width: 100%;
+}
+
+.protocol-open-table th:not(:first-child),
+.protocol-open-table td:not(:first-child) {
+    white-space: nowrap;
+}
+
+.protocol-open-table tbody tr {
+    cursor: pointer;
+}
+
+.protocol-open-table tbody tr:hover {
+    background: var(--color-surface-hover);
+}
+
+.protocol-open-table tbody tr[aria-selected="true"] {
+    background: var(--color-surface-hover);
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+}
+
+.protocol-open-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.protocol-open-table__sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+    color: inherit;
 
     font: inherit;
-    text-align: left;
+    font-weight: 600;
 
     cursor: pointer;
 }
 
-.protocol-open-dialog__item:hover {
-    background: var(--color-surface-hover);
+.protocol-open-table__sort-button:hover {
+    color: var(--color-accent);
 }
 
-.protocol-open-dialog__item:focus-visible {
+.protocol-open-table__sort-button:focus-visible {
     outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
 
-.protocol-open-dialog__item[aria-selected="true"] {
-    border-color: var(--color-accent);
+.protocol-open-table th[aria-sort="ascending"] .protocol-open-table__sort-button::after {
+    content: "▲";
+    font-size: 0.7em;
+}
+
+.protocol-open-table th[aria-sort="descending"] .protocol-open-table__sort-button::after {
+    content: "▼";
+    font-size: 0.7em;
+}
+
+[data-protocol-open-empty] {
+    padding: 24px 12px;
+
+    color: var(--color-text-muted);
+    text-align: center;
 }

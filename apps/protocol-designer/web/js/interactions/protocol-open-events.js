@@ -1,5 +1,14 @@
-/** Wires Protocol Designer open-dialog interactions. */
+/**
+ * Wires Protocol Designer open-dialog selection, sorting, and open interactions.
+ */
 
+import {
+    buildProtocolOpenRows,
+    sortProtocolOpenRows,
+} from "../renderers/protocol-open-row-model.js";
+import { renderProtocolOpenTable } from "../renderers/protocol-open-table-renderer.js";
+
+/** Wires Protocol Designer open-dialog interactions. */
 export function wireProtocolOpenEvents({
     openButton,
     openDialog,
@@ -8,24 +17,75 @@ export function wireProtocolOpenEvents({
     confirmButton,
     protocolList,
     persistenceService,
+    activityTypeVersions,
     protocolOpenController,
 }) {
+    let rows = [];
     let selectedProtocolFamilyId;
+    let sortKey = "updatedAtUnixMs";
+    let sortDirection = "desc";
+
+    /** Renders the current rows using the active selection and sort state. */
+    function renderTable() {
+        const sortedRows = sortProtocolOpenRows(rows, {
+            key: sortKey,
+            direction: sortDirection,
+        });
+
+        renderProtocolOpenTable({
+            container: protocolList,
+            rows: sortedRows,
+            selectedProtocolFamilyId,
+            sortKey,
+            sortDirection,
+        });
+    }
 
     openButton.addEventListener("click", () => {
         selectedProtocolFamilyId = undefined;
+        sortKey = "updatedAtUnixMs";
+        sortDirection = "desc";
         confirmButton.disabled = true;
 
-        renderProtocolFamilies(
-            protocolList,
-            persistenceService.listProtocolFamilies(),
-            (protocolFamilyId) => {
-                selectedProtocolFamilyId = protocolFamilyId;
-                confirmButton.disabled = false;
-            },
-        );
+        rows = buildProtocolOpenRows({
+            protocolFamilies: persistenceService.listProtocolFamilies(),
+            getPlannedVersions: (protocolFamilyId) =>
+                persistenceService.listPlannedProtocolVersions(protocolFamilyId),
+            getActivityTypeVersion: (activityTypeVersionId) =>
+                activityTypeVersions.getById(activityTypeVersionId),
+        });
 
+        renderTable();
         openDialog.showModal();
+    });
+
+    protocolList.addEventListener("click", (event) => {
+        const sortButton = event.target.closest("button[data-sort-key]");
+
+        if (sortButton !== null) {
+            const nextSortKey = sortButton.dataset.sortKey;
+
+            if (nextSortKey === sortKey) {
+                sortDirection = sortDirection === "asc" ? "desc" : "asc";
+            } else {
+                sortKey = nextSortKey;
+                sortDirection = "asc";
+            }
+
+            renderTable();
+            return;
+        }
+
+        const protocolRow = event.target.closest("tr[data-protocol-family-id]");
+
+        if (protocolRow === null) {
+            return;
+        }
+
+        selectedProtocolFamilyId = protocolRow.dataset.protocolFamilyId;
+        confirmButton.disabled = false;
+
+        renderTable();
     });
 
     closeButton.addEventListener("click", () => {
@@ -49,30 +109,4 @@ export function wireProtocolOpenEvents({
             console.error("Failed to open protocol.", error);
         }
     });
-}
-
-/** Renders selectable protocol-family rows into the open dialog. */
-function renderProtocolFamilies(protocolList, protocolFamilies, onSelect) {
-    protocolList.replaceChildren();
-
-    for (const protocolFamily of protocolFamilies) {
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.className = "protocol-open-dialog__item";
-        button.textContent = protocolFamily.displayName;
-        button.dataset.protocolFamilyId = protocolFamily.id;
-        button.setAttribute("aria-selected", "false");
-
-        button.addEventListener("click", () => {
-            for (const item of protocolList.children) {
-                item.setAttribute("aria-selected", "false");
-            }
-
-            button.setAttribute("aria-selected", "true");
-            onSelect(protocolFamily.id);
-        });
-
-        protocolList.append(button);
-    }
 }
