@@ -6,6 +6,7 @@ import { MachineProfile } from "../models/machine-profile.js";
 export class ProtocolOpenController {
     #protocolModel;
     #editorState;
+    #protocolSessionState;
     #persistenceService;
     #activityTypeVersionRepository;
     #machineProfileVersionRepository;
@@ -15,6 +16,7 @@ export class ProtocolOpenController {
     constructor({
         protocolModel,
         editorState,
+        protocolSessionState,
         persistenceService,
         activityTypeVersionRepository,
         machineProfileVersionRepository,
@@ -22,6 +24,7 @@ export class ProtocolOpenController {
     }) {
         this.#protocolModel = protocolModel;
         this.#editorState = editorState;
+        this.#protocolSessionState = protocolSessionState;
         this.#persistenceService = persistenceService;
         this.#activityTypeVersionRepository = activityTypeVersionRepository;
         this.#machineProfileVersionRepository = machineProfileVersionRepository;
@@ -110,6 +113,8 @@ export class ProtocolOpenController {
             protocolFamilyId,
             plannedProtocolVersionId: latestVersion.id,
         });
+
+        this.#protocolSessionState.setBaseline(this.#protocolModel.getSnapshot());
 
         return latestVersion;
     }

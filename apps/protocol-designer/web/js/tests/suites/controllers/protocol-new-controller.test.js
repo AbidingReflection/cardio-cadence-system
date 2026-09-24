@@ -15,8 +15,16 @@ function createHarness() {
         calibrationProfile: { id: "calibration-1" },
     };
 
+    const protocolSnapshot = {
+        activityTypeId: "elliptical",
+        machineProfileId: "machine-1",
+        calibrationProfileId: "calibration-1",
+        phases: [],
+    };
+
     const resetProtocolCalls = [];
     const resetSessionCalls = [];
+    const baselineCalls = [];
 
     const protocolModel = {
         getSetupContext() {
@@ -26,6 +34,10 @@ function createHarness() {
         resetProtocol(context) {
             resetProtocolCalls.push(context);
         },
+
+        getSnapshot() {
+            return protocolSnapshot;
+        },
     };
 
     const editorState = {
@@ -34,16 +46,28 @@ function createHarness() {
         },
     };
 
+    const protocolSessionState = {
+        setBaseline(snapshot) {
+            baselineCalls.push(snapshot);
+        },
+    };
+
     const controller = new ProtocolNewController({
         protocolModel,
         editorState,
+        protocolSessionState,
     });
 
     return {
         controller,
+        protocolModel,
+        editorState,
+        protocolSessionState,
         setupContext,
+        protocolSnapshot,
         resetProtocolCalls,
         resetSessionCalls,
+        baselineCalls,
     };
 }
 
@@ -76,6 +100,11 @@ test("protocol-new-controller", "preserves optional setup values when resetting"
 test("protocol-new-controller", "supports new protocols without optional setup context", () => {
     const resetProtocolCalls = [];
 
+    const protocolSnapshot = {
+        activityTypeId: "cycling",
+        phases: [],
+    };
+
     const protocolModel = {
         getSetupContext() {
             return {
@@ -88,6 +117,10 @@ test("protocol-new-controller", "supports new protocols without optional setup c
         resetProtocol(context) {
             resetProtocolCalls.push(context);
         },
+
+        getSnapshot() {
+            return protocolSnapshot;
+        },
     };
 
     const editorState = {
@@ -97,6 +130,9 @@ test("protocol-new-controller", "supports new protocols without optional setup c
     const controller = new ProtocolNewController({
         protocolModel,
         editorState,
+        protocolSessionState: {
+            setBaseline() {},
+        },
     });
 
     controller.newProtocol();
@@ -109,3 +145,50 @@ test("protocol-new-controller", "supports new protocols without optional setup c
         },
     ]);
 });
+
+test(
+    "protocol-new-controller",
+    "establishes the new empty protocol as the session baseline",
+    () => {
+        let baseline;
+
+        const protocolSnapshot = {
+            activityTypeId: "activity-1",
+            phases: [],
+        };
+
+        const protocolModel = {
+            getSetupContext() {
+                return {
+                    activityType: { id: "activity-1" },
+                };
+            },
+
+            resetProtocol() {},
+
+            getSnapshot() {
+                return protocolSnapshot;
+            },
+        };
+
+        const editorState = {
+            resetProtocolSession() {},
+        };
+
+        const protocolSessionState = {
+            setBaseline(snapshot) {
+                baseline = snapshot;
+            },
+        };
+
+        const controller = new ProtocolNewController({
+            protocolModel,
+            editorState,
+            protocolSessionState,
+        });
+
+        controller.newProtocol();
+
+        assertEqual(baseline, protocolSnapshot);
+    },
+);

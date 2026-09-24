@@ -3,6 +3,7 @@
 import {
     assertDeepEqual,
     assertEqual,
+    assertThrows,
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
@@ -158,6 +159,11 @@ function createFixture(options = {}) {
 
     const calls = [];
 
+    const protocolSnapshot = {
+        activityTypeId: "activity-type-1",
+        phases: [],
+    };
+
     const protocolModel = {
         replaceProtocol(protocol, activityType, machineProfile, calibrationProfile) {
             calls.push({
@@ -169,6 +175,10 @@ function createFixture(options = {}) {
                     calibrationProfile,
                 },
             });
+        },
+
+        getSnapshot() {
+            return protocolSnapshot;
         },
     };
 
@@ -234,9 +244,18 @@ function createFixture(options = {}) {
         },
     };
 
+    const baselineCalls = [];
+
+    const protocolSessionState = {
+        setBaseline(snapshot) {
+            baselineCalls.push(snapshot);
+        },
+    };
+
     const controller = new ProtocolOpenController({
         protocolModel,
         editorState,
+        protocolSessionState,
         persistenceService,
         activityTypeVersionRepository,
         machineProfileVersionRepository,
@@ -246,6 +265,8 @@ function createFixture(options = {}) {
     return {
         calls,
         controller,
+        baselineCalls,
+        protocolSnapshot,
     };
 }
 
@@ -434,4 +455,26 @@ test("protocol-open-controller", "rejects a missing calibration profile version"
             "getCalibrationProfileVersion",
         ],
     );
+});
+
+test("protocol-open-controller", "establishes the opened protocol as the session baseline", () => {
+    const fixture = createFixture();
+
+    fixture.controller.openProtocolFamily(fixture.protocolFamilyId);
+
+    assertEqual(fixture.baselineCalls.length, 1);
+    assertEqual(fixture.baselineCalls[0], fixture.protocolSnapshot);
+});
+
+test("protocol-open-controller", "does not establish a session baseline when opening fails", () => {
+    const fixture = createFixture({
+        protocolFamily: undefined,
+    });
+
+    assertThrows(
+        () => fixture.controller.openProtocolFamily(PROTOCOL_FAMILY.id),
+        `Protocol family "${PROTOCOL_FAMILY.id}" was not found.`,
+    );
+
+    assertEqual(fixture.baselineCalls.length, 0);
 });

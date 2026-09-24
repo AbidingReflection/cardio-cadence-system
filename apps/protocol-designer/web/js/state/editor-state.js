@@ -15,6 +15,7 @@ export class EditorState {
 
     #editingPhaseId;
     #phaseNameDraft;
+    #phaseNameBaseline;
 
     #activeBlockDraft;
     #blockDraftBaseline;
@@ -65,6 +66,7 @@ export class EditorState {
 
         this.#editingPhaseId = undefined;
         this.#phaseNameDraft = undefined;
+        this.#phaseNameBaseline = undefined;
 
         this.#activeBlockDraft = undefined;
         this.#blockDraftBaseline = undefined;
@@ -175,6 +177,7 @@ export class EditorState {
     startPhaseNameEdit(phaseId, name) {
         this.#editingPhaseId = phaseId;
         this.#phaseNameDraft = name;
+        this.#phaseNameBaseline = name;
 
         this.#emit();
     }
@@ -202,8 +205,18 @@ export class EditorState {
 
         this.#editingPhaseId = undefined;
         this.#phaseNameDraft = undefined;
+        this.#phaseNameBaseline = undefined;
 
         this.#emit();
+    }
+
+    /** Returns whether the active phase-name draft differs from its baseline. */
+    isPhaseNameDraftDirty() {
+        if (this.#phaseNameDraft === undefined || this.#phaseNameBaseline === undefined) {
+            return false;
+        }
+
+        return this.#phaseNameDraft !== this.#phaseNameBaseline;
     }
 
     /** Starts a block draft and records its initial baseline. */

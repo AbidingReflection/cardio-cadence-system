@@ -5,7 +5,7 @@ import { ProtocolGraphController } from "../controllers/protocol-graph-controlle
 import { ProtocolNewController } from "../controllers/protocol-new-controller.js";
 
 /** Creates Protocol Designer controllers from application dependencies. */
-export function createControllers({ elements, protocolModel, editorState }) {
+export function createControllers({ elements, protocolModel, editorState, protocolSessionState }) {
     const graphPaneController = new GraphPaneController([
         {
             id: "cadence",
@@ -40,6 +40,7 @@ export function createControllers({ elements, protocolModel, editorState }) {
     const protocolNewController = new ProtocolNewController({
         protocolModel,
         editorState,
+        protocolSessionState,
     });
 
     return {

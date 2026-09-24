@@ -21,6 +21,7 @@ export function wireInteractions({
     protocolPersistenceController,
     protocolOpenController,
     protocolNewController,
+    protocolUnsavedChanges,
     setPendingFieldFocus,
     setPendingToggleFocus,
     setPendingPhaseNameFocus,
@@ -29,6 +30,7 @@ export function wireInteractions({
     wireProtocolNewEvents({
         newButton: elements.new.button,
         protocolNewController,
+        protocolUnsavedChanges,
     });
 
     wireProtocolSaveMenuEvents({

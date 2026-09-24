@@ -130,9 +130,17 @@ function createFixture({
         },
     };
 
+    const baselineCalls = [];
+
+    const protocolSessionState = {
+        setBaseline(snapshot) {
+            baselineCalls.push(snapshot);
+        },
+    };
     const controller = new ProtocolPersistenceController({
         protocolModel,
         editorState,
+        protocolSessionState,
         persistenceService,
         domainVersionSync,
         durablePersistence,
@@ -142,6 +150,7 @@ function createFixture({
         calls,
         controller,
         editorState,
+        baselineCalls,
     };
 }
 
@@ -570,5 +579,64 @@ test(
             calls.some((call) => call.method === "setProtocolPersistenceIdentity"),
             false,
         );
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "establishes the persisted protocol as the session baseline after initial save",
+    async () => {
+        const { baselineCalls, controller } = createFixture();
+
+        await controller.createPersistedProtocol({
+            displayName: "Threshold Intervals",
+            changeSummary: "Initial version",
+        });
+
+        assertEqual(baselineCalls.length, 1);
+        assertDeepEqual(baselineCalls[0], PROTOCOL);
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "establishes the persisted protocol as the session baseline after saving the next version",
+    async () => {
+        const { baselineCalls, controller } = createFixture({
+            protocolFamilyId: "family-1",
+            plannedProtocolVersionId: "version-1",
+        });
+
+        await controller.saveNextProtocolVersion({
+            changeSummary: "Updated version",
+        });
+
+        assertEqual(baselineCalls.length, 1);
+        assertDeepEqual(baselineCalls[0], PROTOCOL);
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "does not establish a session baseline when durable persistence fails",
+    async () => {
+        const commitError = new Error("Commit failed.");
+        const { baselineCalls, controller } = createFixture({
+            commitError,
+        });
+
+        let error;
+
+        try {
+            await controller.createPersistedProtocol({
+                displayName: "Threshold Intervals",
+                changeSummary: "Initial version",
+            });
+        } catch (caughtError) {
+            error = caughtError;
+        }
+
+        assertEqual(error, commitError);
+        assertEqual(baselineCalls.length, 0);
     },
 );

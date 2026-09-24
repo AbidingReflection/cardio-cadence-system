@@ -3,6 +3,7 @@
 export class ProtocolPersistenceController {
     #protocolModel;
     #editorState;
+    #protocolSessionState;
     #persistenceService;
     #domainVersionSync;
     #durablePersistence;
@@ -11,12 +12,14 @@ export class ProtocolPersistenceController {
     constructor({
         protocolModel,
         editorState,
+        protocolSessionState,
         persistenceService,
         domainVersionSync,
         durablePersistence,
     }) {
         this.#protocolModel = protocolModel;
         this.#editorState = editorState;
+        this.#protocolSessionState = protocolSessionState;
         this.#persistenceService = persistenceService;
         this.#domainVersionSync = domainVersionSync;
         this.#durablePersistence = durablePersistence;
@@ -40,6 +43,8 @@ export class ProtocolPersistenceController {
             protocolFamilyId: result.protocolFamily.id,
             plannedProtocolVersionId: result.plannedProtocolVersion.id,
         });
+
+        this.#protocolSessionState.setBaseline(protocol);
 
         return result;
     }
@@ -70,6 +75,8 @@ export class ProtocolPersistenceController {
             protocolFamilyId,
             plannedProtocolVersionId: plannedProtocolVersion.id,
         });
+
+        this.#protocolSessionState.setBaseline(protocol);
 
         return plannedProtocolVersion;
     }
@@ -118,23 +125,5 @@ export class ProtocolPersistenceController {
         return this.saveNextProtocolVersion({
             changeSummary,
         });
-    }
-
-    /** Renames the current persisted protocol without creating a new version. */
-    async renameProtocol({ displayName }) {
-        const { protocolFamilyId } = this.#editorState.getSnapshot();
-
-        if (protocolFamilyId === undefined) {
-            throw new Error("Cannot rename a protocol without an active protocol family.");
-        }
-
-        const protocolFamily = this.#persistenceService.renameProtocolFamily(
-            protocolFamilyId,
-            displayName,
-        );
-
-        await this.#durablePersistence.commit();
-
-        return protocolFamily;
     }
 }

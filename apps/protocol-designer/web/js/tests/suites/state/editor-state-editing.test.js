@@ -74,3 +74,40 @@ test("editor-state-editing", "rejects unsupported edit modes", () => {
         state.setEditMode("banana");
     });
 });
+
+test("editor-state-editing", "starts phase-name editing clean", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warmup");
+
+    assertEqual(state.isPhaseNameDraftDirty(), false);
+});
+
+test("editor-state-editing", "reports a changed phase-name draft as dirty", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warmup");
+    state.updatePhaseNameDraft("Updated Warmup");
+
+    assertEqual(state.isPhaseNameDraftDirty(), true);
+});
+
+test("editor-state-editing", "reports a reverted phase-name draft as clean", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warmup");
+    state.updatePhaseNameDraft("Updated Warmup");
+    state.updatePhaseNameDraft("Warmup");
+
+    assertEqual(state.isPhaseNameDraftDirty(), false);
+});
+
+test("editor-state-editing", "clears phase-name dirty state when editing closes", () => {
+    const state = new EditorState();
+
+    state.startPhaseNameEdit("phase-1", "Warmup");
+    state.updatePhaseNameDraft("Updated Warmup");
+    state.closePhaseNameEdit();
+
+    assertEqual(state.isPhaseNameDraftDirty(), false);
+});

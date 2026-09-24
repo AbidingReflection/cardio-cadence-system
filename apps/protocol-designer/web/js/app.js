@@ -16,6 +16,8 @@ import { ProtocolModel } from "./models/protocol-model.js";
 import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
 
 import { EditorState } from "./state/editor-state.js";
+import { ProtocolSessionState } from "./state/protocol-session-state.js";
+import { ProtocolUnsavedChanges } from "./state/protocol-unsaved-changes.js";
 
 const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
 
@@ -62,12 +64,23 @@ async function main() {
     );
 
     const editorState = new EditorState();
+
+    const protocolSessionState = new ProtocolSessionState();
+    protocolSessionState.setBaseline(protocolModel.getSnapshot());
+
+    const protocolUnsavedChanges = new ProtocolUnsavedChanges({
+        protocolModel,
+        editorState,
+        protocolSessionState,
+    });
+
     const elements = getAppElements();
 
     const { persistenceContext, protocolPersistenceController, protocolOpenController } =
         await createPersistence({
             protocolModel,
             editorState,
+            protocolSessionState,
         });
 
     const { graphPaneController, protocolGraphController, protocolNewController } =
@@ -75,6 +88,7 @@ async function main() {
             elements,
             protocolModel,
             editorState,
+            protocolSessionState,
         });
 
     const rendering = wireRendering({
@@ -94,6 +108,7 @@ async function main() {
         protocolPersistenceController,
         protocolOpenController,
         protocolNewController,
+        protocolUnsavedChanges,
         setPendingFieldFocus: rendering.setPendingFieldFocus,
         setPendingToggleFocus: rendering.setPendingToggleFocus,
         setPendingPhaseNameFocus: rendering.setPendingPhaseNameFocus,
