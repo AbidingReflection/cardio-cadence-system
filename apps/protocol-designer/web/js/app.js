@@ -19,41 +19,29 @@ import { EditorState } from "./state/editor-state.js";
 import { ProtocolSessionState } from "./state/protocol-session-state.js";
 import { ProtocolUnsavedChanges } from "./state/protocol-unsaved-changes.js";
 
-const INITIAL_PROTOCOL_URL = "/data/protocols/true-elliptical-80-minute-session.json";
+const DEFAULT_ACTIVITY_TYPE_ID = "elliptical";
+const DEFAULT_MACHINE_PROFILE_ID = "true-elliptical-aquatic-center";
+// const DEFAULT_CALIBRATION_PROFILE_ID = "...";
 
 /** Initializes the Protocol Designer application. */
 async function main() {
     const domainData = await loadDomainData();
-    const protocolData = await loadProtocolData(INITIAL_PROTOCOL_URL);
 
     await loadGraphSvgs();
 
-    const activityType = domainData.activityTypes.get(protocolData.activityTypeId);
+    const { activityType, machineProfile, calibrationProfile } = getDefaultSetupContext(domainData);
 
-    if (activityType === undefined) {
-        throw new Error(`Protocol ActivityType "${protocolData.activityTypeId}" was not found.`);
+    const protocolData = createEmptyProtocolData({
+        activityType,
+        machineProfile,
+    });
+
+    if (machineProfile !== undefined) {
+        protocolData.machineProfileId = machineProfile.id;
     }
 
-    const machineProfile =
-        protocolData.machineProfileId === undefined
-            ? undefined
-            : domainData.machineProfiles.get(protocolData.machineProfileId);
-
-    if (protocolData.machineProfileId !== undefined && machineProfile === undefined) {
-        throw new Error(
-            `Protocol MachineProfile "${protocolData.machineProfileId}" was not found.`,
-        );
-    }
-
-    const calibrationProfile =
-        protocolData.calibrationProfileId === undefined
-            ? undefined
-            : domainData.calibrationProfiles.get(protocolData.calibrationProfileId);
-
-    if (protocolData.calibrationProfileId !== undefined && calibrationProfile === undefined) {
-        throw new Error(
-            `Protocol CalibrationProfile "${protocolData.calibrationProfileId}" was not found.`,
-        );
+    if (calibrationProfile !== undefined) {
+        protocolData.calibrationProfileId = calibrationProfile.id;
     }
 
     const protocolModel = new ProtocolModel(
@@ -116,25 +104,44 @@ async function main() {
     });
 }
 
-/** Loads and returns protocol data from the specified JSON resource. */
-async function loadProtocolData(url) {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-        throw new Error(
-            `Failed to load protocol "${url}": ` + `${response.status} ${response.statusText}.`,
-        );
-    }
-
-    const data = await response.json();
-
-    if (data === null || typeof data !== "object" || data.protocol === undefined) {
-        throw new Error(`Protocol file "${url}" must contain a protocol object.`);
-    }
-
-    return data.protocol;
-}
-
 main().catch((error) => {
     console.error("Protocol Designer initialization failed.", error);
 });
+
+/** Resolves the temporary default setup used for a fresh startup session. */
+function getDefaultSetupContext(domainData) {
+    const activityType = domainData.activityTypes.get(DEFAULT_ACTIVITY_TYPE_ID);
+
+    if (activityType === undefined) {
+        throw new Error(`Default ActivityType "${DEFAULT_ACTIVITY_TYPE_ID}" was not found.`);
+    }
+
+    const machineProfile =
+        DEFAULT_MACHINE_PROFILE_ID === undefined
+            ? undefined
+            : domainData.machineProfiles.get(DEFAULT_MACHINE_PROFILE_ID);
+
+    if (DEFAULT_MACHINE_PROFILE_ID !== undefined && machineProfile === undefined) {
+        throw new Error(`Default MachineProfile "${DEFAULT_MACHINE_PROFILE_ID}" was not found.`);
+    }
+
+    return {
+        activityType,
+        machineProfile,
+        calibrationProfile: undefined,
+    };
+}
+
+/** Creates an empty protocol for the supplied setup context. */
+function createEmptyProtocolData({ activityType, machineProfile }) {
+    const protocol = {
+        activityTypeId: activityType.id,
+        phases: [],
+    };
+
+    if (machineProfile !== undefined) {
+        protocol.machineProfileId = machineProfile.id;
+    }
+
+    return protocol;
+}
