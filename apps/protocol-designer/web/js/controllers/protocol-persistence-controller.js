@@ -49,7 +49,7 @@ export class ProtocolPersistenceController {
         return result;
     }
 
-    /** Persists the committed protocol as the next version in the current protocol family. */
+    /** Persists the committed protocol as the next version when committed content has changed. */
     async saveNextProtocolVersion({ changeSummary } = {}) {
         const { protocolFamilyId } = this.#editorState.getSnapshot();
 
@@ -60,6 +60,11 @@ export class ProtocolPersistenceController {
         }
 
         const protocol = this.#protocolModel.getSnapshot();
+
+        if (!this.#protocolSessionState.isProtocolDirty(protocol)) {
+            return undefined;
+        }
+
         const dependencies = await this.#resolveDependencies();
 
         const plannedProtocolVersion = this.#persistenceService.createNextPlannedProtocolVersion({

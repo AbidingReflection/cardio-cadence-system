@@ -31,6 +31,7 @@ function createFixture({
     protocolFamilyId = undefined,
     plannedProtocolVersionId = undefined,
     commitError = undefined,
+    protocolDirty = true,
 } = {}) {
     const calls = [];
 
@@ -133,10 +134,15 @@ function createFixture({
     const baselineCalls = [];
 
     const protocolSessionState = {
+        isProtocolDirty() {
+            return protocolDirty;
+        },
+
         setBaseline(snapshot) {
             baselineCalls.push(snapshot);
         },
     };
+
     const controller = new ProtocolPersistenceController({
         protocolModel,
         editorState,
