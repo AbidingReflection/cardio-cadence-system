@@ -27,6 +27,8 @@ export function buildProtocolOpenRowModel({
         protocolFamilyId: protocolFamily.id,
         displayName: protocolFamily.displayName,
         activityName: activityTypeVersion.definition.name,
+        phaseCount: latestVersion.protocol.phases.length,
+        blockCount: getProtocolBlockCount(latestVersion.protocol),
         durationSeconds: getProtocolDurationSeconds(latestVersion.protocol),
         versionNumber: latestVersion.versionNumber,
         updatedAtUnixMs: latestVersion.createdAtUnixMs,
@@ -63,6 +65,8 @@ export function sortProtocolOpenRows(rows, { key, direction }) {
     const supportedKeys = new Set([
         "displayName",
         "activityName",
+        "phaseCount",
+        "blockCount",
         "durationSeconds",
         "versionNumber",
         "updatedAtUnixMs",
@@ -89,4 +93,9 @@ export function sortProtocolOpenRows(rows, { key, direction }) {
 
         return comparison * directionMultiplier;
     });
+}
+
+/** Returns the total number of blocks in a protocol. */
+function getProtocolBlockCount(protocol) {
+    return protocol.phases.reduce((total, phase) => total + phase.blocks.length, 0);
 }

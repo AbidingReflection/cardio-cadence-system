@@ -96,6 +96,8 @@ test("protocol-open-row-model", "builds a row model from the latest planned vers
         protocolFamilyId: "family-1",
         displayName: "Threshold Intervals",
         activityName: "Elliptical",
+        phaseCount: 0,
+        blockCount: 0,
         durationSeconds: 0,
         versionNumber: 2,
         updatedAtUnixMs: 2000,

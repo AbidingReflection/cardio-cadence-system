@@ -11,6 +11,8 @@ function createRows() {
             protocolFamilyId: "family-1",
             displayName: "Threshold Intervals",
             activityName: "Elliptical",
+            phaseCount: 4,
+            blockCount: 12,
             durationSeconds: 4800,
             versionNumber: 7,
             updatedAtUnixMs: Date.UTC(2026, 8, 22),
@@ -19,6 +21,8 @@ function createRows() {
             protocolFamilyId: "family-2",
             displayName: "Endurance Base",
             activityName: "Cycling",
+            phaseCount: 3,
+            blockCount: 8,
             durationSeconds: 3600,
             versionNumber: 3,
             updatedAtUnixMs: Date.UTC(2026, 8, 18),
@@ -46,12 +50,14 @@ test("protocol-open-table-renderer", "renders the protocol table headers", () =>
         header.textContent.trim(),
     );
 
-    assertEqual(headers.length, 5);
+    assertEqual(headers.length, 7);
     assertEqual(headers[0], "Protocol");
     assertEqual(headers[1], "Activity");
-    assertEqual(headers[2], "Duration");
-    assertEqual(headers[3], "Version");
-    assertEqual(headers[4], "Updated");
+    assertEqual(headers[2], "Phases");
+    assertEqual(headers[3], "Blocks");
+    assertEqual(headers[4], "Duration");
+    assertEqual(headers[5], "Version");
+    assertEqual(headers[6], "Updated");
 });
 
 test("protocol-open-table-renderer", "renders one row per protocol", () => {
@@ -94,9 +100,11 @@ test("protocol-open-table-renderer", "renders protocol row values", () => {
 
     assertEqual(cells[0], "Threshold Intervals");
     assertEqual(cells[1], "Elliptical");
-    assertEqual(cells[2], "1 h 20 min");
-    assertEqual(cells[3], "7");
-    assertEqual(cells[4], expectedUpdated);
+    assertEqual(cells[2], "4");
+    assertEqual(cells[3], "12");
+    assertEqual(cells[4], "1 h 20 min");
+    assertEqual(cells[5], "7");
+    assertEqual(cells[6], expectedUpdated);
 });
 
 test("protocol-open-table-renderer", "stores protocol family identity on each row", () => {
@@ -163,7 +171,7 @@ test("protocol-open-table-renderer", "renders sortable header controls", () => {
 
     const sortButtons = container.querySelectorAll("button[data-sort-key]");
 
-    assertEqual(sortButtons.length, 5);
+    assertEqual(sortButtons.length, 7);
 });
 
 test("protocol-open-table-renderer", "renders an empty state when no protocols exist", () => {

@@ -12,6 +12,14 @@ const COLUMNS = [
         label: "Activity",
     },
     {
+        key: "phaseCount",
+        label: "Phases",
+    },
+    {
+        key: "blockCount",
+        label: "Blocks",
+    },
+    {
         key: "durationSeconds",
         label: "Duration",
     },
@@ -112,6 +120,8 @@ function createProtocolRow(rowModel, selectedProtocolFamilyId) {
     row.append(
         createCell(rowModel.displayName),
         createCell(rowModel.activityName),
+        createCell(String(rowModel.phaseCount)),
+        createCell(String(rowModel.blockCount)),
         createCell(formatDuration(rowModel.durationSeconds)),
         createCell(String(rowModel.versionNumber)),
         createCell(UPDATED_FORMATTER.format(rowModel.updatedAtUnixMs)),
