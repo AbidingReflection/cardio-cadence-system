@@ -48,9 +48,19 @@ export function wireProtocolOpenEvents({
     function selectProtocolFamily(protocolFamilyId) {
         selectedProtocolFamilyId = protocolFamilyId;
         confirmButton.disabled = false;
-        renderTable();
 
-        const selectedRow = [...protocolTableContainer.querySelectorAll("tbody tr")].find(
+        const protocolRows = [
+            ...protocolTableContainer.querySelectorAll("tr[data-protocol-family-id]"),
+        ];
+
+        for (const row of protocolRows) {
+            row.setAttribute(
+                "aria-selected",
+                row.dataset.protocolFamilyId === protocolFamilyId ? "true" : "false",
+            );
+        }
+
+        const selectedRow = protocolRows.find(
             (row) => row.dataset.protocolFamilyId === protocolFamilyId,
         );
 
@@ -111,6 +121,7 @@ export function wireProtocolOpenEvents({
 
         renderTable();
         openDialog.showModal();
+        protocolTableContainer.focus();
     });
 
     protocolTableContainer.addEventListener("click", (event) => {
@@ -156,6 +167,17 @@ export function wireProtocolOpenEvents({
             event.preventDefault();
             void openSelectedProtocol();
         }
+    });
+
+    protocolTableContainer.addEventListener("dblclick", (event) => {
+        const protocolRow = event.target.closest("tr[data-protocol-family-id]");
+
+        if (protocolRow === null) {
+            return;
+        }
+
+        selectProtocolFamily(protocolRow.dataset.protocolFamilyId);
+        void openSelectedProtocol();
     });
 
     closeButton.addEventListener("click", () => {

@@ -538,3 +538,57 @@ test("protocol-open-events", "selecting a protocol scrolls the selected row into
         Element.prototype.scrollIntoView = originalScrollIntoView;
     }
 });
+
+test("protocol-open-events", "opening the dialog focuses the protocol table", () => {
+    const { openButton, protocolTableContainer } = createHarness();
+
+    let focusCount = 0;
+
+    protocolTableContainer.focus = () => {
+        focusCount += 1;
+    };
+
+    openButton.click();
+
+    assertEqual(focusCount, 1);
+});
+
+test("protocol-open-events", "double-clicking a protocol row opens that protocol", async () => {
+    const { openButton, protocolTableContainer, openCalls } = createHarness();
+
+    openButton.click();
+
+    const row = protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]');
+
+    row.dispatchEvent(
+        new MouseEvent("dblclick", {
+            bubbles: true,
+        }),
+    );
+
+    await flushAsyncEvents();
+
+    assertDeepEqual(openCalls, ["family-1"]);
+});
+
+test(
+    "protocol-open-events",
+    "double-clicking a protocol row closes the dialog after open",
+    async () => {
+        const { openButton, openDialog, protocolTableContainer } = createHarness();
+
+        openButton.click();
+
+        protocolTableContainer
+            .querySelector('tr[data-protocol-family-id="family-1"]')
+            .dispatchEvent(
+                new MouseEvent("dblclick", {
+                    bubbles: true,
+                }),
+            );
+
+        await flushAsyncEvents();
+
+        assertEqual(openDialog.open, false);
+    },
+);
