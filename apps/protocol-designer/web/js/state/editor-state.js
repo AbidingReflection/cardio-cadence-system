@@ -55,6 +55,30 @@ export class EditorState {
         };
     }
 
+    /** Resets transient editor state for a newly created or loaded protocol. */
+    resetProtocolSession() {
+        this.#expandedPhaseIds.clear();
+        this.#expandedBlockId = undefined;
+
+        this.#selectedPhaseId = undefined;
+        this.#selectedBlockId = undefined;
+
+        this.#editingPhaseId = undefined;
+        this.#phaseNameDraft = undefined;
+
+        this.#activeBlockDraft = undefined;
+        this.#blockDraftBaseline = undefined;
+
+        this.#validationErrors = [];
+        this.#insertionTarget = undefined;
+        this.#editMode = undefined;
+
+        this.#protocolFamilyId = undefined;
+        this.#plannedProtocolVersionId = undefined;
+
+        this.#emit();
+    }
+
     /** Subscribes to editor-state changes and returns an unsubscribe function. */
     subscribe(listener) {
         this.#listeners.add(listener);

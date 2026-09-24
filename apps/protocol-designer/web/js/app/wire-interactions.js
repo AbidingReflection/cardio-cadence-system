@@ -9,6 +9,7 @@ import { wireProtocolSaveEvents } from "../interactions/protocol-save-events.js"
 import { wireProtocolSaveMenuEvents } from "../interactions/protocol-save-menu-events.js";
 import { wireProtocolSetupEvents } from "../interactions/protocol-setup-events.js";
 import { wireProtocolTreeEvents } from "../interactions/protocol-tree-events.js";
+import { wireProtocolNewEvents } from "../interactions/protocol-new-events.js";
 
 /** Wires Protocol Designer interaction handlers. */
 export function wireInteractions({
@@ -19,11 +20,17 @@ export function wireInteractions({
     persistenceContext,
     protocolPersistenceController,
     protocolOpenController,
+    protocolNewController,
     setPendingFieldFocus,
     setPendingToggleFocus,
     setPendingPhaseNameFocus,
     setPendingStructuralFocus,
 }) {
+    wireProtocolNewEvents({
+        newButton: elements.new.button,
+        protocolNewController,
+    });
+
     wireProtocolSaveMenuEvents({
         saveMenuButton: elements.save.menuButton,
         saveMenu: elements.save.menu,

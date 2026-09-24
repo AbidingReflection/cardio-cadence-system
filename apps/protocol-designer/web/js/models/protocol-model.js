@@ -59,6 +59,24 @@ export class ProtocolModel {
         this.#emit();
     }
 
+    /** Replaces the current protocol with an empty protocol using the supplied setup context. */
+    resetProtocol({ activityType, machineProfile = undefined, calibrationProfile = undefined }) {
+        const protocol = {
+            activityTypeId: activityType.id,
+            phases: [],
+        };
+
+        if (machineProfile !== undefined) {
+            protocol.machineProfileId = machineProfile.id;
+        }
+
+        if (calibrationProfile !== undefined) {
+            protocol.calibrationProfileId = calibrationProfile.id;
+        }
+
+        this.replaceProtocol(protocol, activityType, machineProfile, calibrationProfile);
+    }
+
     /** Atomically updates the protocol's domain setup and resolved references. */
     updateSetup({
         activityType,

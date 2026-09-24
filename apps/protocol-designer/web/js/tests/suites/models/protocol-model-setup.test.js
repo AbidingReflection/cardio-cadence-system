@@ -423,3 +423,65 @@ test("protocol-model-setup", "normalizes replacement protocol data", () => {
         start: 2,
     });
 });
+
+test("protocol-model-setup", "resets protocol structure while preserving supplied setup", () => {
+    const model = createProtocolModel();
+
+    model.resetProtocol({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: MACHINE_PROFILE,
+        calibrationProfile: CALIBRATION_PROFILE,
+    });
+
+    assertDeepEqual(model.getSnapshot(), {
+        activityTypeId: ACTIVITY_TYPE.id,
+        machineProfileId: MACHINE_PROFILE.id,
+        calibrationProfileId: CALIBRATION_PROFILE.id,
+        phases: [],
+    });
+});
+
+test("protocol-model-setup", "resets protocol without optional setup references", () => {
+    const model = createProtocolModel();
+
+    model.resetProtocol({
+        activityType: ACTIVITY_TYPE,
+    });
+
+    assertDeepEqual(model.getSnapshot(), {
+        activityTypeId: ACTIVITY_TYPE.id,
+        phases: [],
+    });
+});
+
+test("protocol-model-setup", "reset protocol updates setup context", () => {
+    const model = createProtocolModel();
+
+    model.resetProtocol({
+        activityType: OTHER_ACTIVITY_TYPE,
+    });
+
+    assertDeepEqual(model.getSetupContext(), {
+        activityType: OTHER_ACTIVITY_TYPE,
+        machineProfile: undefined,
+        calibrationProfile: undefined,
+    });
+});
+
+test("protocol-model-setup", "reset protocol notifies subscribers once", () => {
+    const model = createProtocolModel();
+
+    let notificationCount = 0;
+
+    model.subscribe(() => {
+        notificationCount += 1;
+    });
+
+    model.resetProtocol({
+        activityType: ACTIVITY_TYPE,
+        machineProfile: MACHINE_PROFILE,
+        calibrationProfile: CALIBRATION_PROFILE,
+    });
+
+    assertEqual(notificationCount, 1);
+});

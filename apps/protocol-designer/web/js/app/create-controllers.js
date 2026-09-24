@@ -2,9 +2,10 @@
 
 import { GraphPaneController } from "../controllers/graph-pane-controller.js";
 import { ProtocolGraphController } from "../controllers/protocol-graph-controller.js";
+import { ProtocolNewController } from "../controllers/protocol-new-controller.js";
 
-/** Creates graph-related controllers from application elements. */
-export function createControllers({ elements }) {
+/** Creates Protocol Designer controllers from application dependencies. */
+export function createControllers({ elements, protocolModel, editorState }) {
     const graphPaneController = new GraphPaneController([
         {
             id: "cadence",
@@ -36,8 +37,14 @@ export function createControllers({ elements }) {
         cumulativeCaloriesContainer: elements.graphs.cumulativeCalories.container,
     });
 
+    const protocolNewController = new ProtocolNewController({
+        protocolModel,
+        editorState,
+    });
+
     return {
         graphPaneController,
         protocolGraphController,
+        protocolNewController,
     };
 }

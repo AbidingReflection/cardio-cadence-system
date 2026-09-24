@@ -35,6 +35,10 @@ export function getAppElements() {
             },
         },
 
+        new: {
+            button: requireElement("#protocol-new-button"),
+        },
+
         save: {
             button: requireElement("#protocol-save-button"),
             menuButton: requireElement("#protocol-save-menu-button"),

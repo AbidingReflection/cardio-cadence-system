@@ -70,9 +70,12 @@ async function main() {
             editorState,
         });
 
-    const { graphPaneController, protocolGraphController } = createControllers({
-        elements,
-    });
+    const { graphPaneController, protocolGraphController, protocolNewController } =
+        createControllers({
+            elements,
+            protocolModel,
+            editorState,
+        });
 
     const rendering = wireRendering({
         elements,
@@ -90,6 +93,7 @@ async function main() {
         persistenceContext,
         protocolPersistenceController,
         protocolOpenController,
+        protocolNewController,
         setPendingFieldFocus: rendering.setPendingFieldFocus,
         setPendingToggleFocus: rendering.setPendingToggleFocus,
         setPendingPhaseNameFocus: rendering.setPendingPhaseNameFocus,
