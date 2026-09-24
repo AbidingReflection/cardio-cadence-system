@@ -19,6 +19,7 @@ export function wireProtocolOpenEvents({
     persistenceService,
     activityTypeVersions,
     protocolOpenController,
+    protocolUnsavedChanges,
 }) {
     let rows = [];
     let selectedProtocolFamilyId;
@@ -75,8 +76,19 @@ export function wireProtocolOpenEvents({
             return;
         }
 
+        if (protocolUnsavedChanges.hasUnsavedChanges()) {
+            const confirmed = window.confirm(
+                "You have unsaved changes. Opening another protocol will discard them. Continue?",
+            );
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
         try {
             await protocolOpenController.openProtocolFamily(selectedProtocolFamilyId);
+
             openDialog.close();
         } catch (error) {
             console.error("Failed to open protocol.", error);

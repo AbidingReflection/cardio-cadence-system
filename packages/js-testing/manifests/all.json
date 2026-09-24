@@ -1,6 +1,3 @@
 {
-    "roots": [
-        "/protocol-designer",
-        "/packages"
-    ]
+    "roots": ["/protocol-designer", "/packages"]
 }

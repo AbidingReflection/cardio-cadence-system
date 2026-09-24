@@ -23,8 +23,17 @@ export class IndexedDbStore {
                 const objectStore = transaction.objectStore(OBJECT_STORE_NAME);
                 const request = objectStore.get(SNAPSHOT_KEY);
 
-                request.onsuccess = () => resolve(request.result);
+                let snapshot;
+
+                request.onsuccess = () => {
+                    snapshot = request.result;
+                };
+
                 request.onerror = () => reject(request.error);
+
+                transaction.oncomplete = () => resolve(snapshot);
+                transaction.onerror = () => reject(transaction.error);
+                transaction.onabort = () => reject(transaction.error);
             });
         } finally {
             database.close();

@@ -1,5 +1,3 @@
 {
-    "roots": [
-        "/protocol-designer/js/tests/suites/models"
-    ]
+    "roots": ["/protocol-designer/js/tests/suites/models"]
 }

@@ -23,7 +23,7 @@ export class PersistenceService {
         plannedProtocolVersionRepository,
         executedProtocolRepository,
         idGenerator = () => crypto.randomUUID(),
-                clock = () => Date.now(),
+        clock = () => Date.now(),
     }) {
         this.#protocolFamilyRepository = protocolFamilyRepository;
         this.#plannedProtocolVersionRepository = plannedProtocolVersionRepository;

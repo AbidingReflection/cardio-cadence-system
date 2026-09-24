@@ -69,6 +69,7 @@ export function wireInteractions({
         persistenceService: persistenceContext.service,
         activityTypeVersions: persistenceContext.activityTypeVersions,
         protocolOpenController,
+        protocolUnsavedChanges,
     });
 
     wireProtocolTreeEvents({

@@ -136,6 +136,7 @@ function createHarness({
     protocolFamilies = PROTOCOL_FAMILIES,
     plannedVersions = PLANNED_VERSIONS,
     openError = undefined,
+    hasUnsavedChanges = false,
 } = {}) {
     const openButton = document.createElement("button");
     const closeButton = document.createElement("button");
@@ -183,6 +184,12 @@ function createHarness({
         },
     };
 
+    const protocolUnsavedChanges = {
+        hasUnsavedChanges() {
+            return hasUnsavedChanges;
+        },
+    };
+
     wireProtocolOpenEvents({
         openButton,
         openDialog,
@@ -193,6 +200,7 @@ function createHarness({
         persistenceService,
         activityTypeVersions,
         protocolOpenController,
+        protocolUnsavedChanges,
     });
 
     return {
@@ -592,3 +600,53 @@ test(
         assertEqual(openDialog.open, false);
     },
 );
+
+test("protocol-open-events", "cancelling dirty open preserves the current protocol", async () => {
+    const harness = createHarness({
+        hasUnsavedChanges: true,
+    });
+
+    harness.openButton.click();
+
+    const firstRow = harness.protocolTableContainer.querySelector("tr[data-protocol-family-id]");
+
+    firstRow.click();
+
+    const originalConfirm = window.confirm;
+    window.confirm = () => false;
+
+    try {
+        harness.confirmButton.click();
+        await flushAsyncEvents();
+
+        assertEqual(harness.openCalls.length, 0);
+        assertEqual(harness.openDialog.open, true);
+    } finally {
+        window.confirm = originalConfirm;
+    }
+});
+
+test("protocol-open-events", "confirming dirty open opens the selected protocol", async () => {
+    const harness = createHarness({
+        hasUnsavedChanges: true,
+    });
+
+    harness.openButton.click();
+
+    const firstRow = harness.protocolTableContainer.querySelector("tr[data-protocol-family-id]");
+
+    firstRow.click();
+
+    const originalConfirm = window.confirm;
+    window.confirm = () => true;
+
+    try {
+        harness.confirmButton.click();
+        await flushAsyncEvents();
+
+        assertEqual(harness.openCalls.length, 1);
+        assertEqual(harness.openDialog.open, false);
+    } finally {
+        window.confirm = originalConfirm;
+    }
+});
