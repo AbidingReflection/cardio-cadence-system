@@ -159,6 +159,14 @@ function createFixture(options = {}) {
 
     const calls = [];
 
+    const preferenceCalls = [];
+
+    const preferences = {
+        setLastSetupContext(setupContext) {
+            preferenceCalls.push(setupContext);
+        },
+    };
+
     const protocolSnapshot = {
         activityTypeId: "activity-type-1",
         phases: [],
@@ -256,6 +264,7 @@ function createFixture(options = {}) {
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService,
         activityTypeVersionRepository,
         machineProfileVersionRepository,
@@ -267,6 +276,7 @@ function createFixture(options = {}) {
         controller,
         baselineCalls,
         protocolSnapshot,
+        preferenceCalls,
     };
 }
 
@@ -477,4 +487,31 @@ test("protocol-open-controller", "does not establish a session baseline when ope
     );
 
     assertEqual(fixture.baselineCalls.length, 0);
+});
+
+test("protocol-open-controller", "stores the opened setup as the last-used setup", () => {
+    const fixture = createFixture();
+
+    fixture.controller.openProtocolFamily(PROTOCOL_FAMILY.id);
+
+    assertEqual(fixture.preferenceCalls.length, 1);
+
+    const setupContext = fixture.preferenceCalls[0];
+
+    assertEqual(setupContext.activityType.id, ACTIVITY_TYPE_VERSION.definition.id);
+    assertEqual(setupContext.machineProfile.id, MACHINE_PROFILE_VERSION.definition.id);
+    assertEqual(setupContext.calibrationProfile.id, CALIBRATION_PROFILE_VERSION.definition.id);
+});
+
+test("protocol-open-controller", "does not update last-used setup when opening fails", () => {
+    const fixture = createFixture({
+        protocolFamily: undefined,
+    });
+
+    assertThrows(
+        () => fixture.controller.openProtocolFamily(fixture.protocolFamilyId),
+        `Protocol family "${fixture.protocolFamilyId}" was not found.`,
+    );
+
+    assertEqual(fixture.preferenceCalls.length, 0);
 });

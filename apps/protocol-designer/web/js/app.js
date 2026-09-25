@@ -6,6 +6,7 @@
 import { createControllers } from "./app/create-controllers.js";
 import { getAppElements } from "./app/app-elements.js";
 import { createPersistence } from "./app/create-persistence.js";
+import { resolveStartupSetup } from "./app/resolve-startup-setup.js";
 import { wireInteractions } from "./app/wire-interactions.js";
 import { wireRendering } from "./app/wire-rendering.js";
 
@@ -16,12 +17,12 @@ import { ProtocolModel } from "./models/protocol-model.js";
 import { loadGraphSvgs } from "./renderers/graph-svg-loader.js";
 
 import { EditorState } from "./state/editor-state.js";
+import { ProtocolDesignerPreferences } from "./state/protocol-designer-preferences.js";
 import { ProtocolSessionState } from "./state/protocol-session-state.js";
 import { ProtocolUnsavedChanges } from "./state/protocol-unsaved-changes.js";
 
 const DEFAULT_ACTIVITY_TYPE_ID = "elliptical";
 const DEFAULT_MACHINE_PROFILE_ID = "true-elliptical-aquatic-center";
-// const DEFAULT_CALIBRATION_PROFILE_ID = "...";
 
 /** Initializes the Protocol Designer application. */
 async function main() {
@@ -29,20 +30,24 @@ async function main() {
 
     await loadGraphSvgs();
 
-    const { activityType, machineProfile, calibrationProfile } = getDefaultSetupContext(domainData);
+    const preferences = new ProtocolDesignerPreferences();
+
+    const setupContext = resolveStartupSetup({
+        domainData,
+        preferences,
+        defaultActivityTypeId: DEFAULT_ACTIVITY_TYPE_ID,
+        defaultMachineProfileId: DEFAULT_MACHINE_PROFILE_ID,
+    });
+
+    preferences.setLastSetupContext(setupContext);
+
+    const { activityType, machineProfile, calibrationProfile } = setupContext;
 
     const protocolData = createEmptyProtocolData({
         activityType,
         machineProfile,
+        calibrationProfile,
     });
-
-    if (machineProfile !== undefined) {
-        protocolData.machineProfileId = machineProfile.id;
-    }
-
-    if (calibrationProfile !== undefined) {
-        protocolData.calibrationProfileId = calibrationProfile.id;
-    }
 
     const protocolModel = new ProtocolModel(
         protocolData,
@@ -69,6 +74,7 @@ async function main() {
             protocolModel,
             editorState,
             protocolSessionState,
+            preferences,
         });
 
     const { graphPaneController, protocolGraphController, protocolNewController } =
@@ -92,6 +98,7 @@ async function main() {
         protocolModel,
         editorState,
         domainData,
+        preferences,
         persistenceContext,
         protocolPersistenceController,
         protocolOpenController,
@@ -104,36 +111,8 @@ async function main() {
     });
 }
 
-main().catch((error) => {
-    console.error("Protocol Designer initialization failed.", error);
-});
-
-/** Resolves the temporary default setup used for a fresh startup session. */
-function getDefaultSetupContext(domainData) {
-    const activityType = domainData.activityTypes.get(DEFAULT_ACTIVITY_TYPE_ID);
-
-    if (activityType === undefined) {
-        throw new Error(`Default ActivityType "${DEFAULT_ACTIVITY_TYPE_ID}" was not found.`);
-    }
-
-    const machineProfile =
-        DEFAULT_MACHINE_PROFILE_ID === undefined
-            ? undefined
-            : domainData.machineProfiles.get(DEFAULT_MACHINE_PROFILE_ID);
-
-    if (DEFAULT_MACHINE_PROFILE_ID !== undefined && machineProfile === undefined) {
-        throw new Error(`Default MachineProfile "${DEFAULT_MACHINE_PROFILE_ID}" was not found.`);
-    }
-
-    return {
-        activityType,
-        machineProfile,
-        calibrationProfile: undefined,
-    };
-}
-
 /** Creates an empty protocol for the supplied setup context. */
-function createEmptyProtocolData({ activityType, machineProfile }) {
+function createEmptyProtocolData({ activityType, machineProfile, calibrationProfile }) {
     const protocol = {
         activityTypeId: activityType.id,
         phases: [],
@@ -143,5 +122,13 @@ function createEmptyProtocolData({ activityType, machineProfile }) {
         protocol.machineProfileId = machineProfile.id;
     }
 
+    if (calibrationProfile !== undefined) {
+        protocol.calibrationProfileId = calibrationProfile.id;
+    }
+
     return protocol;
 }
+
+main().catch((error) => {
+    console.error("Protocol Designer initialization failed.", error);
+});

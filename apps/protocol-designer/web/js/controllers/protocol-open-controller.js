@@ -7,6 +7,7 @@ export class ProtocolOpenController {
     #protocolModel;
     #editorState;
     #protocolSessionState;
+    #preferences;
     #persistenceService;
     #activityTypeVersionRepository;
     #machineProfileVersionRepository;
@@ -17,6 +18,7 @@ export class ProtocolOpenController {
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService,
         activityTypeVersionRepository,
         machineProfileVersionRepository,
@@ -25,6 +27,7 @@ export class ProtocolOpenController {
         this.#protocolModel = protocolModel;
         this.#editorState = editorState;
         this.#protocolSessionState = protocolSessionState;
+        this.#preferences = preferences;
         this.#persistenceService = persistenceService;
         this.#activityTypeVersionRepository = activityTypeVersionRepository;
         this.#machineProfileVersionRepository = machineProfileVersionRepository;
@@ -115,6 +118,12 @@ export class ProtocolOpenController {
         });
 
         this.#protocolSessionState.setBaseline(this.#protocolModel.getSnapshot());
+
+        this.#preferences.setLastSetupContext({
+            activityType,
+            machineProfile,
+            calibrationProfile,
+        });
 
         return latestVersion;
     }

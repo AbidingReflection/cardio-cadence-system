@@ -17,6 +17,7 @@ export function wireInteractions({
     protocolModel,
     editorState,
     domainData,
+    preferences,
     persistenceContext,
     protocolPersistenceController,
     protocolOpenController,
@@ -101,6 +102,7 @@ export function wireInteractions({
         calibrationProfileSelect: elements.setup.calibrationProfileSelect,
         domainData,
         protocolModel,
+        preferences,
     });
 
     elements.protocol.editPhaseButton.addEventListener("click", () => {

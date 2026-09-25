@@ -8,7 +8,12 @@ import { DurablePersistence } from "/packages/persistence/storage/durable-persis
 import { IndexedDbStore } from "/packages/persistence/storage/indexed-db-store.js";
 
 /** Creates hydrated persistence services and Protocol Designer persistence controllers. */
-export async function createPersistence({ protocolModel, editorState, protocolSessionState }) {
+export async function createPersistence({
+    protocolModel,
+    editorState,
+    protocolSessionState,
+    preferences,
+}) {
     const persistenceContext = new PersistenceContext();
 
     const durablePersistence = new DurablePersistence({
@@ -31,6 +36,7 @@ export async function createPersistence({ protocolModel, editorState, protocolSe
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService: persistenceContext.service,
         activityTypeVersionRepository: persistenceContext.activityTypeVersions,
         machineProfileVersionRepository: persistenceContext.machineProfileVersions,

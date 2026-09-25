@@ -12,6 +12,7 @@ export function wireProtocolSetupEvents({
     calibrationProfileSelect,
     domainData,
     protocolModel,
+    preferences,
 }) {
     setupButton.addEventListener("click", () => {
         initializeDialog();
@@ -76,6 +77,12 @@ export function wireProtocolSetupEvents({
             machineProfile,
             calibrationProfile,
             resetStructure,
+        });
+
+        preferences.setLastSetupContext({
+            activityType,
+            machineProfile,
+            calibrationProfile,
         });
 
         setupDialog.close();

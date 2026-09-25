@@ -125,6 +125,14 @@ function createHarness(protocol = createProtocol()) {
         },
     };
 
+    const preferenceCalls = [];
+
+    const preferences = {
+        setLastSetupContext(setupContext) {
+            preferenceCalls.push(setupContext);
+        },
+    };
+
     wireProtocolSetupEvents({
         setupButton,
         setupDialog,
@@ -136,6 +144,7 @@ function createHarness(protocol = createProtocol()) {
         calibrationProfileSelect,
         domainData,
         protocolModel,
+        preferences,
     });
 
     setupButton.click();
@@ -150,6 +159,7 @@ function createHarness(protocol = createProtocol()) {
         machineProfileSelect,
         calibrationProfileSelect,
         updateSetupCalls,
+        preferenceCalls,
     };
 }
 
