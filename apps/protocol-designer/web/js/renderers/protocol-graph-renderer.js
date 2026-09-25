@@ -15,6 +15,7 @@ import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
 import {
     getLinearTicks,
     getTimeTicks,
+    getXAxisTickTargetCount,
     getYAxisTickTargetCount,
 } from "/packages/graph/graph-ticks.js";
 import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
@@ -289,7 +290,7 @@ export class ProtocolGraphRenderer {
         const xTicks = getTimeTicks({
             startTimeMs: 0,
             endTimeMs: expander.durationMs,
-            targetCount: 9,
+            targetCount: getXAxisTickTargetCount(layout.plot.width),
         });
 
         const yTicks = getLinearTicks({

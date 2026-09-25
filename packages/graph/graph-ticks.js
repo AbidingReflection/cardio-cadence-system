@@ -8,7 +8,11 @@
 
 const NICE_INTERVAL_MULTIPLIERS = [1, 2, 5, 10];
 
-const MINIMUM_Y_TICK_SPACING_PX = 28;
+const MINIMUM_X_TICK_SPACING_PX = 45;
+const MINIMUM_X_TICK_TARGET_COUNT = 2;
+const MAXIMUM_X_TICK_TARGET_COUNT = 10;
+
+const MINIMUM_Y_TICK_SPACING_PX = 16;
 const MINIMUM_Y_TICK_TARGET_COUNT = 2;
 const MAXIMUM_Y_TICK_TARGET_COUNT = 8;
 
@@ -37,6 +41,18 @@ const TIME_INTERVALS_MS = [
     6 * HOUR_MS,
     12 * HOUR_MS,
 ];
+
+/** Returns a readable target count for x-axis ticks within the available plot width. */
+export function getXAxisTickTargetCount(plotWidthPx) {
+    validatePlotWidth(plotWidthPx);
+
+    const targetCount = Math.floor(plotWidthPx / MINIMUM_X_TICK_SPACING_PX) + 1;
+
+    return Math.min(
+        MAXIMUM_X_TICK_TARGET_COUNT,
+        Math.max(MINIMUM_X_TICK_TARGET_COUNT, targetCount),
+    );
+}
 
 /** Returns a readable target count for y-axis ticks within the available plot height. */
 export function getYAxisTickTargetCount(plotHeightPx) {
@@ -150,6 +166,13 @@ function validateDomain(min, max) {
 function validateTargetCount(targetCount) {
     if (typeof targetCount !== "number" || !Number.isInteger(targetCount) || targetCount < 2) {
         throw new RangeError("Graph tick targetCount must be an integer of at least 2.");
+    }
+}
+
+/** Validates available x-axis plot width. */
+function validatePlotWidth(plotWidthPx) {
+    if (typeof plotWidthPx !== "number" || !Number.isFinite(plotWidthPx) || plotWidthPx < 0) {
+        throw new RangeError("Graph plot width must be a finite non-negative number.");
     }
 }
 

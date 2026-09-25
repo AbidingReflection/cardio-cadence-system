@@ -8,7 +8,12 @@
 
 import { assertDeepEqual, assertThrows, test } from "../../js-testing/framework/test-framework.js";
 
-import { getLinearTicks, getTimeTicks, getYAxisTickTargetCount } from "../graph-ticks.js";
+import {
+    getLinearTicks,
+    getTimeTicks,
+    getXAxisTickTargetCount,
+    getYAxisTickTargetCount,
+} from "../graph-ticks.js";
 
 test("graph-ticks", "generates cadence-style ticks", () => {
     const ticks = getLinearTicks({
@@ -236,13 +241,6 @@ test("graph-ticks", "rejects invalid elapsed-time target counts", () => {
     );
 });
 
-test("graph-ticks", "reduces y-axis tick density for shorter plots", () => {
-    assertDeepEqual(
-        [getYAxisTickTargetCount(200), getYAxisTickTargetCount(120), getYAxisTickTargetCount(60)],
-        [8, 5, 3],
-    );
-});
-
 test("graph-ticks", "clamps y-axis tick target count to readable bounds", () => {
     assertDeepEqual(
         [getYAxisTickTargetCount(0), getYAxisTickTargetCount(20), getYAxisTickTargetCount(1000)],
@@ -262,4 +260,39 @@ test("graph-ticks", "rejects invalid y-axis plot heights", () => {
     assertThrows(() => {
         getYAxisTickTargetCount(Number.POSITIVE_INFINITY);
     });
+});
+
+test("graph-ticks", "clamps x-axis tick target count to readable bounds", () => {
+    assertDeepEqual(
+        [getXAxisTickTargetCount(0), getXAxisTickTargetCount(40), getXAxisTickTargetCount(2000)],
+        [2, 2, 10],
+    );
+});
+
+test("graph-ticks", "rejects invalid x-axis plot widths", () => {
+    assertThrows(() => {
+        getXAxisTickTargetCount(-1);
+    });
+
+    assertThrows(() => {
+        getXAxisTickTargetCount(Number.NaN);
+    });
+
+    assertThrows(() => {
+        getXAxisTickTargetCount(Number.POSITIVE_INFINITY);
+    });
+});
+
+test("graph-ticks", "reduces y-axis tick density for shorter plots", () => {
+    assertDeepEqual(
+        [getYAxisTickTargetCount(60), getYAxisTickTargetCount(40), getYAxisTickTargetCount(20)],
+        [4, 3, 2],
+    );
+});
+
+test("graph-ticks", "reduces x-axis tick density for narrower plots", () => {
+    assertDeepEqual(
+        [getXAxisTickTargetCount(180), getXAxisTickTargetCount(90), getXAxisTickTargetCount(45)],
+        [5, 3, 2],
+    );
 });

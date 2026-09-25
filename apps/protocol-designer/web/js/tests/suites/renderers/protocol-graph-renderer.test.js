@@ -647,3 +647,34 @@ test("protocol-graph-renderer", "reduces y-axis ticks when graph height decrease
         `Expected fewer y-axis ticks after resize, got ${tallTickCount} before and ${shortTickCount} after.`,
     );
 });
+
+test("protocol-graph-renderer", "reduces x-axis ticks when graph width decreases", () => {
+    const container = createContainer(800, 240);
+    const renderer = createRenderer(container);
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            variableId: "cadence",
+            label: "Cadence",
+            unit: "RPM",
+            valueMin: 0,
+            valueMax: 120,
+        },
+    );
+
+    const wideTickCount = container.querySelectorAll(".graph-axis__label--x").length;
+
+    triggerResizeObserver(container, {
+        width: 320,
+        height: 240,
+    });
+
+    const narrowTickCount = container.querySelectorAll(".graph-axis__label--x").length;
+
+    assert(
+        narrowTickCount < wideTickCount,
+        `Expected fewer x-axis ticks after resize, got ${wideTickCount} before and ${narrowTickCount} after.`,
+    );
+});
