@@ -1,11 +1,16 @@
 /**
  * Graph tick responsibilities:
  * - Generate stable human-readable tick values for numeric and time domains.
- * - Choose readable intervals independently of SVG rendering and layout geometry.
+ * - Choose readable intervals independently of SVG rendering.
+ * - Derive readable y-axis tick density from available plot height.
  * - Keep tick generation reusable across graph axes and grid presentation.
  */
 
 const NICE_INTERVAL_MULTIPLIERS = [1, 2, 5, 10];
+
+const MINIMUM_Y_TICK_SPACING_PX = 28;
+const MINIMUM_Y_TICK_TARGET_COUNT = 2;
+const MAXIMUM_Y_TICK_TARGET_COUNT = 8;
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
@@ -32,6 +37,18 @@ const TIME_INTERVALS_MS = [
     6 * HOUR_MS,
     12 * HOUR_MS,
 ];
+
+/** Returns a readable target count for y-axis ticks within the available plot height. */
+export function getYAxisTickTargetCount(plotHeightPx) {
+    validatePlotHeight(plotHeightPx);
+
+    const targetCount = Math.floor(plotHeightPx / MINIMUM_Y_TICK_SPACING_PX) + 1;
+
+    return Math.min(
+        MAXIMUM_Y_TICK_TARGET_COUNT,
+        Math.max(MINIMUM_Y_TICK_TARGET_COUNT, targetCount),
+    );
+}
 
 /** Returns readable evenly spaced ticks within a numeric domain. */
 export function getLinearTicks({ min, max, targetCount }) {
@@ -133,5 +150,12 @@ function validateDomain(min, max) {
 function validateTargetCount(targetCount) {
     if (typeof targetCount !== "number" || !Number.isInteger(targetCount) || targetCount < 2) {
         throw new RangeError("Graph tick targetCount must be an integer of at least 2.");
+    }
+}
+
+/** Validates available y-axis plot height. */
+function validatePlotHeight(plotHeightPx) {
+    if (typeof plotHeightPx !== "number" || !Number.isFinite(plotHeightPx) || plotHeightPx < 0) {
+        throw new RangeError("Graph plot height must be a finite non-negative number.");
     }
 }

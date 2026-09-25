@@ -1,4 +1,5 @@
 import {
+    assert,
     assertEqual,
     test,
 } from "../../../../../../packages/js-testing/framework/test-framework.js";
@@ -614,4 +615,35 @@ test("protocol-graph-renderer", "rerenders when observed dimensions change", () 
     });
 
     assertEqual(container.querySelector("svg").getAttribute("viewBox"), "0 0 640 320");
+});
+
+test("protocol-graph-renderer", "reduces y-axis ticks when graph height decreases", () => {
+    const container = createContainer(800, 240);
+    const renderer = createRenderer(container);
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            variableId: "cadence",
+            label: "Cadence",
+            unit: "RPM",
+            valueMin: 0,
+            valueMax: 120,
+        },
+    );
+
+    const tallTickCount = container.querySelectorAll(".graph-axis__label--y").length;
+
+    triggerResizeObserver(container, {
+        width: 800,
+        height: 100,
+    });
+
+    const shortTickCount = container.querySelectorAll(".graph-axis__label--y").length;
+
+    assert(
+        shortTickCount < tallTickCount,
+        `Expected fewer y-axis ticks after resize, got ${tallTickCount} before and ${shortTickCount} after.`,
+    );
 });

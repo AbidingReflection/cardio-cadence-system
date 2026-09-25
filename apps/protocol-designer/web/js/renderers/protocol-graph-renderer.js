@@ -12,7 +12,11 @@
 import { GraphLayout } from "/packages/graph/graph-layout.js";
 import { getGraphSampleIntervalMs } from "/packages/graph/graph-sampling-resolution.js";
 import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
-import { getLinearTicks, getTimeTicks } from "/packages/graph/graph-ticks.js";
+import {
+    getLinearTicks,
+    getTimeTicks,
+    getYAxisTickTargetCount,
+} from "/packages/graph/graph-ticks.js";
 import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
 import { SvgGraphRenderer } from "/packages/graph/svg-graph-renderer.js";
 import { SvgGraphStructureRenderer } from "/packages/graph/svg-graph-structure-renderer.js";
@@ -291,7 +295,7 @@ export class ProtocolGraphRenderer {
         const yTicks = getLinearTicks({
             min: valueMin,
             max: valueMax,
-            targetCount: 6,
+            targetCount: getYAxisTickTargetCount(layout.plot.height),
         });
 
         const phases = this.#getGraphPhases(graphContext);

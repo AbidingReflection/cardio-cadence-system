@@ -8,7 +8,7 @@
 
 import { assertDeepEqual, assertThrows, test } from "../../js-testing/framework/test-framework.js";
 
-import { getLinearTicks, getTimeTicks } from "../graph-ticks.js";
+import { getLinearTicks, getTimeTicks, getYAxisTickTargetCount } from "../graph-ticks.js";
 
 test("graph-ticks", "generates cadence-style ticks", () => {
     const ticks = getLinearTicks({
@@ -234,4 +234,32 @@ test("graph-ticks", "rejects invalid elapsed-time target counts", () => {
             }),
         /at least 2/,
     );
+});
+
+test("graph-ticks", "reduces y-axis tick density for shorter plots", () => {
+    assertDeepEqual(
+        [getYAxisTickTargetCount(200), getYAxisTickTargetCount(120), getYAxisTickTargetCount(60)],
+        [8, 5, 3],
+    );
+});
+
+test("graph-ticks", "clamps y-axis tick target count to readable bounds", () => {
+    assertDeepEqual(
+        [getYAxisTickTargetCount(0), getYAxisTickTargetCount(20), getYAxisTickTargetCount(1000)],
+        [2, 2, 8],
+    );
+});
+
+test("graph-ticks", "rejects invalid y-axis plot heights", () => {
+    assertThrows(() => {
+        getYAxisTickTargetCount(-1);
+    });
+
+    assertThrows(() => {
+        getYAxisTickTargetCount(Number.NaN);
+    });
+
+    assertThrows(() => {
+        getYAxisTickTargetCount(Number.POSITIVE_INFINITY);
+    });
 });
