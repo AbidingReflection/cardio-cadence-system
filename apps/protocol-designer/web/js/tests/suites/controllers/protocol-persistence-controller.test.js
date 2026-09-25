@@ -3,6 +3,7 @@
 import {
     assertDeepEqual,
     assertEqual,
+    assertThrows,
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
@@ -143,10 +144,19 @@ function createFixture({
         },
     };
 
+    const lastProtocolFamilyIdCalls = [];
+
+    const preferences = {
+        setLastProtocolFamilyId(protocolFamilyId) {
+            lastProtocolFamilyIdCalls.push(protocolFamilyId);
+        },
+    };
+
     const controller = new ProtocolPersistenceController({
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService,
         domainVersionSync,
         durablePersistence,
@@ -157,6 +167,7 @@ function createFixture({
         controller,
         editorState,
         baselineCalls,
+        lastProtocolFamilyIdCalls,
     };
 }
 
@@ -644,5 +655,39 @@ test(
 
         assertEqual(error, commitError);
         assertEqual(baselineCalls.length, 0);
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "stores the created protocol family as last active",
+    async () => {
+        const fixture = createFixture();
+
+        await fixture.controller.createPersistedProtocol({
+            displayName: "Test Protocol",
+            changeSummary: "Initial version",
+        });
+
+        assertDeepEqual(fixture.lastProtocolFamilyIdCalls, ["family-1"]);
+    },
+);
+
+test(
+    "protocol-persistence-controller",
+    "does not update last active protocol family when durable commit fails",
+    async () => {
+        const fixture = createFixture({
+            commitError: new Error("Commit failed."),
+        });
+
+        try {
+            await fixture.controller.createPersistedProtocol({
+                displayName: "Test Protocol",
+                changeSummary: "Initial version",
+            });
+        } catch {}
+
+        assertEqual(fixture.lastProtocolFamilyIdCalls.length, 0);
     },
 );

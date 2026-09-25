@@ -125,6 +125,8 @@ export class ProtocolOpenController {
             calibrationProfile,
         });
 
+        this.#preferences.setLastProtocolFamilyId(protocolFamilyId);
+
         return latestVersion;
     }
 }

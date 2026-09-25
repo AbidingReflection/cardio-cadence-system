@@ -3,6 +3,8 @@
  */
 
 const LAST_SETUP_KEY = "cardio-cadence-system:protocol-designer:last-setup";
+const LAST_PROTOCOL_FAMILY_ID_KEY =
+    "cardio-cadence-system:protocol-designer:last-protocol-family-id";
 
 export class ProtocolDesignerPreferences {
     #storage;
@@ -46,5 +48,20 @@ export class ProtocolDesignerPreferences {
     /** Clears the stored last-used setup. */
     clearLastSetup() {
         this.#storage.removeItem(LAST_SETUP_KEY);
+    }
+
+    /** Returns the last active protocol family ID, or undefined when none is stored. */
+    getLastProtocolFamilyId() {
+        return this.#storage.getItem(LAST_PROTOCOL_FAMILY_ID_KEY) ?? undefined;
+    }
+
+    /** Stores the last active protocol family ID. */
+    setLastProtocolFamilyId(protocolFamilyId) {
+        this.#storage.setItem(LAST_PROTOCOL_FAMILY_ID_KEY, protocolFamilyId);
+    }
+
+    /** Clears the stored last active protocol family ID. */
+    clearLastProtocolFamilyId() {
+        this.#storage.removeItem(LAST_PROTOCOL_FAMILY_ID_KEY);
     }
 }

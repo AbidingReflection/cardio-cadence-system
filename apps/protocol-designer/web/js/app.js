@@ -77,12 +77,23 @@ async function main() {
             preferences,
         });
 
+    const lastProtocolFamilyId = preferences.getLastProtocolFamilyId();
+
+    if (lastProtocolFamilyId !== undefined) {
+        try {
+            protocolOpenController.openProtocolFamily(lastProtocolFamilyId);
+        } catch {
+            preferences.clearLastProtocolFamilyId();
+        }
+    }
+
     const { graphPaneController, protocolGraphController, protocolNewController } =
         createControllers({
             elements,
             protocolModel,
             editorState,
             protocolSessionState,
+            preferences,
         });
 
     const rendering = wireRendering({

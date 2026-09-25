@@ -27,6 +27,7 @@ export async function createPersistence({
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService: persistenceContext.service,
         domainVersionSync: persistenceContext.domainVersionSync,
         durablePersistence,

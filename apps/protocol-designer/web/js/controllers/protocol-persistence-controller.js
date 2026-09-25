@@ -4,6 +4,7 @@ export class ProtocolPersistenceController {
     #protocolModel;
     #editorState;
     #protocolSessionState;
+    #preferences;
     #persistenceService;
     #domainVersionSync;
     #durablePersistence;
@@ -13,6 +14,7 @@ export class ProtocolPersistenceController {
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         persistenceService,
         domainVersionSync,
         durablePersistence,
@@ -20,6 +22,7 @@ export class ProtocolPersistenceController {
         this.#protocolModel = protocolModel;
         this.#editorState = editorState;
         this.#protocolSessionState = protocolSessionState;
+        this.#preferences = preferences;
         this.#persistenceService = persistenceService;
         this.#domainVersionSync = domainVersionSync;
         this.#durablePersistence = durablePersistence;
@@ -45,6 +48,8 @@ export class ProtocolPersistenceController {
         });
 
         this.#protocolSessionState.setBaseline(protocol);
+
+        this.#preferences.setLastProtocolFamilyId(result.protocolFamily.id);
 
         return result;
     }

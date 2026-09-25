@@ -25,6 +25,7 @@ function createHarness() {
     const resetProtocolCalls = [];
     const resetSessionCalls = [];
     const baselineCalls = [];
+    const clearLastProtocolFamilyIdCalls = [];
 
     const protocolModel = {
         getSetupContext() {
@@ -52,10 +53,17 @@ function createHarness() {
         },
     };
 
+    const preferences = {
+        clearLastProtocolFamilyId() {
+            clearLastProtocolFamilyIdCalls.push(true);
+        },
+    };
+
     const controller = new ProtocolNewController({
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
     });
 
     return {
@@ -63,11 +71,13 @@ function createHarness() {
         protocolModel,
         editorState,
         protocolSessionState,
+        preferences,
         setupContext,
         protocolSnapshot,
         resetProtocolCalls,
         resetSessionCalls,
         baselineCalls,
+        clearLastProtocolFamilyIdCalls,
     };
 }
 
@@ -127,12 +137,17 @@ test("protocol-new-controller", "supports new protocols without optional setup c
         resetProtocolSession() {},
     };
 
+    const preferences = {
+        clearLastProtocolFamilyId() {},
+    };
+
     const controller = new ProtocolNewController({
         protocolModel,
         editorState,
         protocolSessionState: {
             setBaseline() {},
         },
+        preferences,
     });
 
     controller.newProtocol();
@@ -181,10 +196,15 @@ test(
             },
         };
 
+        const preferences = {
+            clearLastProtocolFamilyId() {},
+        };
+
         const controller = new ProtocolNewController({
             protocolModel,
             editorState,
             protocolSessionState,
+            preferences,
         });
 
         controller.newProtocol();

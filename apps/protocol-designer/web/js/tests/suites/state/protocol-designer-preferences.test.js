@@ -187,3 +187,47 @@ test("protocol-designer-preferences", "omits absent optional setup context IDs",
         activityTypeId: "running",
     });
 });
+
+test(
+    "protocol-designer-preferences",
+    "returns undefined when no last protocol family ID is stored",
+    () => {
+        const preferences = new ProtocolDesignerPreferences({
+            storage: createStorage(),
+        });
+
+        assertEqual(preferences.getLastProtocolFamilyId(), undefined);
+    },
+);
+
+test("protocol-designer-preferences", "stores the last protocol family ID", () => {
+    const preferences = new ProtocolDesignerPreferences({
+        storage: createStorage(),
+    });
+
+    preferences.setLastProtocolFamilyId("protocol-family-1");
+
+    assertEqual(preferences.getLastProtocolFamilyId(), "protocol-family-1");
+});
+
+test("protocol-designer-preferences", "replaces the previously stored protocol family ID", () => {
+    const preferences = new ProtocolDesignerPreferences({
+        storage: createStorage(),
+    });
+
+    preferences.setLastProtocolFamilyId("protocol-family-1");
+    preferences.setLastProtocolFamilyId("protocol-family-2");
+
+    assertEqual(preferences.getLastProtocolFamilyId(), "protocol-family-2");
+});
+
+test("protocol-designer-preferences", "clears the stored protocol family ID", () => {
+    const preferences = new ProtocolDesignerPreferences({
+        storage: createStorage(),
+    });
+
+    preferences.setLastProtocolFamilyId("protocol-family-1");
+    preferences.clearLastProtocolFamilyId();
+
+    assertEqual(preferences.getLastProtocolFamilyId(), undefined);
+});

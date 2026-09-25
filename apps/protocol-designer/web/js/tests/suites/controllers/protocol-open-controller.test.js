@@ -158,12 +158,16 @@ function createFixture(options = {}) {
         : CALIBRATION_PROFILE_VERSION;
 
     const calls = [];
-
     const preferenceCalls = [];
+    const protocolFamilyPreferenceCalls = [];
 
     const preferences = {
         setLastSetupContext(setupContext) {
             preferenceCalls.push(setupContext);
+        },
+
+        setLastProtocolFamilyId(protocolFamilyId) {
+            protocolFamilyPreferenceCalls.push(protocolFamilyId);
         },
     };
 
@@ -277,6 +281,7 @@ function createFixture(options = {}) {
         baselineCalls,
         protocolSnapshot,
         preferenceCalls,
+        protocolFamilyPreferenceCalls,
     };
 }
 
