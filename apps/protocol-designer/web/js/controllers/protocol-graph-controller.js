@@ -59,8 +59,8 @@ export class ProtocolGraphController {
     }
 
     /** Renders protocol-backed graphs from committed protocol, selection, and setup context. */
-    render(protocol, selection, { activityType, machineProfile, calibrationProfile }) {
-        const graphConfigs = resolveProtocolGraphConfigs(activityType, machineProfile);
+    render(protocol, selection, { activityType, calibrationProfile }) {
+        const graphConfigs = resolveProtocolGraphConfigs(activityType);
 
         if (this.#graphPaneController.isExpanded("cadence")) {
             this.#primaryGraphRenderer.render(protocol, selection, graphConfigs.primary);
@@ -79,8 +79,6 @@ export class ProtocolGraphController {
                     {
                         label: "Calorie Rate",
                         unit: "kcal/min",
-                        valueMin: 0,
-                        valueMax: 30,
                     },
                 );
             } else {
@@ -89,8 +87,6 @@ export class ProtocolGraphController {
                     transformValue: (value) => value * 60,
                     label: "Calorie Rate",
                     unit: "kcal/min",
-                    valueMin: 0,
-                    valueMax: 30,
                 });
             }
         }
@@ -102,8 +98,6 @@ export class ProtocolGraphController {
                     {
                         label: "Cumulative Calories",
                         unit: "kcal",
-                        valueMin: 0,
-                        valueMax: 1,
                     },
                 );
             } else {
@@ -114,8 +108,6 @@ export class ProtocolGraphController {
                         new CumulativeCalorieSeries(expander, calibrationProfile),
                     label: "Cumulative Calories",
                     unit: "kcal",
-                    valueMin: 0,
-                    valueMax: totalCalories,
                 });
             }
         }

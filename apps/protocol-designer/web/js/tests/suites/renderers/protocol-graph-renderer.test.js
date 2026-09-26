@@ -10,8 +10,6 @@ const CADENCE_GRAPH_CONFIG = {
     variableId: "cadence",
     label: "Cadence",
     unit: "RPM",
-    valueMin: 30,
-    valueMax: 80,
 };
 
 const resizeObserverCallbacks = new Map();
@@ -276,7 +274,6 @@ test("protocol-graph-renderer", "replaces previous rendered geometry on rerender
     renderer.render(createProtocol(), {}, CADENCE_GRAPH_CONFIG);
 
     const firstPath = container.querySelector(".graph-series__line");
-    const firstPathData = firstPath.getAttribute("d");
 
     const updatedProtocol = createProtocol();
 
@@ -292,7 +289,7 @@ test("protocol-graph-renderer", "replaces previous rendered geometry on rerender
     const paths = container.querySelectorAll(".graph-series__line");
 
     assertEqual(paths.length, 1);
-    assertEqual(paths[0].getAttribute("d") === firstPathData, false);
+    assertEqual(container.contains(firstPath), false);
 });
 
 test("protocol-graph-renderer", "renders protocol graph axis titles", () => {
@@ -321,8 +318,6 @@ test("protocol-graph-renderer", "uses latest graph configuration on rerender", (
             variableId: "speed",
             label: "Speed",
             unit: "MPH",
-            valueMin: 0,
-            valueMax: 10,
         },
     );
 
@@ -455,8 +450,6 @@ test("protocol-graph-renderer", "renders a supplied graph series", () => {
             createSeries,
             label: "Custom",
             unit: "units",
-            valueMin: 0,
-            valueMax: 10,
         },
     );
 
@@ -487,31 +480,12 @@ test("protocol-graph-renderer", "applies a presentation value transform", () => 
         {},
         {
             createSeries,
-            label: "Calorie Rate",
-            unit: "kcal/s",
-            valueMin: 0,
-            valueMax: 30,
-        },
-    );
-
-    const untransformedPath = container.querySelector(".graph-series__line").getAttribute("d");
-
-    renderer.render(
-        createProtocol(),
-        {},
-        {
-            createSeries,
             transformValue: (value) => value * 60,
             label: "Calorie Rate",
             unit: "kcal/min",
-            valueMin: 0,
-            valueMax: 30,
         },
     );
 
-    const transformedPath = container.querySelector(".graph-series__line").getAttribute("d");
-
-    assertEqual(transformedPath === untransformedPath, false);
     assertEqual(
         container.querySelector(".graph-axis__title--y").textContent,
         "Calorie Rate (kcal/min)",
@@ -546,8 +520,6 @@ test("protocol-graph-renderer", "updates selection without resampling the graph 
             createSeries,
             label: "Custom",
             unit: "units",
-            valueMin: 0,
-            valueMax: 10,
         },
     );
 
@@ -588,8 +560,6 @@ test("protocol-graph-renderer", "does not rerender for unchanged observed dimens
             createSeries,
             label: "Custom",
             unit: "units",
-            valueMin: 0,
-            valueMax: 10,
         },
     );
 
@@ -628,8 +598,6 @@ test("protocol-graph-renderer", "reduces y-axis ticks when graph height decrease
             variableId: "cadence",
             label: "Cadence",
             unit: "RPM",
-            valueMin: 0,
-            valueMax: 120,
         },
     );
 
@@ -659,8 +627,6 @@ test("protocol-graph-renderer", "reduces x-axis ticks when graph width decreases
             variableId: "cadence",
             label: "Cadence",
             unit: "RPM",
-            valueMin: 0,
-            valueMax: 120,
         },
     );
 
@@ -677,4 +643,69 @@ test("protocol-graph-renderer", "reduces x-axis ticks when graph width decreases
         narrowTickCount < wideTickCount,
         `Expected fewer x-axis ticks after resize, got ${wideTickCount} before and ${narrowTickCount} after.`,
     );
+});
+
+test("protocol-graph-renderer", "derives populated graph value domain from series data", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    const createSeries = () => ({
+        valueAt(timeMs) {
+            return timeMs < 30000 ? 40 : 75;
+        },
+
+        valueBefore(timeMs) {
+            return timeMs <= 30000 ? 40 : 75;
+        },
+
+        boundariesBetween() {
+            return [30000];
+        },
+    });
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Cadence",
+            unit: "RPM",
+        },
+    );
+
+    const firstPath = container.querySelector(".graph-series__line").getAttribute("d");
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            createSeries,
+            label: "Cadence",
+            unit: "RPM",
+        },
+    );
+
+    const secondPath = container.querySelector(".graph-series__line").getAttribute("d");
+
+    assert(
+        secondPath === firstPath,
+        "Expected populated graph geometry to be independent of configured value bounds.",
+    );
+});
+
+test("protocol-graph-renderer", "renders populated graphs without configured value bounds", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(
+        createProtocol(),
+        {},
+        {
+            variableId: "cadence",
+            label: "Cadence",
+            unit: "RPM",
+        },
+    );
+
+    assert(container.querySelector(".graph-series__line") !== null);
 });

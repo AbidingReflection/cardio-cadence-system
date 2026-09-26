@@ -26,9 +26,15 @@ import { ProtocolGraphContext } from "/packages/protocol-expander/protocol-graph
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
 import { formatDuration } from "/packages/utils/format-duration.js";
 import { roundSvgPoints } from "/packages/graph/svg-point-precision.js";
+import { getLinearValueDomain } from "/packages/graph/graph-domain.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const SVG_POINT_PRECISION = 1;
+
+const EMPTY_VALUE_DOMAIN = {
+    min: 0,
+    max: 1,
+};
 
 /** Resolves graph margins for the current presentation dimensions. */
 function getGraphMargins(widthPx, heightPx) {
@@ -144,8 +150,6 @@ export class ProtocolGraphRenderer {
             transformValue = undefined,
             label,
             unit = null,
-            valueMin,
-            valueMax,
         } = this.#lastConfig;
 
         const widthPx = this.#widthPx ?? this.#container.clientWidth;
@@ -170,9 +174,6 @@ export class ProtocolGraphRenderer {
 
         this.#svg.setAttribute("viewBox", `0 0 ${widthPx} ${heightPx}`);
 
-        const emptyStateValueMin = valueMax > valueMin ? valueMin : valueMin - 0.5;
-        const emptyStateValueMax = valueMax > valueMin ? valueMax : valueMax + 0.5;
-
         if (this.#unavailableMessage !== undefined) {
             const layout = this.#createLayout({
                 startTimeMs: 0,
@@ -180,8 +181,8 @@ export class ProtocolGraphRenderer {
                 widthPx,
                 heightPx,
                 margins,
-                valueMin: emptyStateValueMin,
-                valueMax: emptyStateValueMax,
+                valueMin: EMPTY_VALUE_DOMAIN.min,
+                valueMax: EMPTY_VALUE_DOMAIN.max,
             });
 
             this.#renderAxes({
@@ -218,8 +219,8 @@ export class ProtocolGraphRenderer {
                 widthPx,
                 heightPx,
                 margins,
-                valueMin: emptyStateValueMin,
-                valueMax: emptyStateValueMax,
+                valueMin: EMPTY_VALUE_DOMAIN.min,
+                valueMax: EMPTY_VALUE_DOMAIN.max,
             });
 
             this.#renderAxes({
@@ -275,14 +276,16 @@ export class ProtocolGraphRenderer {
             }));
         }
 
+        const valueDomain = getLinearValueDomain(samples.map((sample) => sample.value));
+
         const layout = this.#createLayout({
             startTimeMs: 0,
             endTimeMs: expander.durationMs,
             widthPx,
             heightPx,
             margins,
-            valueMin,
-            valueMax,
+            valueMin: valueDomain.min,
+            valueMax: valueDomain.max,
         });
 
         const points = roundSvgPoints(layout.layoutSamples(samples), SVG_POINT_PRECISION);
@@ -294,8 +297,8 @@ export class ProtocolGraphRenderer {
         });
 
         const yTicks = getLinearTicks({
-            min: valueMin,
-            max: valueMax,
+            min: valueDomain.min,
+            max: valueDomain.max,
             targetCount: getYAxisTickTargetCount(layout.plot.height),
         });
 

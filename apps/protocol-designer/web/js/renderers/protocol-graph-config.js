@@ -1,26 +1,11 @@
-const FALLBACK_VALUE_DOMAINS = {
-    cadence: {
-        min: 39,
-        max: 71,
-    },
-    pace: {
-        min: 0,
-        max: 10,
-    },
-    load: {
-        min: 0,
-        max: 20,
-    },
-};
-
-/** Resolves Protocol Designer graph configurations for the current setup. */
-export function resolveProtocolGraphConfigs(activityType, machineProfile = undefined) {
+/** Resolves Protocol Designer graph configurations for the current activity type. */
+export function resolveProtocolGraphConfigs(activityType) {
     const primaryVariable = findVariableByRoles(activityType, ["cadence", "pace"]);
     const loadVariable = findVariableByRoles(activityType, ["load"]);
 
     return {
-        primary: createGraphConfig(primaryVariable, machineProfile),
-        load: createGraphConfig(loadVariable, machineProfile),
+        primary: createGraphConfig(primaryVariable),
+        load: createGraphConfig(loadVariable),
     };
 }
 
@@ -39,35 +24,11 @@ function findVariableByRoles(activityType, roles) {
     return variable;
 }
 
-/** Builds one graph configuration from an activity variable and optional machine bounds. */
-function createGraphConfig(variable, machineProfile) {
-    const fallbackDomain = FALLBACK_VALUE_DOMAINS[variable.role];
-
-    if (fallbackDomain === undefined) {
-        throw new Error(
-            `No fallback graph value domain is defined for variable role "${variable.role}".`,
-        );
-    }
-
-    const machineVariable = machineProfile?.getVariable(variable.id);
-
-    const valueMin = Number.isFinite(machineVariable?.min)
-        ? machineVariable.min
-        : fallbackDomain.min;
-
-    const valueMax = Number.isFinite(machineVariable?.max)
-        ? machineVariable.max
-        : fallbackDomain.max;
-
-    if (!(valueMin < valueMax)) {
-        throw new Error(`Graph value range for variable "${variable.id}" must have min < max.`);
-    }
-
+/** Builds one graph configuration from an activity variable. */
+function createGraphConfig(variable) {
     return {
         variableId: variable.id,
         label: variable.name,
         unit: variable.unit,
-        valueMin,
-        valueMax,
     };
 }

@@ -6,10 +6,14 @@ import {
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { ActivityType } from "../../../models/activity-type.js";
-import { MachineProfile } from "../../../models/machine-profile.js";
 import { resolveProtocolGraphConfigs } from "../../../renderers/protocol-graph-config.js";
 
 const SUITE = "Protocol graph config";
+
+/** Creates a validated ActivityType fixture. */
+function createActivityType(data) {
+    return new ActivityType(data);
+}
 
 test(SUITE, "resolves cadence and load variables for elliptical activity", () => {
     const activityType = createActivityType({
@@ -67,15 +71,11 @@ test(SUITE, "resolves pace and load variables for treadmill activity", () => {
             variableId: "speed",
             label: "Speed",
             unit: "MPH",
-            valueMin: 0,
-            valueMax: 10,
         },
         load: {
             variableId: "incline",
             label: "Incline",
             unit: "%",
-            valueMin: 0,
-            valueMax: 20,
         },
     });
 });
@@ -100,95 +100,52 @@ test(SUITE, "uses machine bounds when available", () => {
         ],
     });
 
-    const machineProfile = new MachineProfile(
-        {
-            id: "machine",
-            name: "Machine",
-            activityTypeId: "treadmill",
-            variables: {
-                speed: {
-                    controlMode: "machine-set",
-                    min: 0.5,
-                    max: 10,
-                    increment: 0.1,
-                    progressionTypes: ["steady"],
-                },
-                incline: {
-                    controlMode: "machine-set",
-                    min: 0,
-                    max: 10,
-                    increment: 0.5,
-                    progressionTypes: ["steady"],
-                },
-            },
-        },
-        activityType,
-    );
-
-    assertDeepEqual(resolveProtocolGraphConfigs(activityType, machineProfile), {
+    assertDeepEqual(resolveProtocolGraphConfigs(activityType), {
         primary: {
             variableId: "speed",
             label: "Speed",
             unit: "MPH",
-            valueMin: 0.5,
-            valueMax: 10,
         },
         load: {
             variableId: "incline",
             label: "Incline",
             unit: "%",
-            valueMin: 0,
-            valueMax: 10,
         },
     });
 });
 
-test(SUITE, "uses default graph bounds when machine bounds are absent", () => {
+test(SUITE, "builds graph configs from pace and load variables", () => {
     const activityType = createActivityType({
-        id: "rowing",
-        name: "Rowing Ergometer",
+        id: "treadmill",
+        name: "Treadmill",
         variables: [
             {
-                id: "strokeRate",
-                name: "Stroke Rate",
-                unit: "SPM",
-                role: "cadence",
+                id: "speed",
+                name: "Speed",
+                unit: "MPH",
+                role: "pace",
             },
             {
-                id: "dragFactor",
-                name: "Drag Factor",
-                unit: null,
+                id: "incline",
+                name: "Incline",
+                unit: "%",
                 role: "load",
             },
         ],
     });
 
-    const machineProfile = new MachineProfile(
-        {
-            id: "rower",
-            name: "Rower",
-            activityTypeId: "rowing",
-            variables: {
-                strokeRate: {
-                    controlMode: "user-produced",
-                    progressionTypes: ["steady"],
-                },
-                dragFactor: {
-                    controlMode: "machine-set",
-                    progressionTypes: ["steady"],
-                },
-            },
+    assertDeepEqual(resolveProtocolGraphConfigs(activityType), {
+        primary: {
+            variableId: "speed",
+            label: "Speed",
+            unit: "MPH",
         },
-        activityType,
-    );
-
-    const configs = resolveProtocolGraphConfigs(activityType, machineProfile);
-
-    assertEqual(configs.primary.valueMin, 39);
-    assertEqual(configs.primary.valueMax, 71);
-
-    assertEqual(configs.load.valueMin, 0);
-    assertEqual(configs.load.valueMax, 20);
+        load: {
+            variableId: "incline",
+            label: "Incline",
+            unit: "%",
+        },
+    });
 });
 
 test(SUITE, "throws when no primary graph role is defined", () => {
@@ -230,8 +187,3 @@ test(SUITE, "throws when no load graph role is defined", () => {
         'ActivityType "cadence-only" does not define a variable with role load.',
     );
 });
-
-/** Creates a validated ActivityType fixture. */
-function createActivityType(data) {
-    return new ActivityType(data);
-}
