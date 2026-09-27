@@ -107,7 +107,7 @@ export function wireProtocolSaveEvents({
         saveDialog.close();
     });
 
-    confirmButton.addEventListener("click", async () => {
+    const confirmSaveDialog = async () => {
         const displayName = normalizeOptionalText(displayNameInput.value);
         const changeSummary = normalizeOptionalText(changeSummaryInput.value);
 
@@ -136,6 +136,23 @@ export function wireProtocolSaveEvents({
         } catch {
             // Keep the dialog open so the user can retry.
         }
+    };
+
+    saveDialog.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") {
+            return;
+        }
+
+        if (event.target.closest("button") !== null) {
+            return;
+        }
+
+        event.preventDefault();
+        void confirmSaveDialog();
+    });
+
+    confirmButton.addEventListener("click", () => {
+        void confirmSaveDialog();
     });
 }
 
