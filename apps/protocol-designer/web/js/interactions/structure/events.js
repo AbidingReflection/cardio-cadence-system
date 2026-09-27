@@ -38,6 +38,24 @@ export function wireProtocolStructureEvents({
                 insertBlock(actionElement, protocolModel, editorState, setPendingFieldFocus);
                 break;
 
+            case "copy-phase":
+                togglePhaseCopy(actionElement, editorState);
+                protocolTree.focus();
+                break;
+
+            case "copy-block":
+                toggleBlockCopy(actionElement, editorState);
+                protocolTree.focus();
+                break;
+
+            case "copy-phase-here":
+                copyPhaseHere(actionElement, protocolModel, editorState);
+                break;
+
+            case "copy-block-here":
+                copyBlockHere(actionElement, protocolModel, editorState);
+                break;
+
             case "delete-block":
                 deleteBlock(actionElement, protocolModel, editorState);
                 break;
@@ -131,4 +149,84 @@ function deletePhase(actionElement, protocolModel, editorState) {
     }
 
     requestDeletePhase(protocolModel, editorState, phaseId);
+}
+
+/** Starts, switches, or cancels phase-copy placement mode. */
+function togglePhaseCopy(actionElement, editorState) {
+    const phaseId = actionElement.dataset.phaseId;
+
+    if (typeof phaseId !== "string" || phaseId.trim() === "") {
+        throw new Error("Phase copy action is missing a phase ID.");
+    }
+
+    const { copyMode } = editorState.getSnapshot();
+
+    if (copyMode?.entityType === "phase" && copyMode.sourceId === phaseId) {
+        editorState.clearCopyMode();
+        return;
+    }
+
+    editorState.setCopyMode("phase", phaseId);
+}
+
+/** Starts, switches, or cancels block-copy placement mode. */
+function toggleBlockCopy(actionElement, editorState) {
+    const blockId = actionElement.dataset.blockId;
+
+    if (typeof blockId !== "string" || blockId.trim() === "") {
+        throw new Error("Block copy action is missing a block ID.");
+    }
+
+    const { copyMode } = editorState.getSnapshot();
+
+    if (copyMode?.entityType === "block" && copyMode.sourceId === blockId) {
+        editorState.clearCopyMode();
+        return;
+    }
+
+    editorState.setCopyMode("block", blockId);
+}
+
+/** Copies the active source phase to the selected insertion target. */
+function copyPhaseHere(actionElement, protocolModel, editorState) {
+    const index = Number(actionElement.dataset.insertionIndex);
+    const { copyMode } = editorState.getSnapshot();
+
+    if (!Number.isInteger(index)) {
+        throw new Error("Phase copy target is missing a valid insertion index.");
+    }
+
+    if (
+        copyMode?.entityType !== "phase" ||
+        typeof copyMode.sourceId !== "string" ||
+        copyMode.sourceId.trim() === ""
+    ) {
+        throw new Error("Phase copy target requires an active phase copy source.");
+    }
+
+    protocolModel.copyPhase(copyMode.sourceId, index);
+
+    editorState.clearCopyMode();
+}
+
+/** Copies the active source block to the selected insertion target. */
+function copyBlockHere(actionElement, protocolModel, editorState) {
+    const phaseId = actionElement.dataset.phaseId;
+    const index = Number(actionElement.dataset.insertionIndex);
+    const { copyMode } = editorState.getSnapshot();
+
+    if (typeof phaseId !== "string" || phaseId.trim() === "" || !Number.isInteger(index)) {
+        throw new Error("Block copy target is missing valid insertion data.");
+    }
+
+    if (
+        copyMode?.entityType !== "block" ||
+        typeof copyMode.sourceId !== "string" ||
+        copyMode.sourceId.trim() === ""
+    ) {
+        throw new Error("Block copy target requires an active block copy source.");
+    }
+    protocolModel.copyBlock(copyMode.sourceId, phaseId, index);
+
+    editorState.clearCopyMode();
 }

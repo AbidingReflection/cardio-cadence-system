@@ -9,17 +9,30 @@ import { formatDuration } from "../../../../../packages/utils/format-duration.js
 
 import { createErrorIcon, createWarningIcon } from "/packages/ui/status-icons.js";
 
+import {
+    createCopyActionButton,
+    createDeleteActionButton,
+    createEditActionButton,
+} from "./protocol-action-buttons.js";
+
 /** Creates a selectable insertion target between phases. */
-export function createPhaseInsertionTarget(index) {
+export function createPhaseInsertionTarget(index, copyMode = undefined) {
     const target = document.createElement("button");
+
+    const copyingPhase = copyMode?.entityType === "phase";
 
     target.type = "button";
     target.className = "phase-insertion-target";
-    target.dataset.action = "insert-phase";
+    target.dataset.action = copyingPhase ? "copy-phase-here" : "insert-phase";
     target.dataset.dropTarget = "phase";
     target.dataset.insertionIndex = String(index);
-    target.setAttribute("aria-label", `Insert phase at position ${index + 1}`);
-    target.textContent = "+ Add phase here";
+    target.setAttribute(
+        "aria-label",
+        copyingPhase
+            ? `Copy phase to position ${index + 1}`
+            : `Insert phase at position ${index + 1}`,
+    );
+    target.textContent = copyingPhase ? "Copy phase here" : "+ Add phase here";
 
     return target;
 }
@@ -232,7 +245,7 @@ function createPhaseBody(
                 ),
             );
         } else if (blockManageActive && !hasActiveCreateDraft) {
-            blocks.append(createBlockInsertionTarget(phase.id, index));
+            blocks.append(createBlockInsertionTarget(phase.id, index, editorSnapshot.copyMode));
         }
 
         if (index < phase.blocks.length) {
@@ -256,17 +269,24 @@ function createPhaseBody(
 }
 
 /** Creates a selectable insertion target between blocks. */
-function createBlockInsertionTarget(phaseId, index) {
+function createBlockInsertionTarget(phaseId, index, copyMode = undefined) {
     const target = document.createElement("button");
+
+    const copyingBlock = copyMode?.entityType === "block";
 
     target.type = "button";
     target.className = "block-insertion-target";
-    target.dataset.action = "insert-block";
+    target.dataset.action = copyingBlock ? "copy-block-here" : "insert-block";
     target.dataset.dropTarget = "block";
     target.dataset.phaseId = phaseId;
     target.dataset.insertionIndex = String(index);
-    target.setAttribute("aria-label", `Insert block at position ${index + 1}`);
-    target.textContent = "+ Add block here";
+    target.setAttribute(
+        "aria-label",
+        copyingBlock
+            ? `Copy block to position ${index + 1}`
+            : `Insert block at position ${index + 1}`,
+    );
+    target.textContent = copyingBlock ? "Copy block here" : "+ Add block here";
 
     return target;
 }
@@ -345,20 +365,35 @@ function createPhaseNameEditor(phase, draftName) {
     return input;
 }
 
-/** Creates phase-name edit, save, cancel, and delete controls. */
+/** Creates phase-name edit, save, cancel, copy, and delete controls. */
 function createPhaseNameActions(phase, isEditing) {
     const actions = document.createElement("div");
     actions.className = "phase-name-actions";
 
     if (!isEditing) {
-        const edit = document.createElement("button");
-        edit.type = "button";
-        edit.className = "phase-name-action";
-        edit.dataset.action = "edit-phase-name";
-        edit.setAttribute("aria-label", `Edit phase name: ${phase.name}`);
-        edit.textContent = "✎";
-
-        actions.append(edit, createPhaseDeleteButton(phase));
+        actions.append(
+            createEditActionButton({
+                className: "phase-name-action",
+                action: "edit-phase-name",
+                ariaLabel: `Edit phase name: ${phase.name}`,
+            }),
+            createCopyActionButton({
+                className: "phase-name-action phase-copy-action",
+                action: "copy-phase",
+                ariaLabel: `Copy ${phase.name} phase`,
+                data: {
+                    phaseId: phase.id,
+                },
+            }),
+            createDeleteActionButton({
+                className: "phase-name-action phase-delete-action",
+                action: "delete-phase",
+                ariaLabel: `Delete ${phase.name} phase`,
+                data: {
+                    phaseId: phase.id,
+                },
+            }),
+        );
 
         return actions;
     }
@@ -380,19 +415,6 @@ function createPhaseNameActions(phase, isEditing) {
     actions.append(save, cancel);
 
     return actions;
-}
-
-/** Creates a phase delete control. */
-function createPhaseDeleteButton(phase) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "phase-name-action phase-delete-action";
-    button.dataset.action = "delete-phase";
-    button.dataset.phaseId = phase.id;
-    button.setAttribute("aria-label", `Delete ${phase.name} phase`);
-    button.textContent = "x";
-
-    return button;
 }
 
 /** Returns the total duration of a phase. */

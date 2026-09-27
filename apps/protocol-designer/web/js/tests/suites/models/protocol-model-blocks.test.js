@@ -690,3 +690,97 @@ test("protocol-model-blocks", "failed block move leaves protocol state unchanged
 
     assertDeepEqual(model.getSnapshot(), before);
 });
+
+test("protocol-model-blocks", "copies a block at the requested index", () => {
+    const model = createProtocolModel();
+
+    const source = model.getSnapshot().phases[0].blocks[0];
+
+    const copiedBlockId = model.copyBlock(source.id, "phase-1", 0);
+
+    const phase = model.getSnapshot().phases.find((candidate) => candidate.id === "phase-1");
+
+    assertEqual(phase.blocks[0].id, copiedBlockId);
+});
+
+test("protocol-model-blocks", "gives copied blocks new IDs", () => {
+    const model = createProtocolModel();
+
+    const source = model.getSnapshot().phases[0].blocks[0];
+
+    const copiedBlockId = model.copyBlock(source.id, "phase-1");
+
+    assert(copiedBlockId !== source.id);
+});
+
+test("protocol-model-blocks", "preserves copied block content", () => {
+    const model = createProtocolModel();
+
+    const source = model.getSnapshot().phases[0].blocks[0];
+
+    const copiedBlockId = model.copyBlock(source.id, "phase-1");
+
+    const copied = model.getSnapshot().phases[0].blocks.find((block) => block.id === copiedBlockId);
+
+    const sourceContent = structuredClone(source);
+    const copiedContent = structuredClone(copied);
+
+    delete sourceContent.id;
+    delete copiedContent.id;
+
+    assertDeepEqual(copiedContent, sourceContent);
+});
+
+test("protocol-model-blocks", "copies a block into another phase", () => {
+    const model = createProtocolModel();
+
+    const source = model.getSnapshot().phases[0].blocks[0];
+
+    const targetPhaseId = model.addPhase("Target Phase");
+
+    const copiedBlockId = model.copyBlock(source.id, targetPhaseId, 0);
+
+    const targetPhase = model.getSnapshot().phases.find((phase) => phase.id === targetPhaseId);
+
+    assertEqual(targetPhase.blocks.length, 1);
+    assertEqual(targetPhase.blocks[0].id, copiedBlockId);
+});
+
+test("protocol-model-blocks", "leaves the source block unchanged after copying", () => {
+    const model = createProtocolModel();
+
+    const sourceBefore = structuredClone(model.getSnapshot().phases[0].blocks[0]);
+
+    model.copyBlock(sourceBefore.id, "phase-1");
+
+    const sourceAfter = model
+        .getSnapshot()
+        .phases[0].blocks.find((block) => block.id === sourceBefore.id);
+
+    assertDeepEqual(sourceAfter, sourceBefore);
+});
+
+test("protocol-model-blocks", "rejects copying an unknown block", () => {
+    const model = createProtocolModel();
+
+    assertThrows(() => model.copyBlock("missing-block", "phase-1"), "does not exist");
+});
+
+test("protocol-model-blocks", "rejects copying to an unknown phase", () => {
+    const model = createProtocolModel();
+
+    const source = model.getSnapshot().phases[0].blocks[0];
+
+    assertThrows(() => model.copyBlock(source.id, "missing-phase"), "does not exist");
+});
+
+test("protocol-model-blocks", "failed block copy leaves protocol state unchanged", () => {
+    const model = createProtocolModel();
+
+    const before = model.getSnapshot();
+    const source = before.phases[0].blocks[0];
+
+    assertThrows(() => model.copyBlock(source.id, "phase-1", 999), "block insertion index");
+
+    assertDeepEqual(model.getSnapshot(), before);
+});

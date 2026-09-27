@@ -96,9 +96,16 @@ function handleEscape(event, protocolTree, editorState) {
 
     const snapshot = editorState.getSnapshot();
 
-    if (snapshot.activeBlockDraft !== undefined && editorState.isBlockDraftDirty()) {
+    if (snapshot.activeBlockDraft !== undefined) {
         event.preventDefault();
         cancelBlockEdit(editorState);
+        protocolTree.focus();
+        return;
+    }
+
+    if (snapshot.copyMode !== undefined) {
+        event.preventDefault();
+        editorState.clearCopyMode();
         protocolTree.focus();
         return;
     }

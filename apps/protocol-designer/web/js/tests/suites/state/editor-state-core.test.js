@@ -7,9 +7,9 @@ import {
 import { EditorState } from "../../../state/editor-state.js";
 
 test("editor-state-core", "starts with no expanded phases or block", () => {
-    const editorState = new EditorState();
+    const state = new EditorState();
 
-    assertDeepEqual(editorState.getSnapshot(), {
+    assertDeepEqual(state.getSnapshot(), {
         expandedPhaseIds: [],
         expandedBlockId: undefined,
         selectedPhaseId: undefined,
@@ -22,33 +22,7 @@ test("editor-state-core", "starts with no expanded phases or block", () => {
         editMode: undefined,
         protocolFamilyId: undefined,
         plannedProtocolVersionId: undefined,
-    });
-});
-
-test("editor-state-core", "notifies subscribers after state changes", () => {
-    const state = new EditorState();
-
-    let receivedSnapshot;
-
-    state.subscribe((snapshot) => {
-        receivedSnapshot = snapshot;
-    });
-
-    state.expandPhase("phase-1");
-
-    assertDeepEqual(receivedSnapshot, {
-        expandedPhaseIds: ["phase-1"],
-        expandedBlockId: undefined,
-        selectedPhaseId: undefined,
-        selectedBlockId: undefined,
-        editingPhaseId: undefined,
-        phaseNameDraft: undefined,
-        activeBlockDraft: undefined,
-        validationErrors: [],
-        insertionTarget: undefined,
-        editMode: undefined,
-        protocolFamilyId: undefined,
-        plannedProtocolVersionId: undefined,
+        copyMode: undefined,
     });
 });
 
@@ -100,4 +74,32 @@ test("editor-state-core", "returns independent snapshots", () => {
     snapshot.expandedPhaseIds.push("phase-2");
 
     assertDeepEqual(state.getSnapshot().expandedPhaseIds, ["phase-1"]);
+});
+
+test("editor-state-core", "notifies subscribers after state changes", () => {
+    const state = new EditorState();
+
+    let receivedSnapshot;
+
+    state.subscribe((snapshot) => {
+        receivedSnapshot = snapshot;
+    });
+
+    state.expandPhase("phase-1");
+
+    assertDeepEqual(receivedSnapshot, {
+        expandedPhaseIds: ["phase-1"],
+        expandedBlockId: undefined,
+        selectedPhaseId: undefined,
+        selectedBlockId: undefined,
+        editingPhaseId: undefined,
+        phaseNameDraft: undefined,
+        activeBlockDraft: undefined,
+        validationErrors: [],
+        insertionTarget: undefined,
+        editMode: undefined,
+        protocolFamilyId: undefined,
+        plannedProtocolVersionId: undefined,
+        copyMode: undefined,
+    });
 });

@@ -358,26 +358,24 @@
     padding-left: 12px;
 }
 
-.block-delete-action {
+.block-delete-action,
+.block-copy-action {
     display: flex;
     align-items: center;
     justify-content: center;
 
-    flex: 0 0 auto;
-
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     padding: 0;
 
-    border: 1px solid var(--color-block-border);
+    font-size: 1rem;
+    font-weight: bold;
+
+    border: 1px solid var(--color-phase-border);
     border-radius: 4px;
 
-    background: rgb(255 255 255 / 55%);
-    color: #b3261e;
-
-    font: inherit;
-    font-size: 1rem;
-    line-height: 1;
+    background: rgb(255 255 255 / 45%);
+    color: var(--color-text-muted);
 
     cursor: pointer;
 
@@ -387,9 +385,20 @@
         color 120ms ease;
 }
 
+.block-delete-action {
+    color: #b3261e;
+    font-weight: bold;
+}
+
 .block-delete-action:hover {
     border-color: #b3261e;
 
     background: rgb(179 38 30 / 8%);
     color: #b3261e;
+}
+
+.block-copy-action:hover {
+    border-color: #b3261e;
+
+    background: rgb(179 38 30 / 8%);
 }

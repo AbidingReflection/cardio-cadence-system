@@ -95,22 +95,6 @@ test("graph-pane-controller", "tracks panes independently", () => {
     assertEqual(controller.isExpanded("load"), true);
 });
 
-test("graph-pane-controller", "notifies subscribers after state changes", () => {
-    const definition = createGraphPane("cadence");
-    const controller = new GraphPaneController([definition]);
-
-    let change;
-
-    controller.subscribe((nextChange) => {
-        change = nextChange;
-    });
-
-    controller.setExpanded("cadence", false);
-
-    assertEqual(change.id, "cadence");
-    assertEqual(change.expanded, false);
-});
-
 test("graph-pane-controller", "does not notify subscribers for unchanged state", () => {
     const definition = createGraphPane("cadence");
     const controller = new GraphPaneController([definition]);

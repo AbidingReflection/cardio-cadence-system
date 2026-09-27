@@ -25,7 +25,7 @@ export function renderProtocolTree(
 
     for (let phaseIndex = 0; phaseIndex <= protocolSnapshot.phases.length; phaseIndex += 1) {
         if (editorSnapshot.editMode === "phase") {
-            container.append(createPhaseInsertionTarget(phaseIndex));
+            container.append(createPhaseInsertionTarget(phaseIndex, editorSnapshot.copyMode));
         }
 
         if (phaseIndex < protocolSnapshot.phases.length) {

@@ -22,6 +22,7 @@ export class EditorState {
     #validationErrors = [];
     #insertionTarget;
     #editMode;
+    #copyMode;
 
     #protocolFamilyId;
     #plannedProtocolVersionId;
@@ -53,6 +54,7 @@ export class EditorState {
             editMode: this.#editMode,
             protocolFamilyId: this.#protocolFamilyId,
             plannedProtocolVersionId: this.#plannedProtocolVersionId,
+            copyMode: this.#copyMode === undefined ? undefined : { ...this.#copyMode },
         };
     }
 
@@ -77,6 +79,8 @@ export class EditorState {
 
         this.#protocolFamilyId = undefined;
         this.#plannedProtocolVersionId = undefined;
+
+        this.#copyMode = undefined;
 
         this.#emit();
     }
@@ -241,6 +245,30 @@ export class EditorState {
         this.#emit();
     }
 
+    /** Starts or switches the active structural copy operation. */
+    setCopyMode(entityType, sourceId) {
+        if (entityType !== "phase" && entityType !== "block") {
+            throw new Error(`Unsupported copy entity type: "${entityType}".`);
+        }
+
+        this.#copyMode = {
+            entityType,
+            sourceId,
+        };
+
+        this.#emit();
+    }
+
+    /** Clears the active structural copy operation. */
+    clearCopyMode() {
+        if (this.#copyMode === undefined) {
+            return;
+        }
+
+        this.#copyMode = undefined;
+        this.#emit();
+    }
+
     /** Returns whether the active block draft differs from its baseline. */
     isBlockDraftDirty() {
         if (this.#activeBlockDraft === undefined || this.#blockDraftBaseline === undefined) {
@@ -313,6 +341,8 @@ export class EditorState {
         }
 
         this.#editMode = mode;
+        this.#copyMode = undefined;
+
         this.#emit();
     }
 
@@ -323,6 +353,8 @@ export class EditorState {
         }
 
         this.#editMode = undefined;
+        this.#copyMode = undefined;
+
         this.#emit();
     }
 

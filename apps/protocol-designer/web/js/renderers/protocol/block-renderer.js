@@ -2,6 +2,7 @@
  * Renders committed and newly created block cards, collapsed block summaries,
  * and block-level structural controls.
  */
+import { createCopyActionButton, createDeleteActionButton } from "./protocol-action-buttons.js";
 
 import { createExpandedBlock } from "./block-editor-renderer.js";
 import { formatDuration } from "../../../../packages/utils/format-duration.js";
@@ -95,7 +96,6 @@ export function createNewBlockElement(
 /** Creates the collapsed block row. */
 function createCollapsedBlock(block, activityType, editorSnapshot) {
     const row = document.createElement("div");
-
     row.className = "block-row";
 
     const summary = document.createElement("div");
@@ -111,7 +111,24 @@ function createCollapsedBlock(block, activityType, editorSnapshot) {
     nameActions.append(name);
 
     if (editorSnapshot.editMode === "block") {
-        nameActions.append(createBlockDeleteButton(block));
+        nameActions.append(
+            createCopyActionButton({
+                className: "block-copy-action",
+                action: "copy-block",
+                ariaLabel: `Copy ${block.name} block`,
+                data: {
+                    blockId: block.id,
+                },
+            }),
+            createDeleteActionButton({
+                className: "block-delete-action",
+                action: "delete-block",
+                ariaLabel: `Delete ${block.name} block`,
+                data: {
+                    blockId: block.id,
+                },
+            }),
+        );
     }
 
     const duration = document.createElement("span");
@@ -140,19 +157,6 @@ function createCollapsedBlock(block, activityType, editorSnapshot) {
     row.append(summary, toggle);
 
     return row;
-}
-
-/** Creates a block delete control. */
-function createBlockDeleteButton(block) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "block-delete-action";
-    button.dataset.action = "delete-block";
-    button.dataset.blockId = block.id;
-    button.setAttribute("aria-label", `Delete ${block.name} block`);
-    button.textContent = "×";
-
-    return button;
 }
 
 /** Creates a span containing display text. */

@@ -150,6 +150,39 @@ export class ProtocolModel {
         return phase.id;
     }
 
+    /** Copies a phase to an insertion index and returns its generated ID. */
+    copyPhase(phaseId, index = undefined) {
+        const nextProtocol = structuredClone(this.#protocol);
+
+        const sourcePhase = nextProtocol.phases.find((phase) => phase.id === phaseId);
+
+        if (sourcePhase === undefined) {
+            throw new Error(`Protocol phase "${phaseId}" does not exist.`);
+        }
+
+        const insertionIndex = getInsertionIndex(index, nextProtocol.phases.length, "phase");
+
+        const copiedPhase = structuredClone(sourcePhase);
+
+        copiedPhase.id = crypto.randomUUID();
+
+        for (const block of copiedPhase.blocks) {
+            block.id = crypto.randomUUID();
+        }
+
+        nextProtocol.phases.splice(insertionIndex, 0, copiedPhase);
+
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
+
+        this.#validateCurrentProtocol(normalizedProtocol);
+
+        this.#protocol = structuredClone(normalizedProtocol);
+
+        this.#emit();
+
+        return copiedPhase.id;
+    }
+
     /** Moves a phase to its final zero-based index. */
     movePhase(phaseId, targetIndex) {
         const phaseIndex = this.#protocol.phases.findIndex((phase) => phase.id === phaseId);
@@ -248,6 +281,49 @@ export class ProtocolModel {
         this.#emit();
 
         return block.id;
+    }
+
+    /** Copies a block to a target phase and returns its generated ID. */
+    copyBlock(blockId, targetPhaseId, index = undefined) {
+        const nextProtocol = structuredClone(this.#protocol);
+
+        let sourceBlock;
+
+        for (const phase of nextProtocol.phases) {
+            sourceBlock = phase.blocks.find((block) => block.id === blockId);
+
+            if (sourceBlock !== undefined) {
+                break;
+            }
+        }
+
+        if (sourceBlock === undefined) {
+            throw new Error(`Protocol block "${blockId}" does not exist.`);
+        }
+
+        const targetPhase = nextProtocol.phases.find((phase) => phase.id === targetPhaseId);
+
+        if (targetPhase === undefined) {
+            throw new Error(`Protocol phase "${targetPhaseId}" does not exist.`);
+        }
+
+        const insertionIndex = getInsertionIndex(index, targetPhase.blocks.length, "block");
+
+        const copiedBlock = structuredClone(sourceBlock);
+
+        copiedBlock.id = crypto.randomUUID();
+
+        targetPhase.blocks.splice(insertionIndex, 0, copiedBlock);
+
+        const normalizedProtocol = normalizeProtocol(nextProtocol);
+
+        this.#validateCurrentProtocol(normalizedProtocol);
+
+        this.#protocol = structuredClone(normalizedProtocol);
+
+        this.#emit();
+
+        return copiedBlock.id;
     }
 
     /** Moves a block to its final zero-based index in the target phase. */
