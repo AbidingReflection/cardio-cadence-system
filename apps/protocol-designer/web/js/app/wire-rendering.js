@@ -26,6 +26,29 @@ export function wireRendering({
     let pendingPhaseNameFocus;
     let pendingStructuralFocus;
 
+    /** Renders protocol-backed summary values from committed protocol state. */
+    const renderProtocolSummary = () => {
+        const protocol = protocolModel.getSnapshot();
+
+        const { activityType, machineProfile, calibrationProfile } =
+            protocolModel.getSetupContext();
+
+        elements.protocol.activityTypeName.textContent = activityType.name;
+        elements.protocol.machineProfileName.textContent = machineProfile?.name ?? "";
+
+        const expander = new ProtocolExpander(protocol);
+
+        const calories =
+            calibrationProfile === undefined
+                ? null
+                : calculateProtocolCalories(protocol, calibrationProfile);
+
+        renderTotalsRibbon({
+            durationMs: expander.durationMs,
+            calories,
+        });
+    };
+
     /** Renders protocol-backed graphs from current application state. */
     const renderGraphs = () => {
         const protocol = protocolModel.getSnapshot();
@@ -53,7 +76,7 @@ export function wireRendering({
     };
 
     /** Renders the protocol tree and restores any pending interaction focus. */
-    const render = () => {
+    const renderProtocolTreeView = () => {
         const fieldFocusContext = pendingFieldFocus;
         const toggleFocusContext = pendingToggleFocus;
         const phaseNameFocusContext = pendingPhaseNameFocus;
@@ -68,21 +91,6 @@ export function wireRendering({
 
         const { activityType, machineProfile, calibrationProfile } =
             protocolModel.getSetupContext();
-
-        elements.protocol.activityTypeName.textContent = activityType.name;
-        elements.protocol.machineProfileName.textContent = machineProfile?.name ?? "";
-
-        const expander = new ProtocolExpander(protocol);
-
-        const calories =
-            calibrationProfile === undefined
-                ? null
-                : calculateProtocolCalories(protocol, calibrationProfile);
-
-        renderTotalsRibbon({
-            durationMs: expander.durationMs,
-            calories,
-        });
 
         renderProtocolTree(
             elements.protocol.tree,
@@ -104,13 +112,11 @@ export function wireRendering({
 
         if (fieldFocusContext !== undefined) {
             restoreProtocolFieldFocus(elements.protocol.tree, fieldFocusContext);
-
             return;
         }
 
         if (phaseNameFocusContext !== undefined) {
             restorePhaseNameFocus(elements.protocol.tree, phaseNameFocusContext);
-
             return;
         }
 
@@ -126,16 +132,16 @@ export function wireRendering({
 
             if (restored) {
                 pendingStructuralFocus = undefined;
-
                 return;
             }
         }
     };
 
-    protocolModel.subscribe(render);
+    protocolModel.subscribe(renderProtocolSummary);
+    protocolModel.subscribe(renderProtocolTreeView);
     protocolModel.subscribe(renderGraphs);
 
-    editorState.subscribe(render);
+    editorState.subscribe(renderProtocolTreeView);
     editorState.subscribe(updateGraphSelections);
 
     graphPaneController.subscribe(({ expanded }) => {
@@ -144,7 +150,8 @@ export function wireRendering({
         }
     });
 
-    render();
+    renderProtocolSummary();
+    renderProtocolTreeView();
     renderGraphs();
 
     return {
