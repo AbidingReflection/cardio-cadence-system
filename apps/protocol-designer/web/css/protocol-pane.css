@@ -1,6 +1,7 @@
 .protocol-pane .pane__header {
     display: flex;
     align-items: center;
+    padding: 0 20px 0 12px;
 }
 
 .protocol-pane__title {
@@ -26,8 +27,8 @@
     justify-content: center;
     gap: 5px;
 
-    min-height: 30px;
-    padding: 5px 10px;
+    min-height: 24px;
+    padding: 2px 10px;
 
     border: 1px solid var(--color-border);
     border-radius: 6px;
@@ -36,8 +37,9 @@
     color: var(--color-text);
 
     font: inherit;
-    font-size: 0.78rem;
+    font-size: 1.1em;
     font-weight: 600;
+    text-wrap: nowrap;
 
     cursor: pointer;
 

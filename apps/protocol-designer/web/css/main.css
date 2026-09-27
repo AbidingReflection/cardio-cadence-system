@@ -17,11 +17,11 @@
     --shadow-pane: 0 4px 14px rgb(16 24 40 / 8%);
     --shadow-ribbon: 0 10px 30px rgb(16 24 40 / 18%);
 
-    --header-height: 42px;
-    --pane-header-height: 42px;
+    --header-height: 40px;
+    --pane-header-height: 36px;
     --totals-height: 40px;
 
-    --layout-gap: 8px;
+    --layout-gap: 6px;
     --border-radius: 10px;
 }
 
@@ -38,6 +38,7 @@
 html,
 body {
     height: 100%;
+    user-select: none;
 }
 
 body {
@@ -64,7 +65,7 @@ body {
     height: calc(100vh - var(--header-height) - var(--totals-height));
 
     margin-top: var(--header-height);
-    padding: var(--layout-gap);
+    padding: calc(var(--layout-gap) * 1.2);
 
     overflow: hidden;
 }
