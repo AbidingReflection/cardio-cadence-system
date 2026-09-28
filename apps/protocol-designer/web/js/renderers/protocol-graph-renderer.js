@@ -105,7 +105,7 @@ export class ProtocolGraphRenderer {
         this.#renderCurrent();
     }
 
-    /** Updates graph selection styling without recomputing graph data. */
+    /** Updates graph selection styling without rebuilding graph structure. */
     updateSelection({ selectedPhaseId = undefined, selectedBlockId = undefined } = {}) {
         this.#lastSelection = {
             selectedPhaseId,
@@ -116,7 +116,10 @@ export class ProtocolGraphRenderer {
             return;
         }
 
-        this.#renderStructure();
+        this.#structureRenderer.updateSelection({
+            selectedPhaseId,
+            selectedBlockId,
+        });
     }
 
     /** Stops observing the graph container for size changes. */

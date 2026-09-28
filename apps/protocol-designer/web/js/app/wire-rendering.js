@@ -75,6 +75,48 @@ export function wireRendering({
         });
     };
 
+    /** Updates protocol-tree selection styling without rebuilding the tree. */
+    const updateProtocolTreeSelection = (editorSnapshot) => {
+        const tree = elements.protocol.tree;
+
+        const selectedPhase = tree.querySelector(".phase-card--selected");
+        const selectedBlock = tree.querySelector(".block-card--selected");
+
+        if (selectedPhase !== null) {
+            selectedPhase.classList.remove("phase-card--selected");
+            selectedPhase.setAttribute("aria-selected", "false");
+        }
+
+        if (selectedBlock !== null) {
+            selectedBlock.classList.remove("block-card--selected");
+            selectedBlock.setAttribute("aria-selected", "false");
+        }
+
+        if (editorSnapshot.selectedPhaseId !== undefined) {
+            const phaseElement = tree.querySelector(
+                `[data-phase-id="${CSS.escape(editorSnapshot.selectedPhaseId)}"]`,
+            );
+
+            if (phaseElement !== null) {
+                phaseElement.classList.add("phase-card--selected");
+                phaseElement.setAttribute("aria-selected", "true");
+            }
+
+            return;
+        }
+
+        if (editorSnapshot.selectedBlockId !== undefined) {
+            const blockElement = tree.querySelector(
+                `[data-block-id="${CSS.escape(editorSnapshot.selectedBlockId)}"]`,
+            );
+
+            if (blockElement !== null) {
+                blockElement.classList.add("block-card--selected");
+                blockElement.setAttribute("aria-selected", "true");
+            }
+        }
+    };
+
     /** Renders the protocol tree and restores any pending interaction focus. */
     const renderProtocolTreeView = () => {
         const fieldFocusContext = pendingFieldFocus;
@@ -141,7 +183,14 @@ export function wireRendering({
     protocolModel.subscribe(renderProtocolTreeView);
     protocolModel.subscribe(renderGraphs);
 
-    editorState.subscribe(renderProtocolTreeView);
+    editorState.subscribe((editorSnapshot, changeType) => {
+        if (changeType === "selection") {
+            updateProtocolTreeSelection(editorSnapshot);
+            return;
+        }
+
+        renderProtocolTreeView();
+    });
     editorState.subscribe(updateGraphSelections);
 
     graphPaneController.subscribe(({ expanded }) => {

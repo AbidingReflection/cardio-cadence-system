@@ -698,3 +698,117 @@ test("svg-graph-structure-renderer", "renders phase labels above all phase bands
 
     assertEqual(firstLabelIndex > lastBandIndex, true);
 });
+
+test("svg-graph-structure-renderer", "updates selected phase without rebuilding structure", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+    const layout = createLayout();
+
+    renderer.render({
+        layout,
+        phases: createPhases(),
+        blocks: createBlocks(),
+    });
+
+    const phaseRegionBefore = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
+
+    const phaseBandBefore = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
+
+    renderer.updateSelection({
+        selectedPhaseId: "warmup",
+    });
+
+    const phaseRegionAfter = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
+
+    const phaseBandAfter = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
+
+    assertEqual(phaseRegionAfter, phaseRegionBefore);
+    assertEqual(phaseBandAfter, phaseBandBefore);
+
+    assertEqual(phaseRegionAfter.classList.contains("graph-phase-region--selected"), true);
+
+    assertEqual(phaseBandAfter.classList.contains("graph-phase-band--selected"), true);
+});
+
+test("svg-graph-structure-renderer", "updates selected block without rebuilding structure", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+    const layout = createLayout();
+
+    renderer.render({
+        layout,
+        phases: createPhases(),
+        blocks: createBlocks(),
+    });
+
+    const blockRegionBefore = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
+
+    renderer.updateSelection({
+        selectedBlockId: "block-1",
+    });
+
+    const blockRegionAfter = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
+
+    assertEqual(blockRegionAfter, blockRegionBefore);
+
+    assertEqual(blockRegionAfter.classList.contains("graph-block-region--selected"), true);
+});
+
+test("svg-graph-structure-renderer", "switches selection between phase and block", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+    const layout = createLayout();
+
+    renderer.render({
+        layout,
+        phases: createPhases(),
+        blocks: createBlocks(),
+        selectedPhaseId: "phase-1",
+    });
+
+    renderer.updateSelection({
+        selectedBlockId: "block-1",
+    });
+
+    const selectedPhaseRegion = svg.querySelector(".graph-phase-region--selected");
+
+    const selectedPhaseBand = svg.querySelector(".graph-phase-band--selected");
+
+    const selectedBlockRegion = svg.querySelector(".graph-block-region--selected");
+
+    assertEqual(selectedPhaseRegion, null);
+    assertEqual(selectedPhaseBand, null);
+    assertEqual(selectedBlockRegion.getAttribute("data-block-id"), "block-1");
+});
+
+test("svg-graph-structure-renderer", "clears selection without rebuilding structure", () => {
+    const svg = createSvg();
+    const renderer = new SvgGraphStructureRenderer(svg);
+    const layout = createLayout();
+
+    renderer.render({
+        layout,
+        phases: createPhases(),
+        blocks: createBlocks(),
+        selectedPhaseId: "phase-1",
+    });
+
+    const phaseRegionBefore = svg.querySelector('.graph-phase-region[data-phase-id="phase-1"]');
+
+    const phaseBandBefore = svg.querySelector('.graph-phase-band[data-phase-id="phase-1"]');
+
+    renderer.updateSelection();
+
+    const phaseRegionAfter = svg.querySelector('.graph-phase-region[data-phase-id="phase-1"]');
+
+    const phaseBandAfter = svg.querySelector('.graph-phase-band[data-phase-id="phase-1"]');
+
+    assertEqual(phaseRegionAfter, phaseRegionBefore);
+    assertEqual(phaseBandAfter, phaseBandBefore);
+
+    assertEqual(svg.querySelector(".graph-phase-region--selected"), null);
+
+    assertEqual(svg.querySelector(".graph-phase-band--selected"), null);
+
+    assertEqual(svg.querySelector(".graph-block-region--selected"), null);
+});

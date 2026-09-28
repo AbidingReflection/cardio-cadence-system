@@ -709,3 +709,29 @@ test("protocol-graph-renderer", "renders populated graphs without configured val
 
     assert(container.querySelector(".graph-series__line") !== null);
 });
+
+test("protocol-graph-renderer", "updates selection without rebuilding graph structure", () => {
+    const container = createContainer();
+    const renderer = createRenderer(container);
+
+    renderer.render(
+        createTwoBlockProtocol(),
+        {},
+        {
+            variableId: "cadence",
+            label: "Cadence",
+            unit: "rpm",
+        },
+    );
+
+    const blockRegionBefore = container.querySelector(".graph-block-region");
+
+    renderer.updateSelection({
+        selectedBlockId: blockRegionBefore.getAttribute("data-block-id"),
+    });
+
+    const blockRegionAfter = container.querySelector(".graph-block-region");
+
+    assertEqual(blockRegionAfter, blockRegionBefore);
+    assert(blockRegionAfter.classList.contains("graph-block-region--selected"));
+});

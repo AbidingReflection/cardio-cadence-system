@@ -66,7 +66,7 @@ export class SvgGraphStructureRenderer {
                 this.#createPhaseRegion(plot, phase, index, xStart, xEnd, isSelected),
             );
 
-            phaseBands.push(this.#createPhaseBand(plot, index, xStart, xEnd, isSelected));
+            phaseBands.push(this.#createPhaseBand(plot, phase.id, index, xStart, xEnd, isSelected));
 
             if (xEnd > xStart) {
                 phaseLabels.push(this.#createPhaseLabel(plot, phase.label, xStart, xEnd));
@@ -113,6 +113,42 @@ export class SvgGraphStructureRenderer {
             const x = roundSvgCoordinate(layout.xAtTime(boundaryTimeMs), SVG_COORDINATE_PRECISION);
 
             this.#rootGroup.append(this.#createPhaseBoundary(plot, x));
+        }
+    }
+
+    /** Updates structure selection styling without rebuilding SVG content. */
+    updateSelection({ selectedPhaseId = undefined, selectedBlockId = undefined } = {}) {
+        const selectedPhaseRegion = this.#rootGroup.querySelector(".graph-phase-region--selected");
+
+        const selectedPhaseBand = this.#rootGroup.querySelector(".graph-phase-band--selected");
+
+        const selectedBlockRegion = this.#rootGroup.querySelector(".graph-block-region--selected");
+
+        selectedPhaseRegion?.classList.remove("graph-phase-region--selected");
+        selectedPhaseBand?.classList.remove("graph-phase-band--selected");
+        selectedBlockRegion?.classList.remove("graph-block-region--selected");
+
+        if (selectedPhaseId !== undefined) {
+            const phaseRegion = this.#rootGroup.querySelector(
+                `.graph-phase-region[data-phase-id="${CSS.escape(selectedPhaseId)}"]`,
+            );
+
+            const phaseBand = this.#rootGroup.querySelector(
+                `.graph-phase-band[data-phase-id="${CSS.escape(selectedPhaseId)}"]`,
+            );
+
+            phaseRegion?.classList.add("graph-phase-region--selected");
+            phaseBand?.classList.add("graph-phase-band--selected");
+
+            return;
+        }
+
+        if (selectedBlockId !== undefined) {
+            const blockRegion = this.#rootGroup.querySelector(
+                `.graph-block-region[data-block-id="${CSS.escape(selectedBlockId)}"]`,
+            );
+
+            blockRegion?.classList.add("graph-block-region--selected");
         }
     }
 
@@ -218,7 +254,7 @@ export class SvgGraphStructureRenderer {
     }
 
     /** Creates one phase band above the plot. */
-    #createPhaseBand(plot, index, xStart, xEnd, isSelected) {
+    #createPhaseBand(plot, phaseId, index, xStart, xEnd, isSelected) {
         const rect = document.createElementNS(SVG_NAMESPACE, "rect");
         const bandBottom = plot.top - PHASE_BAND_GAP;
         const bandTop = bandBottom - PHASE_BAND_HEIGHT;
@@ -231,6 +267,7 @@ export class SvgGraphStructureRenderer {
         }
 
         rect.setAttribute("class", classes.join(" "));
+        rect.setAttribute("data-phase-id", phaseId);
         rect.setAttribute("x", String(xStart));
         rect.setAttribute("y", String(roundSvgCoordinate(bandTop, SVG_COORDINATE_PRECISION)));
         rect.setAttribute("width", String(width));

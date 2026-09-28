@@ -68,3 +68,47 @@ test("editor-state-selection", "clears structural selection", () => {
     assertEqual(snapshot.selectedPhaseId, undefined);
     assertEqual(snapshot.selectedBlockId, undefined);
 });
+
+test("editor-state-selection", "phase selection emits selection change type", () => {
+    const editorState = new EditorState();
+
+    let receivedChangeType;
+
+    editorState.subscribe((_snapshot, changeType) => {
+        receivedChangeType = changeType;
+    });
+
+    editorState.selectPhase("phase-1");
+
+    assertEqual(receivedChangeType, "selection");
+});
+
+test("editor-state-selection", "block selection emits selection change type", () => {
+    const editorState = new EditorState();
+
+    let receivedChangeType;
+
+    editorState.subscribe((_snapshot, changeType) => {
+        receivedChangeType = changeType;
+    });
+
+    editorState.selectBlock("block-1");
+
+    assertEqual(receivedChangeType, "selection");
+});
+
+test("editor-state-selection", "clearing selection emits selection change type", () => {
+    const editorState = new EditorState();
+
+    let receivedChangeType;
+
+    editorState.selectPhase("phase-1");
+
+    editorState.subscribe((_snapshot, changeType) => {
+        receivedChangeType = changeType;
+    });
+
+    editorState.clearSelection();
+
+    assertEqual(receivedChangeType, "selection");
+});

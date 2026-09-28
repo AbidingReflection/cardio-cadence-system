@@ -103,3 +103,17 @@ test("editor-state-core", "notifies subscribers after state changes", () => {
         copyMode: undefined,
     });
 });
+
+test("editor-state-core", "non-selection changes emit full change type", () => {
+    const editorState = new EditorState();
+
+    let receivedChangeType;
+
+    editorState.subscribe((_snapshot, changeType) => {
+        receivedChangeType = changeType;
+    });
+
+    editorState.expandPhase("phase-1");
+
+    assertEqual(receivedChangeType, "full");
+});

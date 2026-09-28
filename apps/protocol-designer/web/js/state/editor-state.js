@@ -102,7 +102,7 @@ export class EditorState {
 
         this.#selectedPhaseId = phaseId;
         this.#selectedBlockId = undefined;
-        this.#emit();
+        this.#emit("selection");
     }
 
     /** Selects one block and clears any selected phase. */
@@ -113,7 +113,7 @@ export class EditorState {
 
         this.#selectedBlockId = blockId;
         this.#selectedPhaseId = undefined;
-        this.#emit();
+        this.#emit("selection");
     }
 
     /** Clears the current structural selection. */
@@ -124,7 +124,7 @@ export class EditorState {
 
         this.#selectedPhaseId = undefined;
         this.#selectedBlockId = undefined;
-        this.#emit();
+        this.#emit("selection");
     }
 
     /** Expands a phase by ID. */
@@ -421,11 +421,11 @@ export class EditorState {
     }
 
     /** Notifies all subscribers with the current editor-state snapshot. */
-    #emit() {
+    #emit(changeType = "full") {
         const snapshot = this.getSnapshot();
 
         for (const listener of this.#listeners) {
-            listener(snapshot);
+            listener(snapshot, changeType);
         }
     }
 }
