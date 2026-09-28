@@ -45,6 +45,21 @@ function handleManageKeydown(event, protocolTree, protocolModel, editorState) {
         return;
     }
 
+    if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === "c"
+    ) {
+        handleCopy(event, editorState);
+
+        if (event.defaultPrevented) {
+            protocolTree.focus();
+        }
+
+        return;
+    }
+
     if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
     }
@@ -114,6 +129,22 @@ function handleEscape(event, protocolTree, editorState) {
         event.preventDefault();
         editorState.clearEditMode();
         protocolTree.focus();
+    }
+}
+
+/** Starts structural copy mode for the selected item. */
+function handleCopy(event, editorState) {
+    const snapshot = editorState.getSnapshot();
+
+    if (snapshot.editMode === "phase" && snapshot.selectedPhaseId !== undefined) {
+        event.preventDefault();
+        editorState.setCopyMode("phase", snapshot.selectedPhaseId);
+        return;
+    }
+
+    if (snapshot.editMode === "block" && snapshot.selectedBlockId !== undefined) {
+        event.preventDefault();
+        editorState.setCopyMode("block", snapshot.selectedBlockId);
     }
 }
 
