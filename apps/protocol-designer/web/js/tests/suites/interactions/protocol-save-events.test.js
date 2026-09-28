@@ -35,16 +35,26 @@ function createHarness({
     const changeSummaryField = document.createElement("div");
     const changeSummaryInput = document.createElement("input");
 
-    const saveDialog = {
-        open: false,
+    const saveDialog = document.createElement("dialog");
 
-        showModal() {
-            this.open = true;
-        },
+    saveDialog.append(
+        title,
+        description,
+        displayNameInput,
+        nameHint,
+        changeSummaryField,
+        changeSummaryInput,
+        closeButton,
+        cancelButton,
+        confirmButton,
+    );
 
-        close() {
-            this.open = false;
-        },
+    saveDialog.showModal = function () {
+        this.open = true;
+    };
+
+    saveDialog.close = function () {
+        this.open = false;
     };
 
     const editorState = {
@@ -371,6 +381,33 @@ test("protocol-save-events", "Rename does not open for an unsaved protocol", () 
     const harness = createHarness();
 
     harness.renameButton.click();
+
+    assertEqual(harness.saveDialog.open, false);
+});
+
+test("protocol-save-events", "Enter submits the save dialog", async () => {
+    const harness = createHarness();
+
+    harness.saveButton.click();
+
+    harness.displayNameInput.value = "Morning Intervals";
+    harness.changeSummaryInput.value = "Initial version";
+
+    harness.displayNameInput.dispatchEvent(
+        new KeyboardEvent("keydown", {
+            key: "Enter",
+            bubbles: true,
+        }),
+    );
+
+    await flushAsyncEvents();
+
+    assertDeepEqual(harness.createPersistedProtocolCalls, [
+        {
+            displayName: "Morning Intervals",
+            changeSummary: "Initial version",
+        },
+    ]);
 
     assertEqual(harness.saveDialog.open, false);
 });
