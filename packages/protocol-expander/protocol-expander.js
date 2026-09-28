@@ -227,9 +227,28 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        return this.#orderedBlocks.find(
-            ({ range }) => timeMs >= range.startTimeMs && timeMs < range.endTimeMs,
-        );
+        let low = 0;
+        let high = this.#orderedBlocks.length - 1;
+
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
+            const blockEntry = this.#orderedBlocks[middle];
+            const { range } = blockEntry;
+
+            if (timeMs < range.startTimeMs) {
+                high = middle - 1;
+                continue;
+            }
+
+            if (timeMs >= range.endTimeMs) {
+                low = middle + 1;
+                continue;
+            }
+
+            return blockEntry;
+        }
+
+        return undefined;
     }
 
     /** Returns the block that owns the time immediately before an absolute workout time. */
@@ -238,9 +257,28 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        return this.#orderedBlocks.find(
-            ({ range }) => timeMs > range.startTimeMs && timeMs <= range.endTimeMs,
-        );
+        let low = 0;
+        let high = this.#orderedBlocks.length - 1;
+
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
+            const blockEntry = this.#orderedBlocks[middle];
+            const { range } = blockEntry;
+
+            if (timeMs <= range.startTimeMs) {
+                high = middle - 1;
+                continue;
+            }
+
+            if (timeMs > range.endTimeMs) {
+                low = middle + 1;
+                continue;
+            }
+
+            return blockEntry;
+        }
+
+        return undefined;
     }
 
     /** Returns the canonical progression fraction for an absolute block time. */
