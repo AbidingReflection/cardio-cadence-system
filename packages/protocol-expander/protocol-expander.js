@@ -7,6 +7,7 @@ export class ProtocolExpander {
     #phaseRanges;
     #blockRanges;
     #orderedBlocks;
+    #progressionMappings = new Map();
 
     /** Creates an immutable time-domain interpretation of a valid protocol. */
     constructor(protocol) {
@@ -82,13 +83,12 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        const progression = blockEntry.block.variables[variableId];
+        const mapping = this.#getProgressionMapping(blockEntry.block, variableId);
 
-        if (progression === undefined) {
+        if (mapping === undefined) {
             return undefined;
         }
 
-        const mapping = createProgressionMapping(progression);
         const fraction = ProtocolExpander.#getProgressionFraction(
             mapping,
             blockEntry.range,
@@ -108,13 +108,12 @@ export class ProtocolExpander {
             return undefined;
         }
 
-        const progression = blockEntry.block.variables[variableId];
+        const mapping = this.#getProgressionMapping(blockEntry.block, variableId);
 
-        if (progression === undefined) {
+        if (mapping === undefined) {
             return undefined;
         }
 
-        const mapping = createProgressionMapping(progression);
         const fraction = ProtocolExpander.#getProgressionFraction(
             mapping,
             blockEntry.range,
@@ -150,9 +149,9 @@ export class ProtocolExpander {
                 break;
             }
 
-            const progression = block.variables[variableId];
+            const mapping = this.#getProgressionMapping(block, variableId);
 
-            if (progression === undefined) {
+            if (mapping === undefined) {
                 continue;
             }
 
@@ -164,7 +163,6 @@ export class ProtocolExpander {
                 boundaries.push(range.startTimeMs);
             }
 
-            const mapping = createProgressionMapping(progression);
             const blockDurationMs = range.endTimeMs - range.startTimeMs;
 
             for (const fraction of mapping.getBoundaryFractions()) {
@@ -192,9 +190,9 @@ export class ProtocolExpander {
                 continue;
             }
 
-            const progression = block.variables[variableId];
+            const mapping = this.#getProgressionMapping(block, variableId);
 
-            if (progression === undefined) {
+            if (mapping === undefined) {
                 continue;
             }
 
@@ -202,7 +200,6 @@ export class ProtocolExpander {
                 return range.startTimeMs;
             }
 
-            const mapping = createProgressionMapping(progression);
             const blockDurationMs = range.endTimeMs - range.startTimeMs;
 
             for (const fraction of mapping.getBoundaryFractions()) {
@@ -219,6 +216,32 @@ export class ProtocolExpander {
         }
 
         return undefined;
+    }
+
+    /** Returns the cached progression mapping for one block variable. */
+    #getProgressionMapping(block, variableId) {
+        let blockMappings = this.#progressionMappings.get(block.id);
+
+        if (blockMappings === undefined) {
+            blockMappings = new Map();
+            this.#progressionMappings.set(block.id, blockMappings);
+        }
+
+        if (blockMappings.has(variableId)) {
+            return blockMappings.get(variableId);
+        }
+
+        const progression = block.variables[variableId];
+
+        if (progression === undefined) {
+            return undefined;
+        }
+
+        const mapping = createProgressionMapping(progression);
+
+        blockMappings.set(variableId, mapping);
+
+        return mapping;
     }
 
     /** Returns the block that owns an absolute workout time. */
