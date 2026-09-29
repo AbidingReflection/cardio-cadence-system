@@ -8,8 +8,9 @@
 
 import { roundSvgCoordinate } from "/packages/graph/svg-point-precision.js";
 
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const SVG_COORDINATE_PRECISION = 2;
+
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 /** Renders graph axes, grid lines, tick labels, and axis titles into an existing SVG element. */
 export class SvgGraphAxesRenderer {
@@ -31,6 +32,7 @@ export class SvgGraphAxesRenderer {
         yAxisLabel = null,
         formatXTick = String,
         formatYTick = String,
+        rightYAxis = null,
     }) {
         if (!Array.isArray(xTicks)) {
             throw new TypeError("SvgGraphAxesRenderer xTicks must be an array.");
@@ -54,6 +56,31 @@ export class SvgGraphAxesRenderer {
 
         if (yAxisLabel !== null && typeof yAxisLabel !== "string") {
             throw new TypeError("SvgGraphAxesRenderer yAxisLabel must be a string or null.");
+        }
+
+        if (rightYAxis !== null) {
+            if (!Array.isArray(rightYAxis.ticks)) {
+                throw new TypeError("SvgGraphAxesRenderer rightYAxis ticks must be an array.");
+            }
+
+            if (
+                rightYAxis.formatTick !== undefined &&
+                typeof rightYAxis.formatTick !== "function"
+            ) {
+                throw new TypeError(
+                    "SvgGraphAxesRenderer rightYAxis formatTick must be a function.",
+                );
+            }
+
+            if (
+                rightYAxis.label !== undefined &&
+                rightYAxis.label !== null &&
+                typeof rightYAxis.label !== "string"
+            ) {
+                throw new TypeError(
+                    "SvgGraphAxesRenderer rightYAxis label must be a string or null.",
+                );
+            }
         }
 
         this.#clearRootGroup();
@@ -87,6 +114,27 @@ export class SvgGraphAxesRenderer {
                 this.#createYTickMark(plot, y),
                 this.#createYTickLabel(plot, y, formatYTick(value)),
             );
+        }
+
+        if (rightYAxis !== null) {
+            const rightLayout = rightYAxis.layout;
+            const rightPlot = rightLayout.plot;
+            const formatRightTick = rightYAxis.formatTick ?? String;
+
+            this.#rootGroup.append(this.#createRightYAxisLine(rightPlot));
+
+            if (rightYAxis.label !== undefined && rightYAxis.label !== null) {
+                this.#rootGroup.append(this.#createRightYAxisTitle(rightPlot, rightYAxis.label));
+            }
+
+            for (const value of rightYAxis.ticks) {
+                const y = roundSvgCoordinate(rightLayout.yAtValue(value), SVG_COORDINATE_PRECISION);
+
+                this.#rootGroup.append(
+                    this.#createRightYTickMark(rightPlot, y),
+                    this.#createRightYTickLabel(rightPlot, y, formatRightTick(value)),
+                );
+            }
         }
     }
 
@@ -224,6 +272,64 @@ export class SvgGraphAxesRenderer {
         text.setAttribute("x", String(plot.left - 8));
         text.setAttribute("y", String(y));
         text.setAttribute("text-anchor", "end");
+        text.setAttribute("dominant-baseline", "middle");
+        text.textContent = String(label);
+
+        return text;
+    }
+
+    /** Creates the vertical y-axis baseline at the right plot edge. */
+    #createRightYAxisLine(plot) {
+        const line = document.createElementNS(SVG_NAMESPACE, "line");
+
+        line.setAttribute("class", "graph-axis__line graph-axis__line--y");
+        line.setAttribute("x1", String(plot.right));
+        line.setAttribute("x2", String(plot.right));
+        line.setAttribute("y1", String(plot.top));
+        line.setAttribute("y2", String(plot.bottom));
+
+        return line;
+    }
+
+    /** Creates the rotated y-axis title beside the right plot edge. */
+    #createRightYAxisTitle(plot, label) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        const x = plot.right + 36;
+        const y = (plot.top + plot.bottom) / 2;
+
+        text.setAttribute("class", "graph-axis__title graph-axis__title--y");
+        text.setAttribute("x", String(x));
+        text.setAttribute("y", String(y));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("transform", `rotate(90 ${x} ${y})`);
+        text.textContent = String(label);
+
+        return text;
+    }
+
+    /** Creates one y-axis tick mark at the right plot edge. */
+    #createRightYTickMark(plot, y) {
+        const line = document.createElementNS(SVG_NAMESPACE, "line");
+
+        line.setAttribute("class", "graph-axis__tick graph-axis__tick--y");
+        line.setAttribute("x1", String(plot.right));
+        line.setAttribute("x2", String(plot.right + 4));
+        line.setAttribute("y1", String(y));
+        line.setAttribute("y2", String(y));
+
+        return line;
+    }
+
+    /** Creates one y-axis tick label beside the right plot edge. */
+    #createRightYTickLabel(plot, y, label) {
+        const text = document.createElementNS(SVG_NAMESPACE, "text");
+
+        text.setAttribute("class", "graph-axis__label graph-axis__label--y");
+        text.setAttribute("x", String(plot.right + 8));
+        text.setAttribute("y", String(y));
+        text.setAttribute("text-anchor", "start");
         text.setAttribute("dominant-baseline", "middle");
         text.textContent = String(label);
 

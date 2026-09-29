@@ -20,9 +20,13 @@ export class SvgGraphRenderer {
     }
 
     /** Renders laid-out graph points into renderer-owned SVG content. */
-    render({ points }) {
+    render({ points, className = "graph-series__line" }) {
         if (!Array.isArray(points)) {
             throw new TypeError("SVG graph renderer points must be an array.");
+        }
+
+        if (typeof className !== "string") {
+            throw new TypeError("SVG graph renderer className must be a string.");
         }
 
         this.#clearRootGroup();
@@ -30,7 +34,7 @@ export class SvgGraphRenderer {
         const runs = this.#splitDrawableRuns(points);
 
         for (const run of runs) {
-            this.#rootGroup.append(this.#createSeriesPath(run));
+            this.#rootGroup.append(this.#createSeriesPath(run, className));
         }
     }
 
@@ -75,10 +79,10 @@ export class SvgGraphRenderer {
     }
 
     /** Creates one SVG path for a drawable point run. */
-    #createSeriesPath(points) {
+    #createSeriesPath(points, className) {
         const path = document.createElementNS(SVG_NAMESPACE, "path");
 
-        path.setAttribute("class", "graph-series__line");
+        path.setAttribute("class", className);
         path.setAttribute("d", SvgGraphRenderer.#buildPathData(points));
 
         return path;
