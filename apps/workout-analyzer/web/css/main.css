@@ -1,0 +1,60 @@
+body {
+    --graph-calorie-rate-color: #d97706;
+    --graph-heart-rate-color: #dc2626;
+
+    min-height: 100%;
+    overflow: auto;
+}
+
+.workout-analyzer {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 24px 0;
+}
+
+.workout-analyzer__header {
+    margin-bottom: 16px;
+}
+
+.workout-analyzer__header h1,
+.workout-analyzer__header p {
+    margin: 0;
+}
+
+.workout-analyzer__header p {
+    margin-top: 4px;
+    color: var(--color-text-muted);
+}
+
+.analysis-panel {
+    overflow: hidden;
+
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+
+    background: var(--color-surface);
+    box-shadow: var(--shadow-pane);
+}
+
+.analysis-panel__graph {
+    position: relative;
+
+    width: 100%;
+    height: 420px;
+}
+
+.analysis-panel__graph svg {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+}
+
+.graph-series__line--calorie-rate {
+    stroke: #3aff00;
+}
+
+.graph-series__line--heart-rate {
+    stroke: #dc2626;
+    stroke-width: 2.5;
+}
