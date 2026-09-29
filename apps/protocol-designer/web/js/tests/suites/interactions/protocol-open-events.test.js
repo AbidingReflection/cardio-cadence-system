@@ -368,19 +368,34 @@ test("protocol-open-events", "successful open closes the dialog", async () => {
     assertEqual(openDialog.open, false);
 });
 
-test("protocol-open-events", "failed open leaves the dialog open", async () => {
+test("protocol-open-events", "failed open keeps the dialog open", async () => {
     const { openButton, openDialog, protocolTableContainer, confirmButton } = createHarness({
         openError: new Error("Open failed."),
     });
 
-    openButton.click();
+    const originalConsoleError = console.error;
+    const loggedErrors = [];
 
-    protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
-    confirmButton.click();
+    console.error = (...args) => {
+        loggedErrors.push(args);
+    };
 
-    await flushAsyncEvents();
+    try {
+        openButton.click();
 
-    assertEqual(openDialog.open, true);
+        protocolTableContainer.querySelector('tr[data-protocol-family-id="family-1"]').click();
+
+        confirmButton.click();
+
+        await flushAsyncEvents();
+
+        assertEqual(openDialog.open, true);
+        assertEqual(loggedErrors.length, 1);
+        assertEqual(loggedErrors[0][0], "Failed to open protocol.");
+        assertEqual(loggedErrors[0][1].message, "Open failed.");
+    } finally {
+        console.error = originalConsoleError;
+    }
 });
 
 test("protocol-open-events", "close button closes the dialog", () => {
