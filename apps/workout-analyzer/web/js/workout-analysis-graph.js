@@ -13,13 +13,17 @@ import { roundSvgPoints } from "/packages/graph/svg-point-precision.js";
 const SVG_POINT_PRECISION = 2;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-/** Renders planned calorie rate against heart-rate response. */
-export function renderWorkoutAnalysisGraph(container, calorieRateSamples, heartRateSamples) {
+/** Renders planned calorie rate against one or more heart-rate responses. */
+export function renderWorkoutAnalysisGraph(container, { calorieRateSamples, heartRateSeries }) {
     const widthPx = container.clientWidth;
     const heightPx = container.clientHeight;
 
     const startTimeMs = 0;
-    const endTimeMs = 80 * 60_000;
+
+    const endTimeMs = Math.max(
+        calorieRateSamples.at(-1)?.timeMs ?? 0,
+        ...heartRateSeries.map(({ samples }) => samples.at(-1)?.timeMs ?? 0),
+    );
 
     const calorieRateMin = 0;
     const calorieRateMax = 30;
@@ -104,24 +108,32 @@ export function renderWorkoutAnalysisGraph(container, calorieRateSamples, heartR
         SVG_POINT_PRECISION,
     );
 
-    const heartRatePoints = roundSvgPoints(
-        heartRateSamples.map(({ timeMs, value }) => ({
-            x: heartRateLayout.xAtTime(timeMs),
-            y: heartRateLayout.yAtValue(value),
-        })),
-        SVG_POINT_PRECISION,
-    );
+    heartRateSeries.forEach(({ id, samples }, index) => {
+        const points = roundSvgPoints(
+            samples.map(({ timeMs, value }) => ({
+                x: heartRateLayout.xAtTime(timeMs),
+                y: heartRateLayout.yAtValue(value),
+            })),
+            SVG_POINT_PRECISION,
+        );
+
+        const renderer = new SvgGraphRenderer(svg);
+
+        renderer.render({
+            points,
+            className: [
+                "graph-series__line",
+                "graph-series__line--heart-rate",
+                `graph-series__line--heart-rate-${index + 1}`,
+                `graph-series__line--workout-${id}`,
+            ].join(" "),
+        });
+    });
 
     const calorieRateRenderer = new SvgGraphRenderer(svg);
-    const heartRateRenderer = new SvgGraphRenderer(svg);
 
     calorieRateRenderer.render({
         points: calorieRatePoints,
         className: "graph-series__line graph-series__line--calorie-rate",
-    });
-
-    heartRateRenderer.render({
-        points: heartRatePoints,
-        className: "graph-series__line graph-series__line--heart-rate",
     });
 }

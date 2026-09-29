@@ -56,5 +56,5 @@ body {
 
 .graph-series__line--heart-rate {
     stroke: #dc2626;
-    stroke-width: 2.5;
+    stroke-width: 1;
 }
