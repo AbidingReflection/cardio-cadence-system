@@ -6,17 +6,24 @@
 
         <title>Cardio Cadence Protocol Designer</title>
 
+        <link rel="stylesheet" href="/packages/ui/css/theme.css" />
+        <link rel="stylesheet" href="/packages/ui/css/base.css" />
+        <link rel="stylesheet" href="/packages/ui/css/pane.css" />
+        <link rel="stylesheet" href="/packages/ui/css/dialog.css" />
+        <link rel="stylesheet" href="/packages/graph/css/graph-theme.css" />
+        <link rel="stylesheet" href="/packages/graph/css/graph.css" />
+
         <link rel="stylesheet" href="css/main.css" />
-        <link rel="stylesheet" href="css/pane.css" />
         <link rel="stylesheet" href="css/top-ribbon.css" />
         <link rel="stylesheet" href="css/graph-pane.css" />
-        <link rel="stylesheet" href="css/graph.css" />
         <link rel="stylesheet" href="css/protocol-pane.css" />
-        <link rel="stylesheet" href="css/protocol-tree.css" />
+
+        <link rel="stylesheet" href="css/protocol/protocol-layout.css" />
+        <link rel="stylesheet" href="css/protocol/phase.css" />
+        <link rel="stylesheet" href="css/protocol/block.css" />
+        <link rel="stylesheet" href="css/protocol/block-editor.css" />
+
         <link rel="stylesheet" href="css/totals-ribbon.css" />
-        <link rel="stylesheet" href="css/protocol-setup.css" />
-        <link rel="stylesheet" href="css/dialog.css" />
-        <link rel="stylesheet" href="css/protocol-save.css" />
         <link rel="stylesheet" href="css/protocol-open.css" />
     </head>
 
@@ -34,13 +41,7 @@
 
             <nav class="top-ribbon__menu" aria-label="Application menu">
                 <div class="top-ribbon__menu-group">
-                    <button
-                        type="button"
-                        class="menu-button"
-                        id="protocol-new-button"
-                    >
-                        New
-                    </button>
+                    <button type="button" class="menu-button" id="protocol-new-button">New</button>
 
                     <button
                         type="button"
@@ -350,7 +351,7 @@
 
                         <input
                             type="text"
-                            class="protocol-save-dialog__input"
+                            class="app-dialog__control protocol-save-dialog__input"
                             id="protocol-save-display-name"
                         />
 
@@ -375,7 +376,7 @@
 
                         <input
                             type="text"
-                            class="protocol-save-dialog__input"
+                            class="app-dialog__control protocol-save-dialog__input"
                             id="protocol-save-change-summary"
                             placeholder="Optional"
                         />
@@ -437,7 +438,7 @@
 
                         <select
                             id="protocol-setup-activity-type"
-                            class="protocol-setup-dialog__select"
+                            class="app-dialog__control protocol-setup-dialog__select"
                         ></select>
                     </div>
                 </div>
@@ -455,7 +456,7 @@
 
                         <select
                             id="protocol-setup-machine-profile"
-                            class="protocol-setup-dialog__select"
+                            class="app-dialog__control protocol-setup-dialog__select"
                         ></select>
 
                         <p class="app-dialog__hint protocol-setup-dialog__hint">
@@ -473,7 +474,7 @@
 
                         <select
                             id="protocol-setup-calibration-profile"
-                            class="protocol-setup-dialog__select"
+                            class="app-dialog__control protocol-setup-dialog__select"
                             disabled
                         ></select>
 

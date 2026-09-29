@@ -15,7 +15,7 @@
     background: var(--color-header);
     color: var(--color-header-text);
 
-    box-shadow: 0 2px 10px rgb(16 24 40 / 20%);
+    box-shadow: var(--shadow-header);
 }
 
 .app-brand {
@@ -32,6 +32,7 @@
 
 .app-brand__section {
     color: var(--color-header-muted);
+
     font-size: 0.9rem;
     font-weight: 500;
 }
@@ -50,7 +51,8 @@
 
 .top-ribbon__menu-group--setup {
     padding-left: 20px;
-    border-left: 1px solid rgb(255 255 255 / 18%);
+
+    border-left: 1px solid var(--color-header-border);
 }
 
 .menu-button {
@@ -77,8 +79,8 @@
 }
 
 .menu-button:hover {
-    border-color: rgb(255 255 255 / 18%);
-    background: rgb(255 255 255 / 10%);
+    border-color: var(--color-header-border);
+    background: var(--color-header-hover);
 }
 
 .menu-button:focus-visible {
@@ -119,14 +121,14 @@
     padding-right: 6px;
     padding-left: 6px;
 
-    border-left-color: rgb(255 255 255 / 12%);
+    border-left-color: var(--color-header-divider);
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
 
 .menu-split-button__primary:hover + .menu-split-button__dropdown,
 .menu-split-button__dropdown:hover {
-    border-left-color: rgb(255 255 255 / 18%);
+    border-left-color: var(--color-header-border);
 }
 
 .menu-dropdown {
@@ -138,13 +140,13 @@
     min-width: 160px;
     padding: 6px;
 
-    border: 1px solid rgb(16 24 40 / 18%);
+    border: 1px solid var(--color-dropdown-border);
     border-radius: 6px;
 
-    background: #fff;
-    color: #222;
+    background: var(--color-dropdown-surface);
+    color: var(--color-dropdown-text);
 
-    box-shadow: 0 8px 24px rgb(16 24 40 / 22%);
+    box-shadow: var(--shadow-dropdown);
 }
 
 .menu-dropdown[hidden] {
@@ -172,7 +174,7 @@
 }
 
 .menu-dropdown__item:hover {
-    background: #f1f3f5;
+    background: var(--color-surface-hover);
 }
 
 .menu-dropdown__item:focus-visible {

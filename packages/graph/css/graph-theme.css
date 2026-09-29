@@ -1,0 +1,29 @@
+/* Graph colors */
+.graph-svg {
+    --graph-text-color: var(--color-text);
+    --graph-block-boundary-color: #8a8a8a;
+
+    --graph-phase-fill-0: #dfeedd;
+    --graph-phase-fill-1: #f2ebc8;
+    --graph-phase-fill-2: #dcebf4;
+    --graph-phase-fill-3: #f3dede;
+    --graph-phase-fill-4: #e7def3;
+    --graph-phase-fill-5: #d8eeee;
+    --graph-phase-fill-6: #f3e1ca;
+    --graph-phase-fill-7: #e4eed3;
+    --graph-phase-fill-8: #eadceb;
+    --graph-phase-fill-9: #f1dfe8;
+
+    --graph-phase-band-fill-0: #cfe4cb;
+    --graph-phase-band-fill-1: #e9ddb0;
+    --graph-phase-band-fill-2: #c8dfed;
+    --graph-phase-band-fill-3: #e9c6c6;
+    --graph-phase-band-fill-4: #d6c6e9;
+    --graph-phase-band-fill-5: #bfe0e0;
+    --graph-phase-band-fill-6: #e9cfad;
+    --graph-phase-band-fill-7: #d1e3b8;
+    --graph-phase-band-fill-8: #d9c2dc;
+    --graph-phase-band-fill-9: #e5c5d5;
+
+    --graph-selection-color: #f4df7a;
+}

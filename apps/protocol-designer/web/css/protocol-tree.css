@@ -1,8 +1,0 @@
-/**
- * Composes the styles used to render and edit the protocol tree.
- */
-
-@import url("./protocol/protocol-layout.css");
-@import url("./protocol/phase.css");
-@import url("./protocol/block.css");
-@import url("./protocol/block-editor.css");

@@ -1,11 +1,5 @@
-/*
- * Graph responsibilities:
- * - Style reusable graph SVG presentation.
- * - Keep graph geometry and data semantics out of CSS.
- * - Provide baseline styling for rendered series and plot layers.
- */
-
 .graph-renderer {
+    color: var(--graph-text-color);
     pointer-events: none;
 }
 
@@ -50,60 +44,8 @@
     font-size: 0.8rem;
 }
 
-.graph-pane__content {
-    container-name: graph;
-    container-type: size;
-}
-
 .graph-axis__title--y {
     font-size: clamp(0.65rem, 4cqh, 0.9rem);
-}
-
-.graph-phase-boundary {
-    stroke: currentColor;
-    stroke-opacity: 0.25;
-    stroke-width: 1;
-    stroke-dasharray: 4 4;
-    vector-effect: non-scaling-stroke;
-}
-
-.graph-phase-region {
-    opacity: 0.18;
-}
-
-.graph-phase-region--0 {
-    fill: #dfeedd;
-}
-
-.graph-phase-region--1 {
-    fill: #f2ebc8;
-}
-
-.graph-phase-region--2 {
-    fill: #dcebf4;
-}
-
-.graph-phase-band {
-    opacity: 0.95;
-}
-
-.graph-phase-band--0 {
-    fill: #cfe4cb;
-}
-
-.graph-phase-band--1 {
-    fill: #e9ddb0;
-}
-
-.graph-phase-band--2 {
-    fill: #c8dfed;
-}
-
-.graph-phase-label {
-    fill: var(--color-text);
-    font-size: 13px;
-    font-weight: 600;
-    pointer-events: none;
 }
 
 .graph-phase-boundary {
@@ -114,8 +56,103 @@
     vector-effect: non-scaling-stroke;
 }
 
+.graph-phase-region {
+    opacity: 0.18;
+}
+
+.graph-phase-band {
+    opacity: 0.95;
+}
+
+.graph-phase-region--0 {
+    fill: var(--graph-phase-fill-0);
+}
+
+.graph-phase-region--1 {
+    fill: var(--graph-phase-fill-1);
+}
+
+.graph-phase-region--2 {
+    fill: var(--graph-phase-fill-2);
+}
+
+.graph-phase-region--3 {
+    fill: var(--graph-phase-fill-3);
+}
+
+.graph-phase-region--4 {
+    fill: var(--graph-phase-fill-4);
+}
+
+.graph-phase-region--5 {
+    fill: var(--graph-phase-fill-5);
+}
+
+.graph-phase-region--6 {
+    fill: var(--graph-phase-fill-6);
+}
+
+.graph-phase-region--7 {
+    fill: var(--graph-phase-fill-7);
+}
+
+.graph-phase-region--8 {
+    fill: var(--graph-phase-fill-8);
+}
+
+.graph-phase-region--9 {
+    fill: var(--graph-phase-fill-9);
+}
+
+.graph-phase-band--0 {
+    fill: var(--graph-phase-band-fill-0);
+}
+
+.graph-phase-band--1 {
+    fill: var(--graph-phase-band-fill-1);
+}
+
+.graph-phase-band--2 {
+    fill: var(--graph-phase-band-fill-2);
+}
+
+.graph-phase-band--3 {
+    fill: var(--graph-phase-band-fill-3);
+}
+
+.graph-phase-band--4 {
+    fill: var(--graph-phase-band-fill-4);
+}
+
+.graph-phase-band--5 {
+    fill: var(--graph-phase-band-fill-5);
+}
+
+.graph-phase-band--6 {
+    fill: var(--graph-phase-band-fill-6);
+}
+
+.graph-phase-band--7 {
+    fill: var(--graph-phase-band-fill-7);
+}
+
+.graph-phase-band--8 {
+    fill: var(--graph-phase-band-fill-8);
+}
+
+.graph-phase-band--9 {
+    fill: var(--graph-phase-band-fill-9);
+}
+
+.graph-phase-label {
+    fill: var(--graph-text-color);
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
 .graph-block-boundary {
-    stroke: #8a8a8a;
+    stroke: var(--graph-block-boundary-color);
     stroke-opacity: 0.35;
     stroke-width: 1;
     stroke-dasharray: 1 4;
@@ -129,7 +166,7 @@
 
 .graph-phase-region--selected {
     opacity: 0.7;
-    stroke: #f4df7a;
+    stroke: var(--graph-selection-color);
     stroke-opacity: 0.9;
     stroke-width: 2;
 }
@@ -142,7 +179,7 @@
     fill: currentColor;
     fill-opacity: 0.08;
 
-    stroke: #f4df7a;
+    stroke: var(--graph-selection-color);
     stroke-opacity: 0.9;
     stroke-width: 2;
 
@@ -150,7 +187,7 @@
 }
 
 .graph-empty-state {
-    fill: var(--color-text);
+    fill: var(--graph-text-color);
     opacity: 0.55;
     font-size: 14px;
     font-weight: 500;

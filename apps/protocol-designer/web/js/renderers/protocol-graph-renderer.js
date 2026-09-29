@@ -70,6 +70,7 @@ export class ProtocolGraphRenderer {
         this.#container = container;
 
         this.#svg = document.createElementNS(SVG_NAMESPACE, "svg");
+        this.#svg.classList.add("graph-svg");
         this.#container.replaceChildren(this.#svg);
 
         this.#svgRenderer = new SvgGraphRenderer(this.#svg);

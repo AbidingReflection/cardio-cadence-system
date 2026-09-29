@@ -1,0 +1,74 @@
+:root {
+    /* Core colors */
+    --color-page: #eef1f5;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f7f8fa;
+    --color-surface-hover: #f1f3f5;
+    --color-border: #d8dde5;
+
+    --color-text: #202936;
+    --color-text-muted: #667085;
+
+    --color-accent: #2979ff;
+    --color-accent-hover: #1f64d6;
+    --color-accent-text: #ffffff;
+    --color-accent-tint: rgb(41 121 255 / 16%);
+
+    --color-backdrop: rgb(16 24 40 / 45%);
+    --color-focus-shadow: rgb(0 0 0 / 8%);
+
+    /* Header colors */
+    --color-header: #182230;
+    --color-header-text: #ffffff;
+    --color-header-muted: #aeb9c8;
+    --color-header-border: rgb(255 255 255 / 18%);
+    --color-header-divider: rgb(255 255 255 / 12%);
+    --color-header-divider-subtle: rgb(255 255 255 / 14%);
+    --color-header-hover: rgb(255 255 255 / 10%);
+
+    /* Status colors */
+    --color-danger: #b3261e;
+    --color-danger-strong: #ef4444;
+    --color-danger-tint: rgb(179 38 30 / 8%);
+    --color-warning: #facc15;
+
+    /* Protocol colors */
+    --color-phase-background: #fff1f1;
+    --color-phase-header: #ffe2e2;
+    --color-phase-border: #efb8b8;
+
+    --color-block-background: #eef6ff;
+    --color-block-hover: #e2f0ff;
+    --color-block-border: #b8d4ee;
+
+    /* Control surfaces */
+    --color-control-subtle: rgb(255 255 255 / 45%);
+    --color-control-subtle-hover: rgb(255 255 255 / 75%);
+
+    --color-block-control: rgb(255 255 255 / 55%);
+    --color-block-control-hover: rgb(255 255 255 / 80%);
+
+    --color-editor-control: rgb(255 255 255 / 80%);
+    --color-editor-control-hover: rgb(255 255 255 / 95%);
+    --color-editor-action: rgb(255 255 255 / 75%);
+
+    /* Dropdown colors */
+    --color-dropdown-surface: var(--color-surface);
+    --color-dropdown-text: #222;
+    --color-dropdown-border: rgb(16 24 40 / 18%);
+
+    /* Effects */
+    --shadow-pane: 0 4px 14px rgb(16 24 40 / 8%);
+    --shadow-ribbon: 0 10px 30px rgb(16 24 40 / 18%);
+    --shadow-header: 0 2px 10px rgb(16 24 40 / 20%);
+    --shadow-footer: 0 -2px 10px rgb(16 24 40 / 20%);
+    --shadow-dropdown: 0 8px 24px rgb(16 24 40 / 22%);
+
+    /* Structural dimensions */
+    --header-height: 40px;
+    --pane-header-height: 36px;
+    --totals-height: 40px;
+
+    --layout-gap: 6px;
+    --border-radius: 10px;
+}

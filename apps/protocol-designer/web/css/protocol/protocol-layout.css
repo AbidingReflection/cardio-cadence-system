@@ -1,13 +1,3 @@
-:root {
-    --color-phase-background: #fff1f1;
-    --color-phase-header: #ffe2e2;
-    --color-phase-border: #efb8b8;
-
-    --color-block-background: #eef6ff;
-    --color-block-hover: #e2f0ff;
-    --color-block-border: #b8d4ee;
-}
-
 .protocol-content {
     padding: 6px;
     overflow-y: scroll;

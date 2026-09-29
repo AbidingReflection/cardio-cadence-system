@@ -8,7 +8,7 @@ import {
 import { ActivityType } from "../../../models/activity-type.js";
 import { resolveProtocolGraphConfigs } from "../../../renderers/protocol-graph-config.js";
 
-const SUITE = "Protocol graph config";
+const SUITE = "protocol-graph-config";
 
 /** Creates a validated ActivityType fixture. */
 function createActivityType(data) {
