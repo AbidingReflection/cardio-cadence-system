@@ -10,6 +10,7 @@ import { wireProtocolSaveMenuEvents } from "../interactions/protocol-save-menu-e
 import { wireProtocolSetupEvents } from "../interactions/protocol-setup-events.js";
 import { wireProtocolTreeEvents } from "../interactions/protocol-tree-events.js";
 import { wireProtocolNewEvents } from "../interactions/protocol-new-events.js";
+import { wireProtocolExportEvents } from "../interactions/protocol-export-events.js";
 
 /** Wires Protocol Designer interaction handlers. */
 export function wireInteractions({
@@ -32,6 +33,11 @@ export function wireInteractions({
         newButton: elements.new.button,
         protocolNewController,
         protocolUnsavedChanges,
+    });
+
+    wireProtocolExportEvents({
+        exportButton: elements.export.button,
+        protocolModel,
     });
 
     wireProtocolSaveMenuEvents({
