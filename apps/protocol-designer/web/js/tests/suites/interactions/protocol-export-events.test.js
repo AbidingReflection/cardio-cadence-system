@@ -7,7 +7,23 @@ import {
 import { wireProtocolExportEvents } from "../../../interactions/protocol-export-events.js";
 
 /** Creates a wired Protocol Export interaction test harness. */
-function createHarness(protocol) {
+function createHarness(
+    protocol,
+    {
+        activityType = {
+            id: "activity-1",
+            name: "Activity",
+        },
+        machineProfile = {
+            id: "machine-1",
+            name: "Machine",
+        },
+        calibrationProfile = {
+            id: "calibration-1",
+            name: "Calibration",
+        },
+    } = {},
+) {
     const exportButton = document.createElement("button");
 
     let snapshotCallCount = 0;
@@ -16,6 +32,34 @@ function createHarness(protocol) {
         getSnapshot() {
             snapshotCallCount += 1;
             return structuredClone(protocol);
+        },
+
+        getSetupContext() {
+            return {
+                activityType: {
+                    getDefinition() {
+                        return structuredClone(activityType);
+                    },
+                },
+
+                machineProfile:
+                    machineProfile === null
+                        ? undefined
+                        : {
+                              getDefinition() {
+                                  return structuredClone(machineProfile);
+                              },
+                          },
+
+                calibrationProfile:
+                    calibrationProfile === null
+                        ? undefined
+                        : {
+                              getDefinition() {
+                                  return structuredClone(calibrationProfile);
+                              },
+                          },
+            };
         },
     };
 
@@ -62,6 +106,7 @@ function createHarness(protocol) {
         createdUrls,
         revokedUrls,
         clickedDownloads,
+
         restore() {
             URL.createObjectURL = originalCreateObjectURL;
             URL.revokeObjectURL = originalRevokeObjectURL;
@@ -70,14 +115,33 @@ function createHarness(protocol) {
     };
 }
 
-test("protocol-export-events", "exports the current protocol snapshot", async () => {
+test("protocol-export-events", "exports a self-contained protocol bundle", async () => {
     const protocol = {
         id: "test-protocol",
         name: "Test Protocol",
         phases: [],
     };
 
-    const harness = createHarness(protocol);
+    const activityType = {
+        id: "activity-1",
+        name: "Activity",
+    };
+
+    const machineProfile = {
+        id: "machine-1",
+        name: "Machine",
+    };
+
+    const calibrationProfile = {
+        id: "calibration-1",
+        name: "Calibration",
+    };
+
+    const harness = createHarness(protocol, {
+        activityType,
+        machineProfile,
+        calibrationProfile,
+    });
 
     try {
         harness.exportButton.click();
@@ -88,11 +152,45 @@ test("protocol-export-events", "exports the current protocol snapshot", async ()
         const blob = harness.createdUrls[0];
         const exported = JSON.parse(await blob.text());
 
-        assertDeepEqual(exported, protocol);
+        assertDeepEqual(exported, {
+            protocol,
+            activityType,
+            machineProfile,
+            calibrationProfile,
+        });
     } finally {
         harness.restore();
     }
 });
+
+test(
+    "protocol-export-events",
+    "exports null for unavailable machine and calibration profiles",
+    async () => {
+        const protocol = {
+            id: "test-protocol",
+            name: "Test Protocol",
+            phases: [],
+        };
+
+        const harness = createHarness(protocol, {
+            machineProfile: null,
+            calibrationProfile: null,
+        });
+
+        try {
+            harness.exportButton.click();
+
+            const blob = harness.createdUrls[0];
+            const exported = JSON.parse(await blob.text());
+
+            assertEqual(exported.machineProfile, null);
+            assertEqual(exported.calibrationProfile, null);
+        } finally {
+            harness.restore();
+        }
+    },
+);
 
 test("protocol-export-events", "uses the protocol id as the download filename", () => {
     const harness = createHarness({

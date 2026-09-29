@@ -1,0 +1,254 @@
+{
+  "protocol": {
+    "id": "true-elliptical-108-minute-session",
+    "name": "True Elliptical 108-Minute Session",
+    "activityTypeId": "elliptical",
+    "machineProfileId": "true-elliptical-aquatic-center",
+    "calibrationProfileId": "true-elliptical-aquatic-center-default",
+    "phases": [
+      {
+        "id": "6187f5ad-73f1-4951-ac6c-58fd672ac20b",
+        "name": "Warm-up",
+        "blocks": [
+          {
+            "id": "6fb87851-0735-4831-9070-efe898d2c9d5",
+            "name": "Warm-up",
+            "durationSeconds": 900,
+            "variables": {
+              "cadence": {
+                "type": "stepped",
+                "start": 40,
+                "end": 55,
+                "step": 5
+              },
+              "resistance": {
+                "type": "stepped",
+                "start": 2,
+                "end": 8,
+                "step": 1
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "f309fefd-7a35-4649-9260-1ed792435e9f",
+        "name": "Primary",
+        "blocks": [
+          {
+            "id": "1ed119dc-c5ea-45dc-9e59-a7add91a09b5",
+            "name": "Main",
+            "durationSeconds": 3600,
+            "variables": {
+              "cadence": {
+                "type": "stepped",
+                "start": 60,
+                "end": 65,
+                "step": 1
+              },
+              "resistance": {
+                "type": "stepped",
+                "start": 9,
+                "end": 14,
+                "step": 1
+              }
+            }
+          },
+          {
+            "id": "13447edd-0c0d-4254-8005-d3cf0fb565af",
+            "name": "Taper 1",
+            "durationSeconds": 300,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 66
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 15
+              }
+            }
+          },
+          {
+            "id": "d40b2cab-be25-4225-b062-3a66d3a2f4c2",
+            "name": "Taper 2",
+            "durationSeconds": 240,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 67
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 16
+              }
+            }
+          },
+          {
+            "id": "3d7dc897-1c5b-493f-861f-bda809086dd1",
+            "name": "Taper 3",
+            "durationSeconds": 180,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 68
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 17
+              }
+            }
+          },
+          {
+            "id": "b84fc368-6f59-4f9c-ba03-486559d687ae",
+            "name": "Taper 4",
+            "durationSeconds": 120,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 69
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 18
+              }
+            }
+          },
+          {
+            "id": "625817d1-5f30-42cf-a181-58c8eb1405ab",
+            "name": "Taper 5",
+            "durationSeconds": 60,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 70
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 19
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "1bf480d7-f849-4a24-bc4e-6bebfbd5803b",
+        "name": "Cool-down",
+        "blocks": [
+          {
+            "id": "4275cd84-f900-4ef5-a753-a118756f0bdd",
+            "name": "Cool-down",
+            "durationSeconds": 900,
+            "variables": {
+              "cadence": {
+                "type": "stepped",
+                "start": 65,
+                "end": 40,
+                "step": 5
+              },
+              "resistance": {
+                "type": "stepped",
+                "start": 18,
+                "end": 4,
+                "step": 1
+              }
+            }
+          },
+          {
+            "id": "3275cd84-f900-4ef5-a753-a118756f0bdd",
+            "name": "Cool-down",
+            "durationSeconds": 180,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 40
+              },
+              "resistance": {
+                "type": "stepped",
+                "start": 3,
+                "end": 1,
+                "step": 1
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "activityType": {
+    "id": "elliptical",
+    "name": "Elliptical",
+    "variables": [
+      {
+        "id": "cadence",
+        "name": "Cadence",
+        "unit": "RPM",
+        "role": "cadence"
+      },
+      {
+        "id": "resistance",
+        "name": "Resistance",
+        "unit": null,
+        "role": "load"
+      }
+    ]
+  },
+  "machineProfile": {
+    "id": "true-elliptical-aquatic-center",
+    "name": "True Elliptical - Aquatic Center",
+    "activityTypeId": "elliptical",
+    "variables": {
+      "cadence": {
+        "controlMode": "user-produced",
+        "progressionTypes": [
+          "steady",
+          "linear",
+          "stepped"
+        ]
+      },
+      "resistance": {
+        "controlMode": "machine-set",
+        "min": 1,
+        "max": 20,
+        "increment": 1,
+        "progressionTypes": [
+          "steady",
+          "stepped"
+        ]
+      }
+    }
+  },
+  "calibrationProfile": {
+    "id": "true-elliptical-aquatic-center-default",
+    "name": "True Elliptical - Aquatic Center Calibration",
+    "machineProfileId": "true-elliptical-aquatic-center",
+    "context": {},
+    "domain": {
+      "cadence": {
+        "min": 40,
+        "max": 70
+      },
+      "resistance": {
+        "min": 1,
+        "max": 19
+      }
+    },
+    "model": {
+      "type": "polynomial",
+      "input": {
+        "type": "product",
+        "variables": [
+          "cadence",
+          "resistance"
+        ]
+      },
+      "coefficients": [
+        0.05319496124203944,
+        0.00017650576544874094,
+        1.9274328075989227e-7,
+        -7.974104688189543e-11
+      ],
+      "outputUnit": "kcalPerSecond"
+    }
+  }
+}
