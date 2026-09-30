@@ -1,5 +1,5 @@
 /**
- * SvgGraphStructureRenderer responsibilities:
+ * ProtocolGraphStructureRenderer responsibilities:
  * - Render protocol structure overlays into an existing SVG element.
  * - Map structural time ranges through an existing graph layout.
  * - Own and replace only its structure-related SVG content.
@@ -14,7 +14,7 @@ const PHASE_BAND_HEIGHT = 20;
 const PHASE_BAND_GAP = 4;
 
 /** Renders graph structure overlays into an existing SVG element. */
-export class SvgGraphStructureRenderer {
+export class ProtocolGraphStructureRenderer {
     #svg;
     #rootGroup;
 
@@ -33,11 +33,11 @@ export class SvgGraphStructureRenderer {
         selectedBlockId = undefined,
     }) {
         if (!Array.isArray(phases)) {
-            throw new TypeError("SvgGraphStructureRenderer phases must be an array.");
+            throw new TypeError("ProtocolGraphStructureRenderer phases must be an array.");
         }
 
         if (!Array.isArray(blocks)) {
-            throw new TypeError("SvgGraphStructureRenderer blocks must be an array.");
+            throw new TypeError("ProtocolGraphStructureRenderer blocks must be an array.");
         }
 
         this.#clearRootGroup();

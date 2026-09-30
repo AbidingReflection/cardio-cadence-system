@@ -1,7 +1,7 @@
 import { assertEqual, assertThrows, test } from "../../js-testing/framework/test-framework.js";
 
 import { GraphLayout } from "../graph-layout.js";
-import { SvgGraphStructureRenderer } from "../svg-graph-structure-renderer.js";
+import { ProtocolGraphStructureRenderer } from "../protocol-graph-structure-renderer.js";
 
 /** Creates a test SVG element. */
 function createSvg() {
@@ -74,17 +74,17 @@ function createBlocks() {
     ];
 }
 
-test("svg-graph-structure-renderer", "creates one renderer-owned structure group", () => {
+test("protocol-graph-structure-renderer", "creates one renderer-owned structure group", () => {
     const svg = createSvg();
 
-    new SvgGraphStructureRenderer(svg);
+    new ProtocolGraphStructureRenderer(svg);
 
     assertEqual(svg.querySelectorAll(".graph-structure").length, 1);
 });
 
-test("svg-graph-structure-renderer", "renders internal phase boundaries", () => {
+test("protocol-graph-structure-renderer", "renders internal phase boundaries", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -94,10 +94,10 @@ test("svg-graph-structure-renderer", "renders internal phase boundaries", () => 
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 2);
 });
 
-test("svg-graph-structure-renderer", "maps phase boundaries through the graph layout", () => {
+test("protocol-graph-structure-renderer", "maps phase boundaries through the graph layout", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -113,10 +113,10 @@ test("svg-graph-structure-renderer", "maps phase boundaries through the graph la
     assertEqual(Number(boundaries[1].getAttribute("x2")), layout.xAtTime(45_000));
 });
 
-test("svg-graph-structure-renderer", "renders phase boundaries across the plot height", () => {
+test("protocol-graph-structure-renderer", "renders phase boundaries across the plot height", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -130,9 +130,9 @@ test("svg-graph-structure-renderer", "renders phase boundaries across the plot h
     assertEqual(Number(boundary.getAttribute("y2")), plot.bottom);
 });
 
-test("svg-graph-structure-renderer", "renders no boundaries for one phase", () => {
+test("protocol-graph-structure-renderer", "renders no boundaries for one phase", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -149,9 +149,9 @@ test("svg-graph-structure-renderer", "renders no boundaries for one phase", () =
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
 });
 
-test("svg-graph-structure-renderer", "renders one phase region per phase", () => {
+test("protocol-graph-structure-renderer", "renders one phase region per phase", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -161,9 +161,9 @@ test("svg-graph-structure-renderer", "renders one phase region per phase", () =>
     assertEqual(svg.querySelectorAll(".graph-phase-region").length, 3);
 });
 
-test("svg-graph-structure-renderer", "renders one phase band per phase", () => {
+test("protocol-graph-structure-renderer", "renders one phase band per phase", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -173,9 +173,9 @@ test("svg-graph-structure-renderer", "renders one phase band per phase", () => {
     assertEqual(svg.querySelectorAll(".graph-phase-band").length, 3);
 });
 
-test("svg-graph-structure-renderer", "renders one phase label per phase", () => {
+test("protocol-graph-structure-renderer", "renders one phase label per phase", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -190,10 +190,10 @@ test("svg-graph-structure-renderer", "renders one phase label per phase", () => 
     assertEqual(labels[2].textContent, "Cooldown");
 });
 
-test("svg-graph-structure-renderer", "maps phase region spans through the graph layout", () => {
+test("protocol-graph-structure-renderer", "maps phase region spans through the graph layout", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -215,10 +215,10 @@ test("svg-graph-structure-renderer", "maps phase region spans through the graph 
     assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
 });
 
-test("svg-graph-structure-renderer", "renders phase regions across the plot height", () => {
+test("protocol-graph-structure-renderer", "renders phase regions across the plot height", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -239,10 +239,10 @@ test("svg-graph-structure-renderer", "renders phase regions across the plot heig
     assertEqual(Number(region.getAttribute("height")), plot.bottom - plot.top);
 });
 
-test("svg-graph-structure-renderer", "maps phase bands through the graph layout", () => {
+test("protocol-graph-structure-renderer", "maps phase bands through the graph layout", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -264,10 +264,10 @@ test("svg-graph-structure-renderer", "maps phase bands through the graph layout"
     assertEqual(Number(band.getAttribute("width")), expectedEnd - expectedStart);
 });
 
-test("svg-graph-structure-renderer", "centers phase labels within their phase spans", () => {
+test("protocol-graph-structure-renderer", "centers phase labels within their phase spans", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -289,9 +289,9 @@ test("svg-graph-structure-renderer", "centers phase labels within their phase sp
     assertEqual(Number(label.getAttribute("x")), (expectedStart + expectedEnd) / 2);
 });
 
-test("svg-graph-structure-renderer", "renders indexed phase presentation classes", () => {
+test("protocol-graph-structure-renderer", "renders indexed phase presentation classes", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -307,9 +307,9 @@ test("svg-graph-structure-renderer", "renders indexed phase presentation classes
     assertEqual(svg.querySelectorAll(".graph-phase-band--2").length, 1);
 });
 
-test("svg-graph-structure-renderer", "renders no phase structure for an empty phase list", () => {
+test("protocol-graph-structure-renderer", "renders no phase structure for an empty phase list", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -322,9 +322,9 @@ test("svg-graph-structure-renderer", "renders no phase structure for an empty ph
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
 });
 
-test("svg-graph-structure-renderer", "replaces previous structure content on rerender", () => {
+test("protocol-graph-structure-renderer", "replaces previous structure content on rerender", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -349,7 +349,7 @@ test("svg-graph-structure-renderer", "replaces previous structure content on rer
     assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
 });
 
-test("svg-graph-structure-renderer", "places structure before series content", () => {
+test("protocol-graph-structure-renderer", "places structure before series content", () => {
     const svg = createSvg();
 
     const seriesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -357,16 +357,16 @@ test("svg-graph-structure-renderer", "places structure before series content", (
     seriesGroup.setAttribute("class", "graph-renderer");
     svg.append(seriesGroup);
 
-    new SvgGraphStructureRenderer(svg);
+    new ProtocolGraphStructureRenderer(svg);
 
     const structureGroup = svg.querySelector(".graph-structure");
 
     assertEqual(structureGroup.nextElementSibling === seriesGroup, true);
 });
 
-test("svg-graph-structure-renderer", "rejects non-array phases", () => {
+test("protocol-graph-structure-renderer", "rejects non-array phases", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     assertThrows(
         () =>
@@ -378,9 +378,9 @@ test("svg-graph-structure-renderer", "rejects non-array phases", () => {
     );
 });
 
-test("svg-graph-structure-renderer", "renders internal block boundaries", () => {
+test("protocol-graph-structure-renderer", "renders internal block boundaries", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -410,10 +410,10 @@ test("svg-graph-structure-renderer", "renders internal block boundaries", () => 
     assertEqual(svg.querySelectorAll(".graph-block-boundary").length, 2);
 });
 
-test("svg-graph-structure-renderer", "maps block boundaries through the graph layout", () => {
+test("protocol-graph-structure-renderer", "maps block boundaries through the graph layout", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -449,10 +449,10 @@ test("svg-graph-structure-renderer", "maps block boundaries through the graph la
     assertEqual(Number(boundaries[1].getAttribute("x2")), layout.xAtTime(40_000));
 });
 
-test("svg-graph-structure-renderer", "renders block boundaries across the plot height", () => {
+test("protocol-graph-structure-renderer", "renders block boundaries across the plot height", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -480,9 +480,9 @@ test("svg-graph-structure-renderer", "renders block boundaries across the plot h
     assertEqual(Number(boundary.getAttribute("y2")), plot.bottom);
 });
 
-test("svg-graph-structure-renderer", "renders no block boundaries for one block", () => {
+test("protocol-graph-structure-renderer", "renders no block boundaries for one block", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -500,9 +500,9 @@ test("svg-graph-structure-renderer", "renders no block boundaries for one block"
     assertEqual(svg.querySelectorAll(".graph-block-boundary").length, 0);
 });
 
-test("svg-graph-structure-renderer", "rejects non-array blocks", () => {
+test("protocol-graph-structure-renderer", "rejects non-array blocks", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     assertThrows(
         () =>
@@ -515,9 +515,9 @@ test("svg-graph-structure-renderer", "rejects non-array blocks", () => {
     );
 });
 
-test("svg-graph-structure-renderer", "renders one block region per block", () => {
+test("protocol-graph-structure-renderer", "renders one block region per block", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -528,9 +528,9 @@ test("svg-graph-structure-renderer", "renders one block region per block", () =>
     assertEqual(svg.querySelectorAll(".graph-block-region").length, 3);
 });
 
-test("svg-graph-structure-renderer", "preserves block identity on block regions", () => {
+test("protocol-graph-structure-renderer", "preserves block identity on block regions", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -547,10 +547,10 @@ test("svg-graph-structure-renderer", "preserves block identity on block regions"
     assertEqual(regions[2].getAttribute("data-phase-id"), "phase-2");
 });
 
-test("svg-graph-structure-renderer", "maps block region spans through the graph layout", () => {
+test("protocol-graph-structure-renderer", "maps block region spans through the graph layout", () => {
     const svg = createSvg();
     const layout = createLayout();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout,
@@ -573,9 +573,9 @@ test("svg-graph-structure-renderer", "maps block region spans through the graph 
     assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
 });
 
-test("svg-graph-structure-renderer", "preserves phase identity on phase regions", () => {
+test("protocol-graph-structure-renderer", "preserves phase identity on phase regions", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -590,9 +590,9 @@ test("svg-graph-structure-renderer", "preserves phase identity on phase regions"
     assertEqual(regions[2].getAttribute("data-phase-id"), "cooldown");
 });
 
-test("svg-graph-structure-renderer", "marks only the selected phase region and band", () => {
+test("protocol-graph-structure-renderer", "marks only the selected phase region and band", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -608,9 +608,9 @@ test("svg-graph-structure-renderer", "marks only the selected phase region and b
     assertEqual(selectedRegions[0].getAttribute("data-phase-id"), "work");
 });
 
-test("svg-graph-structure-renderer", "marks only the selected block region", () => {
+test("protocol-graph-structure-renderer", "marks only the selected block region", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -626,11 +626,11 @@ test("svg-graph-structure-renderer", "marks only the selected block region", () 
 });
 
 test(
-    "svg-graph-structure-renderer",
+    "protocol-graph-structure-renderer",
     "renders no selected structure when selection is omitted",
     () => {
         const svg = createSvg();
-        const renderer = new SvgGraphStructureRenderer(svg);
+        const renderer = new ProtocolGraphStructureRenderer(svg);
 
         renderer.render({
             layout: createLayout(),
@@ -644,9 +644,9 @@ test(
     },
 );
 
-test("svg-graph-structure-renderer", "does not label zero-width phases", () => {
+test("protocol-graph-structure-renderer", "does not label zero-width phases", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -679,9 +679,9 @@ test("svg-graph-structure-renderer", "does not label zero-width phases", () => {
     assertEqual(labels[1].textContent, "Cooldown");
 });
 
-test("svg-graph-structure-renderer", "renders phase labels above all phase bands", () => {
+test("protocol-graph-structure-renderer", "renders phase labels above all phase bands", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
 
     renderer.render({
         layout: createLayout(),
@@ -699,9 +699,9 @@ test("svg-graph-structure-renderer", "renders phase labels above all phase bands
     assertEqual(firstLabelIndex > lastBandIndex, true);
 });
 
-test("svg-graph-structure-renderer", "updates selected phase without rebuilding structure", () => {
+test("protocol-graph-structure-renderer", "updates selected phase without rebuilding structure", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
     const layout = createLayout();
 
     renderer.render({
@@ -730,9 +730,9 @@ test("svg-graph-structure-renderer", "updates selected phase without rebuilding 
     assertEqual(phaseBandAfter.classList.contains("graph-phase-band--selected"), true);
 });
 
-test("svg-graph-structure-renderer", "updates selected block without rebuilding structure", () => {
+test("protocol-graph-structure-renderer", "updates selected block without rebuilding structure", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
     const layout = createLayout();
 
     renderer.render({
@@ -754,9 +754,9 @@ test("svg-graph-structure-renderer", "updates selected block without rebuilding 
     assertEqual(blockRegionAfter.classList.contains("graph-block-region--selected"), true);
 });
 
-test("svg-graph-structure-renderer", "switches selection between phase and block", () => {
+test("protocol-graph-structure-renderer", "switches selection between phase and block", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
     const layout = createLayout();
 
     renderer.render({
@@ -781,9 +781,9 @@ test("svg-graph-structure-renderer", "switches selection between phase and block
     assertEqual(selectedBlockRegion.getAttribute("data-block-id"), "block-1");
 });
 
-test("svg-graph-structure-renderer", "clears selection without rebuilding structure", () => {
+test("protocol-graph-structure-renderer", "clears selection without rebuilding structure", () => {
     const svg = createSvg();
-    const renderer = new SvgGraphStructureRenderer(svg);
+    const renderer = new ProtocolGraphStructureRenderer(svg);
     const layout = createLayout();
 
     renderer.render({

@@ -20,7 +20,7 @@ import {
 } from "/packages/graph/graph-ticks.js";
 import { SvgGraphAxesRenderer } from "/packages/graph/svg-graph-axes-renderer.js";
 import { SvgGraphRenderer } from "/packages/graph/svg-graph-renderer.js";
-import { SvgGraphStructureRenderer } from "/packages/graph/svg-graph-structure-renderer.js";
+import { ProtocolGraphStructureRenderer } from "/packages/graph/protocol-graph-structure-renderer.js";
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
 import { ProtocolGraphContext } from "/packages/protocol-expander/protocol-graph-context.js";
 import { ProtocolVariableSeries } from "/packages/protocol-expander/protocol-variable-series.js";
@@ -75,7 +75,7 @@ export class ProtocolGraphRenderer {
 
         this.#svgRenderer = new SvgGraphRenderer(this.#svg);
         this.#axesRenderer = new SvgGraphAxesRenderer(this.#svg);
-        this.#structureRenderer = new SvgGraphStructureRenderer(this.#svg);
+        this.#structureRenderer = new ProtocolGraphStructureRenderer(this.#svg);
 
         this.#resizeObserver = new ResizeObserver((entries) => {
             const { width, height } = entries[0].contentRect;
