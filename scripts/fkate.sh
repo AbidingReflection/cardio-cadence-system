@@ -8,7 +8,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 show_help() {
     cat <<EOF
 Usage:
-  $(basename "$0") [substring]
+  $(basename "$0") [options] [substring]
   $(basename "$0") -h
   $(basename "$0") --help
 
@@ -27,14 +27,19 @@ Behavior:
   - Filtering can continue repeatedly until one match remains.
   - If a filter produces no matches, the previous results are retained.
   - Matching is case-insensitive.
+  - By default, all files except those inside .git are searched.
+  - With -g or --gitignore, files ignored by Git are excluded.
 
 Examples:
   $(basename "$0") proto
   $(basename "$0") controller
+  $(basename "$0") -g controller
+  $(basename "$0") --gitignore structure/events.js
   $(basename "$0")
 
 Options:
-  -h, --help    Show this help message.
+  -g, --gitignore    Exclude files ignored by Git.
+  -h, --help         Show this help message.
 EOF
 }
 
@@ -46,10 +51,32 @@ open_file() {
     kate "$file" </dev/null >/dev/null 2>&1 &
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-    show_help
-    exit 0
-fi
+use_gitignore=false
+
+while (( $# > 0 )); do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -g|--gitignore)
+            use_gitignore=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "Error: unknown option: $1" >&2
+            echo "Use '$(basename "$0") --help' for usage." >&2
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 query="${1:-}"
 
@@ -63,11 +90,28 @@ if [[ -z "$query" ]]; then
     fi
 fi
 
-mapfile -t matches < <(
-    find "$PROJECT_ROOT" \
-        -path '*/.git' -prune -o \
-        -type f -ipath "*${query}*" -print
-)
+if $use_gitignore; then
+    if ! git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree \
+        >/dev/null 2>&1; then
+        echo "Error: --gitignore requires the project to be inside a Git repository." >&2
+        exit 1
+    fi
+
+    mapfile -t matches < <(
+        git -C "$PROJECT_ROOT" ls-files \
+            --cached \
+            --others \
+            --exclude-standard |
+        grep -iF -- "$query" |
+        sed "s|^|$PROJECT_ROOT/|"
+    )
+else
+    mapfile -t matches < <(
+        find "$PROJECT_ROOT" \
+            -path '*/.git' -prune -o \
+            -type f -ipath "*${query}*" -print
+    )
+fi
 
 while true; do
     count=${#matches[@]}
