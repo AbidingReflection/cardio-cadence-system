@@ -6,7 +6,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { CalibrationProfile } from "../../../models/calibration-profile.js";
+import { CalibrationProfile } from "/packages/protocol-core/models/calibration-profile.js";
 
 const MACHINE_PROFILE = {
     id: "true-elliptical-aquatic-center",

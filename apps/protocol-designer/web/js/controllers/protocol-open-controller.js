@@ -1,6 +1,6 @@
-import { ActivityType } from "../models/activity-type.js";
-import { CalibrationProfile } from "../models/calibration-profile.js";
-import { MachineProfile } from "../models/machine-profile.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
+import { CalibrationProfile } from "/packages/protocol-core/models/calibration-profile.js";
+import { MachineProfile } from "/packages/protocol-core/models/machine-profile.js";
 
 /** Coordinates opening persisted protocol families into the Protocol Designer. */
 export class ProtocolOpenController {

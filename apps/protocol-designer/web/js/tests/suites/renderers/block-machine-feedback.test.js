@@ -8,8 +8,8 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ActivityType } from "../../../models/activity-type.js";
-import { MachineProfile } from "../../../models/machine-profile.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
+import { MachineProfile } from "/packages/protocol-core/models/machine-profile.js";
 import { buildBlockMachineFeedback } from "../../../renderers/protocol/block-machine-feedback.js";
 
 function createActivityType() {

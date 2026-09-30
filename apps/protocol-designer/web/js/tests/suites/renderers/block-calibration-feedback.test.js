@@ -8,7 +8,7 @@ import {
     test,
 } from "/packages/js-testing/framework/test-framework.js";
 
-import { ActivityType } from "../../../models/activity-type.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
 import { buildBlockCalibrationFeedback } from "../../../renderers/protocol/block-calibration-feedback.js";
 
 function createActivityType() {

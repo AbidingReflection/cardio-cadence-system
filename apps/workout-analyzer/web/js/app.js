@@ -1,6 +1,6 @@
-import { ActivityType } from "/protocol-designer/js/models/activity-type.js";
-import { MachineProfile } from "/protocol-designer/js/models/machine-profile.js";
-import { CalibrationProfile } from "/protocol-designer/js/models/calibration-profile.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
+import { MachineProfile } from "/packages/protocol-core/models/machine-profile.js";
+import { CalibrationProfile } from "/packages/protocol-core/models/calibration-profile.js";
 
 import { GraphSeriesSampler } from "/packages/graph/graph-series-sampler.js";
 

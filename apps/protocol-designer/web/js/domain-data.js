@@ -1,8 +1,8 @@
 /** Loads shared domain data, constructs validated domain objects, and resolves their references for application use. */
 
-import { ActivityType } from "./models/activity-type.js";
-import { CalibrationProfile } from "./models/calibration-profile.js";
-import { MachineProfile } from "./models/machine-profile.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
+import { CalibrationProfile } from "/packages/protocol-core/models/calibration-profile.js";
+import { MachineProfile } from "/packages/protocol-core/models/machine-profile.js";
 
 /** Loads and constructs the shared domain data used by the Protocol Designer. */
 export async function loadDomainData() {
@@ -68,9 +68,7 @@ async function loadCalibrationProfiles(machineProfiles) {
     const data = await fetchJson("/data/calibration-profiles.json");
 
     if (!Array.isArray(data.calibrationProfiles)) {
-        throw new TypeError(
-            "CalibrationProfile data must contain a calibrationProfiles array.",
-        );
+        throw new TypeError("CalibrationProfile data must contain a calibrationProfiles array.");
     }
 
     const calibrationProfiles = new Map();
@@ -84,10 +82,7 @@ async function loadCalibrationProfiles(machineProfiles) {
             );
         }
 
-        const calibrationProfile = new CalibrationProfile(
-            calibrationProfileData,
-            machineProfile,
-        );
+        const calibrationProfile = new CalibrationProfile(calibrationProfileData, machineProfile);
 
         addUnique(
             calibrationProfiles,

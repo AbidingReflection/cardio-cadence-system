@@ -1,6 +1,6 @@
 import { assertEqual, test } from "/packages/js-testing/framework/test-framework.js";
 import { createExpandedBlock } from "../../../renderers/protocol/block-editor-renderer.js";
-import { ActivityType } from "../../../models/activity-type.js";
+import { ActivityType } from "/packages/protocol-core/models/activity-type.js";
 
 test("block-editor-renderer", "allows decimal target and step inputs", () => {
     const block = {
