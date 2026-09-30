@@ -10,8 +10,8 @@ import { roundSvgCoordinate } from "/packages/graph/svg-point-precision.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const SVG_COORDINATE_PRECISION = 2;
-const PHASE_BAND_HEIGHT = 20;
-const PHASE_BAND_GAP = 4;
+const DEFAULT_PHASE_BAND_HEIGHT = 20;
+const DEFAULT_PHASE_BAND_GAP = 4;
 
 /** Renders graph structure overlays into an existing SVG element. */
 export class ProtocolGraphStructureRenderer {
@@ -31,6 +31,8 @@ export class ProtocolGraphStructureRenderer {
         blocks = [],
         selectedPhaseId = undefined,
         selectedBlockId = undefined,
+        phaseBandHeight = DEFAULT_PHASE_BAND_HEIGHT,
+        phaseBandGap = DEFAULT_PHASE_BAND_GAP,
     }) {
         if (!Array.isArray(phases)) {
             throw new TypeError("ProtocolGraphStructureRenderer phases must be an array.");
@@ -66,10 +68,30 @@ export class ProtocolGraphStructureRenderer {
                 this.#createPhaseRegion(plot, phase, index, xStart, xEnd, isSelected),
             );
 
-            phaseBands.push(this.#createPhaseBand(plot, phase.id, index, xStart, xEnd, isSelected));
+            phaseBands.push(
+                this.#createPhaseBand(
+                    plot,
+                    phase.id,
+                    index,
+                    xStart,
+                    xEnd,
+                    isSelected,
+                    phaseBandHeight,
+                    phaseBandGap,
+                ),
+            );
 
             if (xEnd > xStart) {
-                phaseLabels.push(this.#createPhaseLabel(plot, phase.label, xStart, xEnd));
+                phaseLabels.push(
+                    this.#createPhaseLabel(
+                        plot,
+                        phase.label,
+                        xStart,
+                        xEnd,
+                        phaseBandHeight,
+                        phaseBandGap,
+                    ),
+                );
             }
         }
 
@@ -254,10 +276,19 @@ export class ProtocolGraphStructureRenderer {
     }
 
     /** Creates one phase band above the plot. */
-    #createPhaseBand(plot, phaseId, index, xStart, xEnd, isSelected) {
+    #createPhaseBand(
+        plot,
+        phaseId,
+        index,
+        xStart,
+        xEnd,
+        isSelected,
+        phaseBandHeight,
+        phaseBandGap,
+    ) {
         const rect = document.createElementNS(SVG_NAMESPACE, "rect");
-        const bandBottom = plot.top - PHASE_BAND_GAP;
-        const bandTop = bandBottom - PHASE_BAND_HEIGHT;
+        const bandBottom = plot.top - phaseBandGap;
+        const bandTop = bandBottom - phaseBandHeight;
         const width = roundSvgCoordinate(Math.max(0, xEnd - xStart), SVG_COORDINATE_PRECISION);
 
         const classes = ["graph-phase-band", `graph-phase-band--${index}`];
@@ -273,19 +304,19 @@ export class ProtocolGraphStructureRenderer {
         rect.setAttribute("width", String(width));
         rect.setAttribute(
             "height",
-            String(roundSvgCoordinate(PHASE_BAND_HEIGHT, SVG_COORDINATE_PRECISION)),
+            String(roundSvgCoordinate(phaseBandHeight, SVG_COORDINATE_PRECISION)),
         );
 
         return rect;
     }
 
     /** Creates one centered phase label inside its band. */
-    #createPhaseLabel(plot, label, xStart, xEnd) {
+    #createPhaseLabel(plot, label, xStart, xEnd, phaseBandHeight, phaseBandGap) {
         const text = document.createElementNS(SVG_NAMESPACE, "text");
-        const bandBottom = plot.top - PHASE_BAND_GAP;
+        const bandBottom = plot.top - phaseBandGap;
         const centerX = roundSvgCoordinate((xStart + xEnd) / 2, SVG_COORDINATE_PRECISION);
         const centerY = roundSvgCoordinate(
-            bandBottom - PHASE_BAND_HEIGHT / 2,
+            bandBottom - phaseBandHeight / 2,
             SVG_COORDINATE_PRECISION,
         );
 

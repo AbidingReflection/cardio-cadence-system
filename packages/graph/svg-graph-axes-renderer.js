@@ -30,6 +30,7 @@ export class SvgGraphAxesRenderer {
         yTicks,
         xAxisLabel = null,
         yAxisLabel = null,
+        yAxisTitleOffset = 40,
         formatXTick = String,
         formatYTick = String,
         rightYAxis = null,
@@ -40,6 +41,12 @@ export class SvgGraphAxesRenderer {
 
         if (!Array.isArray(yTicks)) {
             throw new TypeError("SvgGraphAxesRenderer yTicks must be an array.");
+        }
+
+        if (!Number.isFinite(yAxisTitleOffset) || yAxisTitleOffset < 0) {
+            throw new TypeError(
+                "SvgGraphAxesRenderer yAxisTitleOffset must be a non-negative finite number.",
+            );
         }
 
         if (typeof formatXTick !== "function") {
@@ -94,7 +101,7 @@ export class SvgGraphAxesRenderer {
         }
 
         if (yAxisLabel !== null) {
-            this.#rootGroup.append(this.#createYAxisTitle(plot, yAxisLabel));
+            this.#rootGroup.append(this.#createYAxisTitle(plot, yAxisLabel, yAxisTitleOffset));
         }
 
         for (const timeMs of xTicks) {
@@ -170,7 +177,7 @@ export class SvgGraphAxesRenderer {
 
         text.setAttribute("class", "graph-axis__title graph-axis__title--x");
         text.setAttribute("x", String((plot.left + plot.right) / 2));
-        text.setAttribute("y", String(plot.bottom + 30));
+        text.setAttribute("y", String(plot.bottom + 20));
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "hanging");
         text.textContent = String(label);
@@ -179,10 +186,10 @@ export class SvgGraphAxesRenderer {
     }
 
     /** Creates the rotated y-axis title beside the plot. */
-    #createYAxisTitle(plot, label) {
+    #createYAxisTitle(plot, label, titleOffset) {
         const text = document.createElementNS(SVG_NAMESPACE, "text");
 
-        const x = plot.left - 36;
+        const x = plot.left - titleOffset;
         const y = (plot.top + plot.bottom) / 2;
 
         text.setAttribute("class", "graph-axis__title graph-axis__title--y");

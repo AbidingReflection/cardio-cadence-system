@@ -191,12 +191,23 @@ export function wireRendering({
 
         renderProtocolTreeView();
     });
+
     editorState.subscribe(updateGraphSelections);
 
     graphPaneController.subscribe(({ expanded }) => {
         if (expanded) {
             renderGraphs();
         }
+    });
+
+    const printMedia = window.matchMedia("print");
+
+    printMedia.addEventListener("change", () => {
+        protocolGraphController.refreshLayout();
+    });
+
+    window.addEventListener("afterprint", () => {
+        protocolGraphController.refreshLayout();
     });
 
     renderProtocolSummary();

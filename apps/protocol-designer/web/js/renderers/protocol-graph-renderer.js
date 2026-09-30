@@ -36,14 +36,29 @@ const EMPTY_VALUE_DOMAIN = {
     max: 1,
 };
 
-/** Resolves graph margins for the current presentation dimensions. */
-function getGraphMargins(widthPx, heightPx) {
+/** Resolves protocol structure sizing for the current graph height. */
+function getProtocolStructureMetrics(heightPx) {
     return {
-        top: Math.min(44, Math.max(32, heightPx * 0.14)),
-        right: Math.min(20, Math.max(8, widthPx * 0.03)),
-        bottom: Math.min(56, Math.max(44, heightPx * 0.18)),
-        left: Math.min(72, Math.max(56, widthPx * 0.08)),
+        phaseBandHeight: Math.min(20, Math.max(12, heightPx * 0.08)),
+        phaseBandGap: Math.min(4, Math.max(2, heightPx * 0.015)),
     };
+}
+
+/** Resolves graph margins for the current presentation dimensions. */
+function getGraphMargins(widthPx, heightPx, structureMetrics) {
+    const structureTop = structureMetrics.phaseBandHeight + structureMetrics.phaseBandGap;
+
+    return {
+        top: Math.max(structureTop, Math.min(44, Math.max(20, heightPx * 0.14))),
+        right: Math.min(20, Math.max(8, widthPx * 0.03)),
+        bottom: Math.min(56, Math.max(36, heightPx * 0.18)),
+        left: Math.min(56, Math.max(44, widthPx * 0.08)),
+    };
+}
+
+/** Resolves the y-axis title offset for the current graph width. */
+function getYAxisTitleOffset(widthPx) {
+    return Math.min(40, Math.max(30, widthPx * 0.065));
 }
 
 /** Renders one protocol variable through the generic graph pipeline. */
@@ -123,6 +138,16 @@ export class ProtocolGraphRenderer {
         });
     }
 
+    /** Rerenders the graph using the container's current dimensions. */
+    refreshLayout() {
+        const { width, height } = this.#container.getBoundingClientRect();
+
+        this.#widthPx = width;
+        this.#heightPx = height;
+
+        this.#renderCurrent();
+    }
+
     /** Stops observing the graph container for size changes. */
     destroy() {
         this.#resizeObserver.disconnect();
@@ -166,7 +191,8 @@ export class ProtocolGraphRenderer {
             return;
         }
 
-        const margins = getGraphMargins(widthPx, heightPx);
+        const structureMetrics = getProtocolStructureMetrics(heightPx);
+        const margins = getGraphMargins(widthPx, heightPx, structureMetrics);
         const plotWidthPx = widthPx - margins.left - margins.right;
         const plotHeightPx = heightPx - margins.top - margins.bottom;
 
@@ -201,6 +227,7 @@ export class ProtocolGraphRenderer {
                 layout,
                 phases: [],
                 blocks: [],
+                structureMetrics,
             };
 
             this.#renderStructure();
@@ -239,6 +266,7 @@ export class ProtocolGraphRenderer {
                 layout,
                 phases: [],
                 blocks: [],
+                structureMetrics,
             };
 
             this.#renderStructure();
@@ -321,6 +349,7 @@ export class ProtocolGraphRenderer {
             layout,
             phases,
             blocks,
+            structureMetrics,
         };
 
         this.#renderStructure();
@@ -385,7 +414,8 @@ export class ProtocolGraphRenderer {
             yTicks,
             xAxisLabel: "Time",
             yAxisLabel: this.#getYAxisLabel(label, unit),
-            formatXTick: (timeMs) => formatDuration(Math.round(timeMs / 1000)),
+            yAxisTitleOffset: getYAxisTitleOffset(layout.plot.width),
+            formatXTick: (timeMs) => formatDuration(timeMs / 1000),
         });
     }
 
@@ -400,14 +430,15 @@ export class ProtocolGraphRenderer {
 
     /** Renders protocol structure using the latest layout and selection state. */
     #renderStructure() {
-        const { layout, phases, blocks } = this.#lastStructureState;
-
+        const { layout, phases, blocks, structureMetrics } = this.#lastStructureState;
         this.#structureRenderer.render({
             layout,
             phases,
             blocks,
             selectedPhaseId: this.#lastSelection.selectedPhaseId,
             selectedBlockId: this.#lastSelection.selectedBlockId,
+            phaseBandHeight: structureMetrics.phaseBandHeight,
+            phaseBandGap: structureMetrics.phaseBandGap,
         });
     }
 }

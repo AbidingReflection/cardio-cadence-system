@@ -112,4 +112,12 @@ export class ProtocolGraphController {
             }
         }
     }
+
+    /** Rerenders all graphs using their containers' current dimensions. */
+    refreshLayout() {
+        this.#primaryGraphRenderer.refreshLayout();
+        this.#loadGraphRenderer.refreshLayout();
+        this.#calorieRateGraphRenderer.refreshLayout();
+        this.#cumulativeCaloriesGraphRenderer.refreshLayout();
+    }
 }
