@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Cadence Controller</title>
+
+        <link rel="stylesheet" href="./css/main.css" />
+        <link rel="stylesheet" href="./css/playback.css" />
+        <link rel="stylesheet" href="./css/workout-status.css" />
+    </head>
+
+    <body>
+        <main class="cadence-controller">
+            <header class="controller-header">
+                <div>
+                    <p class="controller-header__app-name">Cadence Controller</p>
+
+                    <h1 id="protocol-title" class="controller-header__protocol-title">
+                        Loading protocol...
+                    </h1>
+                </div>
+
+                <div id="playback-state" class="playback-state" aria-live="polite">Idle</div>
+            </header>
+
+            <section class="playback-panel" aria-labelledby="playback-heading">
+                <h2 id="playback-heading" class="visually-hidden">Playback</h2>
+
+                <div
+                    id="cadence-visualizer"
+                    class="cadence-visualizer"
+                    aria-label="Cadence cycle"
+                ></div>
+
+                <div id="countdown" class="playback-countdown" aria-live="polite"></div>
+
+                <div class="playback-time">
+                    <div class="playback-time__item">
+                        <span class="playback-time__label"> Elapsed </span>
+
+                        <span id="elapsed-time" class="playback-time__value"> 0:00 </span>
+                    </div>
+
+                    <div class="playback-time__item">
+                        <span class="playback-time__label"> Remaining </span>
+
+                        <span id="remaining-time" class="playback-time__value"> 0:00 </span>
+                    </div>
+                </div>
+
+                <div class="playback-controls" aria-label="Playback controls">
+                    <button id="start-button" type="button" class="playback-control">Start</button>
+
+                    <button id="pause-button" type="button" class="playback-control" disabled>
+                        Pause
+                    </button>
+
+                    <button id="resume-button" type="button" class="playback-control" disabled>
+                        Resume
+                    </button>
+
+                    <button id="stop-button" type="button" class="playback-control" disabled>
+                        Stop
+                    </button>
+                </div>
+            </section>
+
+            <section class="workout-status" aria-labelledby="workout-status-heading">
+                <h2 id="workout-status-heading">Workout Status</h2>
+
+                <div class="workout-status__grid">
+                    <article class="workout-status__item">
+                        <h3>Current Phase</h3>
+
+                        <p id="current-phase">—</p>
+                    </article>
+
+                    <article class="workout-status__item">
+                        <h3>Current Block</h3>
+
+                        <p id="current-block">—</p>
+                    </article>
+
+                    <article class="workout-status__item">
+                        <h3>Next Phase</h3>
+
+                        <p id="next-phase">—</p>
+                    </article>
+
+                    <article class="workout-status__item">
+                        <h3>Next Block</h3>
+
+                        <p id="next-block">—</p>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <script type="module" src="./js/app.js"></script>
+    </body>
+</html>
