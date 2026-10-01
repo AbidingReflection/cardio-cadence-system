@@ -19,6 +19,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from js_testing.test_manifest import (
+    DEFAULT_TEST_TARGET,
     build_test_manifest,
     get_test_manifest_request,
     load_test_roots,
@@ -200,10 +201,16 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         app_route, target = request
         app_root = self.app_roots[app_route]
 
+        manifest_name = (
+            app_route.removeprefix("/")
+            if target == DEFAULT_TEST_TARGET
+            else target
+        )
+
         manifest_path = (
             self.packages_root
             / TEST_MANIFESTS_RELATIVE_PATH
-            / f"{target}.json"
+            / f"{manifest_name}.json"
         )
 
         if not manifest_path.is_file():
