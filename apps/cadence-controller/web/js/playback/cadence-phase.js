@@ -8,7 +8,7 @@
 import { integrateSeries } from "/packages/protocol-expander/numerical-integrator.js";
 
 const MILLISECONDS_PER_MINUTE = 60000;
-const CYCLE_EPSILON = 1e-10;
+const CYCLE_EPSILON = 1e-4;
 const TIME_TOLERANCE_MS = 0.01;
 
 /** Interprets protocol cadence as accumulated cycle phase over workout time. */
@@ -22,6 +22,11 @@ export class CadencePhase {
         this.#protocolExpander = protocolExpander;
         this.#cadenceVariableId = cadenceVariableId;
         this.#series = createCadenceSeries(protocolExpander, cadenceVariableId);
+    }
+
+    /** Returns the total cadence timeline duration in milliseconds. */
+    get durationMs() {
+        return this.#protocolExpander.durationMs;
     }
 
     /** Returns the number of cadence cycles accumulated over a workout time range. */
@@ -54,30 +59,25 @@ export class CadencePhase {
             return undefined;
         }
 
-        const phase = this.phaseAt(timeMs);
-        const cyclesNeeded = phase === 0 ? 1 : 1 - phase;
+        const currentCycles = this.cyclesAt(timeMs);
+        const targetCycles = Math.floor(currentCycles + CYCLE_EPSILON) + 1;
+        const totalCycles = this.cyclesAt(this.#protocolExpander.durationMs);
 
-        const availableCycles = this.cyclesBetween(timeMs, this.#protocolExpander.durationMs);
-
-        if (availableCycles + CYCLE_EPSILON < cyclesNeeded) {
+        if (totalCycles + CYCLE_EPSILON < targetCycles) {
             return undefined;
         }
 
-        return this.#findTimeForCycleAdvance(
-            timeMs,
-            this.#protocolExpander.durationMs,
-            cyclesNeeded,
-        );
+        return this.#findTimeForAccumulatedCycles(targetCycles);
     }
 
-    /** Locates the workout time that accumulates a requested cycle advance. */
-    #findTimeForCycleAdvance(startTimeMs, endTimeMs, targetCycles) {
-        let lowTimeMs = startTimeMs;
-        let highTimeMs = endTimeMs;
+    /** Locates the workout time at which total accumulated cycles reach a target. */
+    #findTimeForAccumulatedCycles(targetCycles) {
+        let lowTimeMs = 0;
+        let highTimeMs = this.#protocolExpander.durationMs;
 
         while (highTimeMs - lowTimeMs > TIME_TOLERANCE_MS) {
             const middleTimeMs = (lowTimeMs + highTimeMs) / 2;
-            const cycles = this.cyclesBetween(startTimeMs, middleTimeMs);
+            const cycles = this.cyclesAt(middleTimeMs);
 
             if (cycles < targetCycles) {
                 lowTimeMs = middleTimeMs;
