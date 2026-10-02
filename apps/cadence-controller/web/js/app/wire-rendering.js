@@ -6,63 +6,90 @@
  */
 
 import {
-    initializeCadenceVisualizer,
-    renderCadenceVisualizer,
+  initializeCadenceVisualizer,
+  renderCadenceVisualizer,
 } from "../renderers/cadence-visualizer.js";
 
 import { renderWorkoutStatus } from "../renderers/workout-status-renderer.js";
 
 /** Wires Cadence Controller state to animation-frame rendering. */
 export function wireRendering(
-    elements,
-    playback,
-    {
-        requestFrame = globalThis.requestAnimationFrame.bind(globalThis),
-        cancelFrame = globalThis.cancelAnimationFrame.bind(globalThis),
-    } = {},
+  elements,
+  playback,
+  {
+    requestFrame = globalThis.requestAnimationFrame.bind(globalThis),
+    cancelFrame = globalThis.cancelAnimationFrame.bind(globalThis),
+  } = {},
 ) {
-    const cadenceVisualizer = initializeCadenceVisualizer(elements.cadenceVisualizer);
+  const cadenceVisualizer = initializeCadenceVisualizer(
+    elements.cadenceVisualizer,
+  );
 
-    let frameId = null;
+  let frameId = null;
 
-    /** Renders current playback and workout state. */
-    function render() {
-        const sessionSnapshot = playback.cadenceSession.getSnapshot();
+  /** Renders current playback and workout state. */
+  function render() {
+    const sessionSnapshot = playback.cadenceSession.getSnapshot();
 
-        const protocolElapsedMs = sessionSnapshot.protocolElapsedMs;
+    const protocolElapsedMs = sessionSnapshot.protocolElapsedMs;
 
-        const workoutSnapshot = playback.workoutContext.getSnapshot(protocolElapsedMs);
+    const workoutSnapshot =
+      playback.workoutContext.getSnapshot(protocolElapsedMs);
 
-        const cadencePhase = playback.cadencePhase.phaseAt(protocolElapsedMs);
+    const cadencePhase = playback.cadencePhase.phaseAt(protocolElapsedMs);
 
-        const cadenceRpm = playback.cadencePhase.cadenceAt(protocolElapsedMs);
+    const cadenceRpm = playback.cadencePhase.cadenceAt(protocolElapsedMs);
 
-        renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
+    const loadValue = getLoadValue(playback, protocolElapsedMs);
 
-        renderCadenceVisualizer(cadenceVisualizer, {
-            phase: cadencePhase,
-            cadenceRpm,
-        });
-    }
+    renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
 
-    /** Renders one frame and schedules the next. */
-    function renderFrame() {
-        render();
+    renderCadenceVisualizer(cadenceVisualizer, {
+      phase: cadencePhase,
+      cadenceRpm,
+    });
 
-        frameId = requestFrame(renderFrame);
-    }
+    elements.resistanceValue.textContent =
+      loadValue === undefined ? "—" : String(loadValue);
+  }
 
+  /** Renders one frame and schedules the next. */
+  function renderFrame() {
     render();
 
     frameId = requestFrame(renderFrame);
+  }
 
-    /** Stops the rendering loop. */
-    return function unwireRendering() {
-        if (frameId === null) {
-            return;
-        }
+  render();
 
-        cancelFrame(frameId);
-        frameId = null;
-    };
+  frameId = requestFrame(renderFrame);
+
+  /** Stops the rendering loop. */
+  return function unwireRendering() {
+    if (frameId === null) {
+      return;
+    }
+
+    cancelFrame(frameId);
+    frameId = null;
+  };
+}
+
+/** Returns the current authored load target for display. */
+function getLoadValue(playback, protocolElapsedMs) {
+  if (playback.loadVariableId === undefined) {
+    return undefined;
+  }
+
+  if (protocolElapsedMs === playback.protocolExpander.durationMs) {
+    return playback.protocolExpander.valueBefore(
+      playback.loadVariableId,
+      protocolElapsedMs,
+    );
+  }
+
+  return playback.protocolExpander.valueAt(
+    playback.loadVariableId,
+    protocolElapsedMs,
+  );
 }

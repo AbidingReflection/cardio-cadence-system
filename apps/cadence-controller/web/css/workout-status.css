@@ -1,94 +1,177 @@
 .workout-status {
     display: grid;
-    gap: 16px;
+    grid-template-rows:
+    auto
+    auto
+    minmax(0, 1fr)
+    auto
+    auto;
 
-    padding: 24px;
-}
-
-.workout-status > h2 {
-    margin: 0;
-
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-
-    opacity: 0.7;
-}
-
-.workout-status__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.workout-status__item {
-    display: grid;
-    gap: 8px;
+    gap: 12px;
 
     min-width: 0;
+    min-height: 0;
 
     padding: 16px;
 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    overflow: hidden;
 
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.025);
 }
 
-.workout-status__item h3 {
-    margin: 0;
+.workout-status__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
 
-    font-size: 0.75rem;
+    min-width: 0;
+}
+
+.workout-status__header > div:first-child {
+    min-width: 0;
+}
+
+.playback-countdown {
+    min-height: 1em;
+
+    font-size: clamp(1.5rem, 5vw, 3rem);
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    line-height: 1;
 
-    opacity: 0.6;
+    text-align: center;
+
+    font-variant-numeric: tabular-nums;
 }
 
-.workout-status__item p {
-    margin: 0;
+.workout-status__primary,
+.workout-status__upcoming,
+.workout-status__time {
+    display: grid;
+
+    min-width: 0;
+}
+
+.workout-status__primary {
+    align-content: center;
+    gap: 10px;
+}
+
+.workout-status__upcoming {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    opacity: 0.72;
+}
+
+.workout-status__time {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workout-status__metric {
+    display: grid;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.workout-status__label {
+    min-width: 0;
 
     overflow: hidden;
 
-    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    opacity: 0.55;
+}
+
+.workout-status__value {
+    min-width: 0;
+
+    overflow: hidden;
+
+    font-size: clamp(1rem, 3vw, 1.5rem);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.1;
 
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Current workout structure should read slightly stronger than upcoming structure. */
-.workout-status__item:nth-child(-n + 2) {
-    background: rgba(255, 255, 255, 0.06);
+.workout-status__primary .workout-status__value {
+    font-size: clamp(1.2rem, 3.5vw, 1.9rem);
 }
 
-.workout-status__item:nth-child(-n + 2) p {
-    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
-}
-
-/* Upcoming structure is intentionally quieter. */
-.workout-status__item:nth-child(n + 3) {
-    opacity: 0.72;
+.workout-status__value--time {
+    font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 640px) {
     .workout-status {
-        padding: 16px;
+        grid-template-rows:
+        auto
+        auto
+        minmax(0, 1fr)
+        auto
+        auto;
+
+        gap: 6px;
+
+        padding: 8px;
     }
 
-    .workout-status__grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    .workout-status__header {
+        align-items: center;
+        gap: 6px;
     }
 
-    .workout-status__item {
-        padding: 14px 16px;
+    .playback-countdown {
+        min-height: 0;
+
+        font-size: 1.5rem;
     }
 
-    .workout-status__item p {
-        white-space: normal;
+    .workout-status__primary {
+        align-content: center;
+        gap: 6px;
+    }
+
+    .workout-status__upcoming,
+    .workout-status__time {
+        gap: 5px;
+
+        padding-top: 5px;
+    }
+
+    .workout-status__metric {
+        gap: 1px;
+    }
+
+    .workout-status__label {
+        font-size: 0.5rem;
+        letter-spacing: 0.05em;
+    }
+
+    .workout-status__value {
+        font-size: 0.8rem;
+    }
+
+    .workout-status__primary .workout-status__value {
+        font-size: 1rem;
     }
 }

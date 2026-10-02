@@ -11,15 +11,28 @@ export function getAppElements(root = document) {
 
         playbackState: requireElement(root, "#playback-state"),
         countdown: requireElement(root, "#countdown"),
+
         elapsedTime: requireElement(root, "#elapsed-time"),
         remainingTime: requireElement(root, "#remaining-time"),
+        phaseRemainingTime: requireElement(
+            root,
+            "#phase-remaining-time",
+        ),
 
         currentPhase: requireElement(root, "#current-phase"),
         currentBlock: requireElement(root, "#current-block"),
         nextPhase: requireElement(root, "#next-phase"),
         nextBlock: requireElement(root, "#next-block"),
 
-        cadenceVisualizer: requireElement(root, "#cadence-visualizer"),
+        resistanceValue: requireElement(
+            root,
+            "#resistance-value",
+        ),
+
+        cadenceVisualizer: requireElement(
+            root,
+            "#cadence-visualizer",
+        ),
 
         startButton: requireElement(root, "#start-button"),
         pauseButton: requireElement(root, "#pause-button"),
@@ -33,7 +46,9 @@ function requireElement(root, selector) {
     const element = root.querySelector(selector);
 
     if (element === null) {
-        throw new Error(`Required Cadence Controller element not found: ${selector}`);
+        throw new Error(
+            `Required Cadence Controller element not found: ${selector}`,
+        );
     }
 
     return element;

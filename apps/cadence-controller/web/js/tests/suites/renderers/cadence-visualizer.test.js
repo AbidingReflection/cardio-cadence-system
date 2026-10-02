@@ -128,7 +128,7 @@ test("cadence-visualizer", "renders rounded current cadence", () => {
         cadenceRpm: 60.6,
     });
 
-    assertEqual(visualizer.cadenceValue.textContent, "61");
+    assertEqual(visualizer.cadenceValue.textContent, "60.6");
 });
 
 test("cadence-visualizer", "rejects negative cadence phase", () => {

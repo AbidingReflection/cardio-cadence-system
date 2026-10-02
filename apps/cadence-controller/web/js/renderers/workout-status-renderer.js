@@ -17,6 +17,8 @@ export function renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot) 
 
     elements.currentPhase.textContent = formatStructure(workoutSnapshot.currentPhase);
 
+    elements.phaseRemainingTime.textContent = formatPhaseRemaining(workoutSnapshot.currentPhase);
+
     elements.currentBlock.textContent = formatStructure(workoutSnapshot.currentBlock);
 
     elements.nextPhase.textContent = formatStructure(workoutSnapshot.nextPhase);
@@ -24,6 +26,15 @@ export function renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot) 
     elements.nextBlock.textContent = formatStructure(workoutSnapshot.nextBlock);
 
     renderControls(elements, sessionSnapshot.state);
+}
+
+/** Formats remaining time in the current phase. */
+function formatPhaseRemaining(currentPhase) {
+    if (currentPhase === null) {
+        return "—";
+    }
+
+    return formatDuration(currentPhase.remainingTimeMs);
 }
 
 /** Formats a playback lifecycle state for display. */

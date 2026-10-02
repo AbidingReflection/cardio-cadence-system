@@ -29,51 +29,82 @@ export function initializeCadenceVisualizer(container) {
 
     <div class="cadence-visualizer__track">
     <div class="cadence-visualizer__indicator"></div>
-    </div>
 
     <div class="cadence-visualizer__cadence">
     <span class="cadence-visualizer__cadence-value"></span>
     <span class="cadence-visualizer__cadence-unit">RPM</span>
     </div>
+    </div>
     `;
 
     return {
-        track: container.querySelector(".cadence-visualizer__track"),
-        indicator: container.querySelector(".cadence-visualizer__indicator"),
-        leftCue: container.querySelector(".cadence-visualizer__cue--left"),
-        rightCue: container.querySelector(".cadence-visualizer__cue--right"),
-        cadenceValue: container.querySelector(".cadence-visualizer__cadence-value"),
+        track: container.querySelector(
+            ".cadence-visualizer__track",
+        ),
+        indicator: container.querySelector(
+            ".cadence-visualizer__indicator",
+        ),
+        leftCue: container.querySelector(
+            ".cadence-visualizer__cue--left",
+        ),
+        rightCue: container.querySelector(
+            ".cadence-visualizer__cue--right",
+        ),
+        cadenceValue: container.querySelector(
+            ".cadence-visualizer__cadence-value",
+        ),
     };
 }
 
 /** Renders current cadence-cycle phase and cadence target. */
-export function renderCadenceVisualizer(visualizer, { phase, cadenceRpm }) {
+export function renderCadenceVisualizer(
+    visualizer,
+    { phase, cadenceRpm },
+) {
     validatePhase(phase);
     validateCadence(cadenceRpm);
 
-    const rotationDegrees = phase * FULL_ROTATION_DEGREES;
+    const rotationDegrees =
+    phase * FULL_ROTATION_DEGREES;
 
-    visualizer.indicator.style.transform = `rotate(${rotationDegrees}deg)`;
+    visualizer.indicator.style.transform =
+    `rotate(${rotationDegrees}deg)`;
 
-    visualizer.cadenceValue.textContent = Math.round(cadenceRpm);
+    visualizer.cadenceValue.textContent =
+    cadenceRpm.toFixed(1);
 
     const leftActive = phase < 0.5;
 
-    visualizer.leftCue.dataset.active = String(leftActive);
+    visualizer.leftCue.dataset.active =
+    String(leftActive);
 
-    visualizer.rightCue.dataset.active = String(!leftActive);
+    visualizer.rightCue.dataset.active =
+    String(!leftActive);
 }
 
 /** Validates normalized cadence-cycle phase. */
 function validatePhase(phase) {
-    if (typeof phase !== "number" || !Number.isFinite(phase) || phase < 0 || phase >= 1) {
-        throw new RangeError("Cadence visualizer phase must be within [0, 1).");
+    if (
+        typeof phase !== "number" ||
+        !Number.isFinite(phase) ||
+        phase < 0 ||
+        phase >= 1
+    ) {
+        throw new RangeError(
+            "Cadence visualizer phase must be within [0, 1).",
+        );
     }
 }
 
 /** Validates a current cadence target. */
 function validateCadence(cadenceRpm) {
-    if (typeof cadenceRpm !== "number" || !Number.isFinite(cadenceRpm) || cadenceRpm < 0) {
-        throw new RangeError("Cadence visualizer RPM must be a non-negative finite number.");
+    if (
+        typeof cadenceRpm !== "number" ||
+        !Number.isFinite(cadenceRpm) ||
+        cadenceRpm < 0
+    ) {
+        throw new RangeError(
+            "Cadence visualizer RPM must be a non-negative finite number.",
+        );
     }
 }

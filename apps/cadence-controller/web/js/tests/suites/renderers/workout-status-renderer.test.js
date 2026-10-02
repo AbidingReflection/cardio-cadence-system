@@ -7,8 +7,10 @@ function createElements() {
     return {
         playbackState: document.createElement("div"),
         countdown: document.createElement("div"),
+
         elapsedTime: document.createElement("div"),
         remainingTime: document.createElement("div"),
+        phaseRemainingTime: document.createElement("div"),
 
         currentPhase: document.createElement("div"),
         currentBlock: document.createElement("div"),
@@ -253,3 +255,52 @@ test("workout-status-renderer", "rejects unsupported playback states", () => {
         /Unsupported playback state/,
     );
 });
+
+test(
+    "workout-status-renderer",
+     "renders unavailable phase remaining time as dash",
+     () => {
+         const elements = createElements();
+
+         const workoutSnapshot = createWorkoutSnapshot({
+             currentPhase: null,
+         });
+
+         renderWorkoutStatus(
+             elements,
+             createSessionSnapshot(),
+                             workoutSnapshot,
+         );
+
+         assertEqual(
+             elements.phaseRemainingTime.textContent,
+             "—",
+         );
+     },
+);
+
+test(
+    "workout-status-renderer",
+     "renders current phase remaining time",
+     () => {
+         const elements = createElements();
+
+         const workoutSnapshot = createWorkoutSnapshot({
+             currentPhase: {
+                 name: "Warm-up",
+                 remainingTimeMs: 125000,
+             },
+         });
+
+         renderWorkoutStatus(
+             elements,
+             createSessionSnapshot(),
+                             workoutSnapshot,
+         );
+
+         assertEqual(
+             elements.phaseRemainingTime.textContent,
+             "2:05",
+         );
+     },
+);
