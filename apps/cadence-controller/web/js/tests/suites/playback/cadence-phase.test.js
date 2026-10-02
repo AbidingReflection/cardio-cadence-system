@@ -254,3 +254,93 @@ test("cadence-phase", "rejects non-finite workout time", () => {
     assertThrows(() => cadencePhase.phaseAt(Infinity));
     assertThrows(() => cadencePhase.nextCycleBoundaryAfter(NaN));
 });
+
+test("cadence-phase", "finds workout time for fractional accumulated cycles", () => {
+    const cadencePhase = createCadencePhase(
+        createProtocol({
+            progression: {
+                type: "steady",
+                start: 60,
+            },
+        }),
+    );
+
+    assertApproximatelyEqual(cadencePhase.timeAtCycleCount(0.5), 500, 0.02);
+
+    assertApproximatelyEqual(cadencePhase.timeAtCycleCount(1), 1000, 0.02);
+
+    assertApproximatelyEqual(cadencePhase.timeAtCycleCount(1.5), 1500, 0.02);
+});
+
+test("cadence-phase", "finds fractional cycle timing during linear cadence", () => {
+    const cadencePhase = createCadencePhase(
+        createProtocol({
+            durationSeconds: 60,
+            progression: {
+                type: "linear",
+                start: 60,
+                end: 120,
+            },
+        }),
+    );
+
+    const halfCycleTime = cadencePhase.timeAtCycleCount(0.5);
+    const fullCycleTime = cadencePhase.timeAtCycleCount(1);
+
+    assertEqual(halfCycleTime > 0, true);
+    assertEqual(halfCycleTime < fullCycleTime, true);
+
+    assertApproximatelyEqual(cadencePhase.cyclesAt(halfCycleTime), 0.5, 1e-4);
+
+    assertApproximatelyEqual(cadencePhase.cyclesAt(fullCycleTime), 1, 1e-4);
+});
+
+test("cadence-phase", "rejects invalid accumulated cycle targets", () => {
+    const cadencePhase = createCadencePhase();
+
+    assertThrows(() => cadencePhase.timeAtCycleCount(-0.5));
+    assertThrows(() => cadencePhase.timeAtCycleCount(Infinity));
+    assertThrows(() => cadencePhase.timeAtCycleCount(NaN));
+});
+
+test("cadence-phase", "returns undefined when accumulated cycle target is unavailable", () => {
+    const cadencePhase = createCadencePhase(
+        createProtocol({
+            durationSeconds: 1,
+            progression: {
+                type: "steady",
+                start: 30,
+            },
+        }),
+    );
+
+    assertEqual(cadencePhase.timeAtCycleCount(1), undefined);
+});
+
+test("cadence-phase", "returns current cadence rate", () => {
+    const cadencePhase = createCadencePhase(
+        createProtocol({
+            progression: {
+                type: "linear",
+                start: 60,
+                end: 120,
+            },
+        }),
+    );
+
+    assertApproximatelyEqual(cadencePhase.cadenceAt(30000), 90);
+});
+
+test("cadence-phase", "returns final cadence rate at protocol end", () => {
+    const cadencePhase = createCadencePhase(
+        createProtocol({
+            progression: {
+                type: "linear",
+                start: 60,
+                end: 120,
+            },
+        }),
+    );
+
+    assertApproximatelyEqual(cadencePhase.cadenceAt(cadencePhase.durationMs), 120);
+});

@@ -36,11 +36,35 @@ export class CadencePhase {
         return integratedCadence / MILLISECONDS_PER_MINUTE;
     }
 
+    /** Returns the workout time at which total accumulated cycles reach a target. */
+    timeAtCycleCount(targetCycles) {
+        validateCycleCount(targetCycles);
+
+        const totalCycles = this.cyclesAt(this.#protocolExpander.durationMs);
+
+        if (targetCycles > totalCycles + CYCLE_EPSILON) {
+            return undefined;
+        }
+
+        return this.#findTimeForAccumulatedCycles(targetCycles);
+    }
+
     /** Returns the total cadence cycles accumulated from workout start. */
     cyclesAt(timeMs) {
         validateTime(timeMs, this.#protocolExpander.durationMs);
 
         return this.cyclesBetween(0, timeMs);
+    }
+
+    /** Returns the cadence rate at an absolute workout time. */
+    cadenceAt(timeMs) {
+        validateTime(timeMs, this.#protocolExpander.durationMs);
+
+        if (timeMs === this.#protocolExpander.durationMs) {
+            return this.#series.valueBefore(timeMs);
+        }
+
+        return this.#series.valueAt(timeMs);
     }
 
     /** Returns normalized cadence-cycle phase within the range [0, 1). */
@@ -61,13 +85,8 @@ export class CadencePhase {
 
         const currentCycles = this.cyclesAt(timeMs);
         const targetCycles = Math.floor(currentCycles + CYCLE_EPSILON) + 1;
-        const totalCycles = this.cyclesAt(this.#protocolExpander.durationMs);
 
-        if (totalCycles + CYCLE_EPSILON < targetCycles) {
-            return undefined;
-        }
-
-        return this.#findTimeForAccumulatedCycles(targetCycles);
+        return this.timeAtCycleCount(targetCycles);
     }
 
     /** Locates the workout time at which total accumulated cycles reach a target. */
@@ -126,5 +145,12 @@ function validateTime(timeMs, durationMs) {
         throw new RangeError(
             `Cadence phase time must be between 0 and ${durationMs} milliseconds.`,
         );
+    }
+}
+
+/** Validates an accumulated cadence-cycle target. */
+function validateCycleCount(targetCycles) {
+    if (typeof targetCycles !== "number" || !Number.isFinite(targetCycles) || targetCycles < 0) {
+        throw new RangeError("Cadence cycle count must be a non-negative finite number.");
     }
 }

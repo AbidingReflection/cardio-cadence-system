@@ -69,7 +69,7 @@ test("audio-cue-engine", "creates a master gain connected to audio output", asyn
     });
 });
 
-test("audio-cue-engine", "schedules a primary cue at the requested audio time", async () => {
+test("audio-cue-engine", "schedules a left cue at the requested audio time", async () => {
     await withFakeAudioContext(async () => {
         const engine = new AudioCueEngine();
 
@@ -77,7 +77,7 @@ test("audio-cue-engine", "schedules a primary cue at the requested audio time", 
 
         engine.scheduleCue({
             audioTime: 10,
-            type: "primary",
+            type: "left",
         });
 
         const oscillator = AudioContextFake.latest.oscillators[0];
@@ -89,7 +89,7 @@ test("audio-cue-engine", "schedules a primary cue at the requested audio time", 
     });
 });
 
-test("audio-cue-engine", "uses the primary cue synthesis graph", async () => {
+test("audio-cue-engine", "uses the left cue synthesis graph", async () => {
     await withFakeAudioContext(async () => {
         const engine = new AudioCueEngine();
 
@@ -97,7 +97,7 @@ test("audio-cue-engine", "uses the primary cue synthesis graph", async () => {
 
         engine.scheduleCue({
             audioTime: 5,
-            type: "primary",
+            type: "left",
         });
 
         const context = AudioContextFake.latest;
@@ -110,10 +110,55 @@ test("audio-cue-engine", "uses the primary cue synthesis graph", async () => {
         assertEqual(cueGain.connections[0], masterGain);
 
         assertEqual(oscillator.frequency.setValueCalls.length, 1);
+        assertEqual(oscillator.frequency.setValueCalls[0].value, 880);
         assertEqual(oscillator.frequency.setValueCalls[0].time, 5);
 
         assertEqual(cueGain.gain.setValueCalls[0].time, 5);
         assertEqual(cueGain.gain.exponentialRampCalls.length, 2);
+    });
+});
+
+test("audio-cue-engine", "uses distinct frequencies for left and right cues", async () => {
+    await withFakeAudioContext(async () => {
+        const engine = new AudioCueEngine();
+
+        await engine.resume();
+
+        engine.scheduleCue({
+            audioTime: 5,
+            type: "left",
+        });
+
+        engine.scheduleCue({
+            audioTime: 6,
+            type: "right",
+        });
+
+        const context = AudioContextFake.latest;
+        const leftOscillator = context.oscillators[0];
+        const rightOscillator = context.oscillators[1];
+
+        assertEqual(leftOscillator.frequency.setValueCalls[0].value, 880);
+        assertEqual(rightOscillator.frequency.setValueCalls[0].value, 720);
+    });
+});
+
+test("audio-cue-engine", "schedules countdown cues with countdown synthesis", async () => {
+    await withFakeAudioContext(async () => {
+        const engine = new AudioCueEngine();
+
+        await engine.resume();
+
+        engine.scheduleCue({
+            audioTime: 7,
+            type: "countdown",
+        });
+
+        const oscillator = AudioContextFake.latest.oscillators[0];
+
+        assertEqual(oscillator.type, "square");
+        assertEqual(oscillator.frequency.setValueCalls[0].value, 660);
+        assertEqual(oscillator.frequency.setValueCalls[0].time, 7);
     });
 });
 
@@ -125,7 +170,7 @@ test("audio-cue-engine", "cleans up completed cue nodes", async () => {
 
         engine.scheduleCue({
             audioTime: 5,
-            type: "primary",
+            type: "left",
         });
 
         const context = AudioContextFake.latest;
@@ -154,12 +199,12 @@ test("audio-cue-engine", "cancels all scheduled cues at the current audio time",
 
         engine.scheduleCue({
             audioTime: 10,
-            type: "primary",
+            type: "left",
         });
 
         engine.scheduleCue({
             audioTime: 11,
-            type: "primary",
+            type: "right",
         });
 
         engine.cancelScheduledCues();
@@ -208,7 +253,7 @@ test("audio-cue-engine", "requires resume before scheduling a cue", () => {
         () =>
             engine.scheduleCue({
                 audioTime: 1,
-                type: "primary",
+                type: "left",
             }),
         /resumed/,
     );
@@ -231,6 +276,22 @@ test("audio-cue-engine", "rejects unsupported cue types", async () => {
     });
 });
 
+test("audio-cue-engine", "rejects missing cue type", async () => {
+    await withFakeAudioContext(async () => {
+        const engine = new AudioCueEngine();
+
+        await engine.resume();
+
+        assertThrows(
+            () =>
+                engine.scheduleCue({
+                    audioTime: 1,
+                }),
+            /Unsupported audio cue type/,
+        );
+    });
+});
+
 test("audio-cue-engine", "rejects invalid audio scheduling times", async () => {
     await withFakeAudioContext(async () => {
         const engine = new AudioCueEngine();
@@ -240,14 +301,14 @@ test("audio-cue-engine", "rejects invalid audio scheduling times", async () => {
         assertThrows(() =>
             engine.scheduleCue({
                 audioTime: -1,
-                type: "primary",
+                type: "left",
             }),
         );
 
         assertThrows(() =>
             engine.scheduleCue({
                 audioTime: Infinity,
-                type: "primary",
+                type: "right",
             }),
         );
     });

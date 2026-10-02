@@ -11,8 +11,10 @@ const DEFAULT_MASTER_GAIN = 0.15;
 const COUNTDOWN_FREQUENCY_HZ = 660;
 const COUNTDOWN_DURATION_SECONDS = 0.05;
 
-const PRIMARY_FREQUENCY_HZ = 880;
-const PRIMARY_DURATION_SECONDS = 0.06;
+const LEFT_FREQUENCY_HZ = 880;
+const RIGHT_FREQUENCY_HZ = 720;
+const CADENCE_DURATION_SECONDS = 0.06;
+
 const ATTACK_SECONDS = 0.005;
 const SILENCE_GAIN = 0.0001;
 
@@ -47,13 +49,17 @@ export class AudioCueEngine {
     }
 
     /** Schedules one semantic cadence cue at an absolute Web Audio time. */
-    scheduleCue({ audioTime, type = "primary" }) {
+    scheduleCue({ audioTime, type }) {
         this.#requireAudioContext();
         validateAudioTime(audioTime);
 
         switch (type) {
-            case "primary":
-                this.#schedulePrimaryCue(audioTime);
+            case "left":
+                this.#scheduleLeftCue(audioTime);
+                break;
+
+            case "right":
+                this.#scheduleRightCue(audioTime);
                 break;
 
             case "countdown":
@@ -109,7 +115,9 @@ export class AudioCueEngine {
         this.#audioContext = new AudioContextClass();
 
         this.#masterGainNode = this.#audioContext.createGain();
+
         this.#masterGainNode.gain.value = this.#masterGain;
+
         this.#masterGainNode.connect(this.#audioContext.destination);
     }
 
@@ -120,12 +128,22 @@ export class AudioCueEngine {
         }
     }
 
-    /** Schedules one short primary cadence transient. */
-    #schedulePrimaryCue(audioTime) {
+    /** Schedules one short left-side cadence transient. */
+    #scheduleLeftCue(audioTime) {
         this.#scheduleTone({
             audioTime,
-            frequencyHz: PRIMARY_FREQUENCY_HZ,
-            durationSeconds: PRIMARY_DURATION_SECONDS,
+            frequencyHz: LEFT_FREQUENCY_HZ,
+            durationSeconds: CADENCE_DURATION_SECONDS,
+            oscillatorType: "square",
+        });
+    }
+
+    /** Schedules one short right-side cadence transient. */
+    #scheduleRightCue(audioTime) {
+        this.#scheduleTone({
+            audioTime,
+            frequencyHz: RIGHT_FREQUENCY_HZ,
+            durationSeconds: CADENCE_DURATION_SECONDS,
             oscillatorType: "square",
         });
     }
@@ -143,13 +161,16 @@ export class AudioCueEngine {
     /** Schedules one synthesized transient through the shared output graph. */
     #scheduleTone({ audioTime, frequencyHz, durationSeconds, oscillatorType }) {
         const oscillator = this.#audioContext.createOscillator();
+
         const gainNode = this.#audioContext.createGain();
 
         oscillator.type = oscillatorType;
         oscillator.frequency.setValueAtTime(frequencyHz, audioTime);
 
         gainNode.gain.setValueAtTime(SILENCE_GAIN, audioTime);
+
         gainNode.gain.exponentialRampToValueAtTime(1, audioTime + ATTACK_SECONDS);
+
         gainNode.gain.exponentialRampToValueAtTime(SILENCE_GAIN, audioTime + durationSeconds);
 
         oscillator.connect(gainNode);

@@ -87,19 +87,6 @@ test("cadence-session", "starts immediately when start delay is zero", async () 
     assertEqual(snapshot.countdownRemainingMs, 0);
 });
 
-test("cadence-session", "schedules a primary cue at immediate protocol start", async () => {
-    const { session, audioCueEngine } = createSession();
-
-    audioCueEngine.currentTime = 10;
-
-    await session.start();
-
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
-
-    assertEqual(primaryCues.length, 1);
-    assertEqual(primaryCues[0].audioTime, 10);
-});
-
 test("cadence-session", "keeps protocol time at zero during start countdown", async () => {
     const { session, audioCueEngine } = createSession({
         startDelaySeconds: 5,
@@ -137,21 +124,6 @@ test("cadence-session", "schedules one countdown cue per delay second", async ()
     assertEqual(countdownCues[4].audioTime, 14);
 });
 
-test("cadence-session", "schedules the first primary cue at the end of countdown", async () => {
-    const { session, audioCueEngine } = createSession({
-        startDelaySeconds: 5,
-    });
-
-    audioCueEngine.currentTime = 10;
-
-    await session.start();
-
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
-
-    assertEqual(primaryCues.length, 1);
-    assertEqual(primaryCues[0].audioTime, 15);
-});
-
 test("cadence-session", "enters running state when countdown expires", async () => {
     const { session, audioCueEngine, timer } = createSession({
         startDelaySeconds: 5,
@@ -180,29 +152,7 @@ test("cadence-session", "derives protocol elapsed time from the audio clock", as
     assertEqual(session.getSnapshot().protocolElapsedMs, 2500);
 });
 
-test("cadence-session", "schedules steady cadence cues through the lookahead window", async () => {
-    const { session, audioCueEngine, timer } = createSession();
-
-    audioCueEngine.currentTime = 10;
-
-    await session.start();
-
-    audioCueEngine.currentTime = 10.8;
-    timer.runIntervals();
-
-    audioCueEngine.currentTime = 11.8;
-    timer.runIntervals();
-
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
-
-    assertEqual(primaryCues.length, 3);
-
-    assertApproximatelyEqual(primaryCues[0].audioTime, 10);
-    assertApproximatelyEqual(primaryCues[1].audioTime, 11, 0.02);
-    assertApproximatelyEqual(primaryCues[2].audioTime, 12, 0.02);
-});
-
-test("cadence-session", "schedules 50 RPM cadence at 1.2 second cycle spacing", async () => {
+test("cadence-session", "schedules 50 RPM left and right cues at half-cycle spacing", async () => {
     const { session, audioCueEngine, timer } = createSession({
         protocol: createProtocol({
             progression: {
@@ -219,12 +169,15 @@ test("cadence-session", "schedules 50 RPM cadence at 1.2 second cycle spacing", 
     audioCueEngine.currentTime = 11;
     timer.runIntervals();
 
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
+    const leftCues = getScheduledCues(audioCueEngine, "left");
+    const rightCues = getScheduledCues(audioCueEngine, "right");
 
-    assertEqual(primaryCues.length, 2);
+    assertEqual(leftCues.length, 2);
+    assertEqual(rightCues.length, 1);
 
-    assertApproximatelyEqual(primaryCues[0].audioTime, 10);
-    assertApproximatelyEqual(primaryCues[1].audioTime, 11.2, 0.02);
+    assertApproximatelyEqual(leftCues[0].audioTime, 10);
+    assertApproximatelyEqual(rightCues[0].audioTime, 10.6, 0.02);
+    assertApproximatelyEqual(leftCues[1].audioTime, 11.2, 0.02);
 });
 
 test("cadence-session", "pauses at the current protocol time", async () => {
@@ -290,9 +243,9 @@ test(
         audioCueEngine.currentTime = 30.4;
         timer.runIntervals();
 
-        const primaryCues = getScheduledCues(audioCueEngine, "primary");
+        const leftCues = getScheduledCues(audioCueEngine, "left");
 
-        const resumedCue = primaryCues.at(-1);
+        const resumedCue = leftCues.at(-1);
 
         assertApproximatelyEqual(resumedCue.audioTime, 30.5, 0.02);
     },
@@ -357,7 +310,7 @@ test("cadence-session", "completes when protocol duration is reached", async () 
     assertEqual(timer.activeIntervalCount, 0);
 });
 
-test("cadence-session", "schedules cues through increasing linear cadence", async () => {
+test("cadence-session", "schedules half-cycle cues through increasing linear cadence", async () => {
     const { session, audioCueEngine, timer } = createSession({
         protocol: createProtocol({
             durationSeconds: 10,
@@ -376,14 +329,14 @@ test("cadence-session", "schedules cues through increasing linear cadence", asyn
     audioCueEngine.currentTime = 10.8;
     timer.runIntervals();
 
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
+    const rightCues = getScheduledCues(audioCueEngine, "right");
 
-    assertEqual(primaryCues.length >= 2, true);
+    assertEqual(rightCues.length >= 1, true);
 
-    const firstCycleCue = primaryCues[1];
+    const firstRightCue = rightCues[0];
 
-    assertEqual(firstCycleCue.audioTime > 10, true);
-    assertEqual(firstCycleCue.audioTime < 11, true);
+    assertEqual(firstRightCue.audioTime > 10, true);
+    assertEqual(firstRightCue.audioTime < 10.5, true);
 });
 
 test("cadence-session", "does not schedule cadence cues past protocol end", async () => {
@@ -400,10 +353,12 @@ test("cadence-session", "does not schedule cadence cues past protocol end", asyn
     audioCueEngine.currentTime = 11.8;
     timer.runIntervals();
 
-    const primaryCues = getScheduledCues(audioCueEngine, "primary");
+    const cadenceCues = audioCueEngine.scheduledCues.filter(
+        (cue) => cue.type === "left" || cue.type === "right",
+    );
 
     assertEqual(
-        primaryCues.every((cue) => cue.audioTime < 12),
+        cadenceCues.every((cue) => cue.audioTime < 12),
         true,
     );
 });
@@ -457,4 +412,58 @@ test("cadence-session", "rejects invalid start delay", () => {
                 timer,
             }),
     );
+});
+
+test("cadence-session", "schedules a left cue at immediate protocol start", async () => {
+    const { session, audioCueEngine } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    const leftCues = getScheduledCues(audioCueEngine, "left");
+
+    assertEqual(leftCues.length, 1);
+    assertEqual(leftCues[0].audioTime, 10);
+});
+
+test("cadence-session", "schedules the first left cue at the end of countdown", async () => {
+    const { session, audioCueEngine } = createSession({
+        startDelaySeconds: 5,
+    });
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    const leftCues = getScheduledCues(audioCueEngine, "left");
+
+    assertEqual(leftCues.length, 1);
+    assertEqual(leftCues[0].audioTime, 15);
+});
+
+test("cadence-session", "alternates left and right cues at half-cycle boundaries", async () => {
+    const { session, audioCueEngine, timer } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 10.8;
+    timer.runIntervals();
+
+    audioCueEngine.currentTime = 11.8;
+    timer.runIntervals();
+
+    const leftCues = getScheduledCues(audioCueEngine, "left");
+    const rightCues = getScheduledCues(audioCueEngine, "right");
+
+    assertEqual(leftCues.length, 3);
+    assertEqual(rightCues.length, 2);
+
+    assertApproximatelyEqual(leftCues[0].audioTime, 10);
+    assertApproximatelyEqual(rightCues[0].audioTime, 10.5, 0.02);
+    assertApproximatelyEqual(leftCues[1].audioTime, 11, 0.02);
+    assertApproximatelyEqual(rightCues[1].audioTime, 11.5, 0.02);
+    assertApproximatelyEqual(leftCues[2].audioTime, 12, 0.02);
 });

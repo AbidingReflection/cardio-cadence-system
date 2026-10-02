@@ -9,6 +9,9 @@
 const SCHEDULER_INTERVAL_MS = 50;
 const LOOKAHEAD_SECONDS = 0.25;
 
+const CUE_CYCLE_INCREMENT = 0.5;
+const CUE_CYCLE_EPSILON = 1e-4;
+
 /** Coordinates protocol cadence timing with scheduled Web Audio playback. */
 export class CadenceSession {
     #cadencePhase;
@@ -20,7 +23,7 @@ export class CadenceSession {
     #anchorProtocolTimeMs = 0;
     #anchorAudioTime = 0;
     #pausedProtocolTimeMs = 0;
-    #nextCueProtocolTimeMs = undefined;
+    #nextCueCycleCount = undefined;
     #schedulerId = null;
 
     /** Creates a cadence playback session. */
@@ -73,10 +76,10 @@ export class CadenceSession {
 
         this.#audioCueEngine.scheduleCue({
             audioTime: protocolStartAudioTime,
-            type: "primary",
+            type: "left",
         });
 
-        this.#nextCueProtocolTimeMs = this.#cadencePhase.nextCycleBoundaryAfter(0);
+        this.#nextCueCycleCount = CUE_CYCLE_INCREMENT;
 
         this.#state = this.#startDelaySeconds === 0 ? "running" : "countdown";
 
@@ -111,9 +114,9 @@ export class CadenceSession {
         this.#anchorProtocolTimeMs = this.#pausedProtocolTimeMs;
         this.#anchorAudioTime = this.#audioCueEngine.currentTime;
 
-        this.#nextCueProtocolTimeMs = this.#cadencePhase.nextCycleBoundaryAfter(
-            this.#pausedProtocolTimeMs,
-        );
+        const accumulatedCycles = this.#cadencePhase.cyclesAt(this.#pausedProtocolTimeMs);
+
+        this.#nextCueCycleCount = getNextCueCycleCount(accumulatedCycles);
 
         this.#state = "running";
 
@@ -134,7 +137,7 @@ export class CadenceSession {
         this.#anchorProtocolTimeMs = 0;
         this.#anchorAudioTime = 0;
         this.#pausedProtocolTimeMs = 0;
-        this.#nextCueProtocolTimeMs = undefined;
+        this.#nextCueCycleCount = undefined;
     }
 
     /** Advances lifecycle state and fills the current scheduling horizon. */
@@ -165,15 +168,22 @@ export class CadenceSession {
         }
     }
 
-    /** Schedules cadence boundaries within the current Web Audio lookahead window. */
+    /** Schedules semantic cadence cues within the current Web Audio lookahead window. */
     #scheduleLookahead() {
         const horizonAudioTime = this.#audioCueEngine.currentTime + LOOKAHEAD_SECONDS;
 
-        while (
-            this.#nextCueProtocolTimeMs !== undefined &&
-            this.#nextCueProtocolTimeMs < this.#cadencePhase.durationMs
-        ) {
-            const cueAudioTime = this.#audioTimeForProtocolTime(this.#nextCueProtocolTimeMs);
+        while (this.#nextCueCycleCount !== undefined) {
+            const cueProtocolTimeMs = this.#cadencePhase.timeAtCycleCount(this.#nextCueCycleCount);
+
+            if (
+                cueProtocolTimeMs === undefined ||
+                cueProtocolTimeMs >= this.#cadencePhase.durationMs
+            ) {
+                this.#nextCueCycleCount = undefined;
+                break;
+            }
+
+            const cueAudioTime = this.#audioTimeForProtocolTime(cueProtocolTimeMs);
 
             if (cueAudioTime > horizonAudioTime) {
                 break;
@@ -181,12 +191,10 @@ export class CadenceSession {
 
             this.#audioCueEngine.scheduleCue({
                 audioTime: cueAudioTime,
-                type: "primary",
+                type: getCueType(this.#nextCueCycleCount),
             });
 
-            this.#nextCueProtocolTimeMs = this.#cadencePhase.nextCycleBoundaryAfter(
-                this.#nextCueProtocolTimeMs,
-            );
+            this.#nextCueCycleCount += CUE_CYCLE_INCREMENT;
         }
     }
 
@@ -249,6 +257,19 @@ export class CadenceSession {
         this.#timer.clearInterval(this.#schedulerId);
         this.#schedulerId = null;
     }
+}
+
+/** Returns the first semantic half-cycle cue strictly after accumulated cycles. */
+function getNextCueCycleCount(accumulatedCycles) {
+    return (
+        (Math.floor((accumulatedCycles + CUE_CYCLE_EPSILON) / CUE_CYCLE_INCREMENT) + 1) *
+        CUE_CYCLE_INCREMENT
+    );
+}
+
+/** Returns the semantic cue type for an accumulated half-cycle boundary. */
+function getCueType(cycleCount) {
+    return Number.isInteger(cycleCount) ? "left" : "right";
 }
 
 /** Validates a whole-second non-negative preparation delay. */
