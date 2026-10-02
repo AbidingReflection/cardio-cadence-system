@@ -69,6 +69,10 @@ function createPlaybackFake() {
             phaseAt() {
                 return 0;
             },
+
+            cadenceAt() {
+                return 60;
+            },
         },
 
         workoutContext: {

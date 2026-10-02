@@ -1,0 +1,94 @@
+.workout-status {
+    display: grid;
+    gap: 16px;
+
+    padding: 24px;
+}
+
+.workout-status > h2 {
+    margin: 0;
+
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    opacity: 0.7;
+}
+
+.workout-status__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.workout-status__item {
+    display: grid;
+    gap: 8px;
+
+    min-width: 0;
+
+    padding: 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.workout-status__item h3 {
+    margin: 0;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    opacity: 0.6;
+}
+
+.workout-status__item p {
+    margin: 0;
+
+    overflow: hidden;
+
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Current workout structure should read slightly stronger than upcoming structure. */
+.workout-status__item:nth-child(-n + 2) {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.workout-status__item:nth-child(-n + 2) p {
+    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+}
+
+/* Upcoming structure is intentionally quieter. */
+.workout-status__item:nth-child(n + 3) {
+    opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+    .workout-status {
+        padding: 16px;
+    }
+
+    .workout-status__grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .workout-status__item {
+        padding: 14px 16px;
+    }
+
+    .workout-status__item p {
+        white-space: normal;
+    }
+}

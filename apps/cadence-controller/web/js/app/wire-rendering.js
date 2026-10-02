@@ -35,9 +35,14 @@ export function wireRendering(
 
         const cadencePhase = playback.cadencePhase.phaseAt(protocolElapsedMs);
 
+        const cadenceRpm = playback.cadencePhase.cadenceAt(protocolElapsedMs);
+
         renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
 
-        renderCadenceVisualizer(cadenceVisualizer, cadencePhase);
+        renderCadenceVisualizer(cadenceVisualizer, {
+            phase: cadencePhase,
+            cadenceRpm,
+        });
     }
 
     /** Renders one frame and schedules the next. */
