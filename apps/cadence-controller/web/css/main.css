@@ -48,15 +48,14 @@ button {
 .cadence-controller {
   display: grid;
   grid-template-rows:
-    auto
-    auto
-    auto
-    minmax(0, 1fr)
-    auto
-    auto;
+  auto
+  auto
+  minmax(0, 1fr)
+  auto
+  auto;
 
   width: 100%;
-  height: 100dvh;
+  height: 99dvh;
 
   min-width: 0;
   min-height: 0;
@@ -65,7 +64,8 @@ button {
 }
 
 .controller-header {
-  display: flex;
+/*   display: flex; */
+display: none;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -119,17 +119,31 @@ button {
 }
 
 .playback-countdown {
-  min-height: 1em;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
 
-  font-size: clamp(1.5rem, 5vw, 3rem);
-  font-weight: 700;
+  display: grid;
+  place-items: center;
+
+  pointer-events: none;
+
+  background: rgba(16, 19, 24, 0.72);
+
+  font-size: clamp(6rem, 30vw, 18rem);
+  font-weight: 800;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 
   text-align: center;
 }
 
+.playback-countdown:empty {
+  display: none;
+}
+
 .guidance-pane {
-  --guidance-header-height: 56px;
+  --guidance-header-height: 40px;
 
   display: grid;
   grid-template-columns:
@@ -168,6 +182,7 @@ button {
 }
 
 .playback-controls {
+  height: 200px
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;

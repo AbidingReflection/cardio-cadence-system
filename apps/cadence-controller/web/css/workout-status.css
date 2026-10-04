@@ -1,5 +1,7 @@
 .workout-status {
-  display: grid;
+  /*   display: grid; */
+  display: none;
+
   grid-template-columns:
     minmax(0, 3fr)
     minmax(0, 2fr)
@@ -15,7 +17,8 @@
 .workout-status__primary,
 .workout-status__upcoming,
 .workout-status__time {
-  display: grid;
+  /*   display: grid; */
+  display: none;
 
   min-width: 0;
 
