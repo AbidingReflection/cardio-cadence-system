@@ -1,16 +1,16 @@
 import {
+  assertDeepEqual,
   assertEqual,
   test,
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
-
 import { createPlayback } from "../../../app/create-playback.js";
 import { AudioCueEngine } from "../../../audio/audio-cue-engine.js";
 import { CadencePhase } from "../../../playback/cadence-phase.js";
 import { CadenceSession } from "../../../playback/cadence-session.js";
+import { LoadSegmentTimeline } from "../../../playback/load-segment-timeline.js";
 import { WorkoutContext } from "../../../playback/workout-context.js";
-
 import { AudioCueEngineFake } from "../../helpers/audio-cue-engine-fake.js";
 import { TimeSourceFake } from "../../helpers/time-source-fake.js";
 
@@ -188,8 +188,40 @@ test("create-playback", "uses bundle load variable resolution", () => {
   });
 
   assertEqual(playback.loadVariableId, "level");
+
   assertEqual(
-    playback.protocolExpander.valueAt(playback.loadVariableId, 0),
-    12,
+    playback.loadSegmentTimeline instanceof LoadSegmentTimeline,
+    true,
   );
+
+  assertDeepEqual(playback.loadSegmentTimeline.segmentAt(30_000), {
+    value: 12,
+    startTimeMs: 0,
+    endTimeMs: 60_000,
+    progress: 0.5,
+  });
 });
+
+test(
+  "create-playback",
+  "omits load timeline when bundle has no load variable",
+  () => {
+    const protocolBundle = createProtocolBundle();
+
+    protocolBundle.loadVariableId = undefined;
+    protocolBundle.protocol.phases[0].blocks[0].variables = {
+      cadence: {
+        type: "steady",
+        start: 60,
+      },
+    };
+
+    const playback = createPlayback(protocolBundle, {
+      audioCueEngine: new AudioCueEngineFake(),
+      timer: new TimeSourceFake(),
+    });
+
+    assertEqual(playback.loadVariableId, undefined);
+    assertEqual(playback.loadSegmentTimeline, undefined);
+  },
+);
