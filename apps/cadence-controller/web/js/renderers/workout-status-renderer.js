@@ -5,7 +5,7 @@
  * - Reflect playback state in available controls.
  */
 
-import { formatDuration } from "/packages/utils/format-duration.js";
+import { formatDurationCompactMs } from "/packages/utils/format-duration.js";
 
 /** Renders current Cadence Controller playback and workout status. */
 export function renderWorkoutStatus(
@@ -21,11 +21,11 @@ export function renderWorkoutStatus(
     sessionSnapshot.countdownRemainingMs,
   );
 
-  elements.elapsedTime.textContent = formatMilliseconds(
+  elements.elapsedTime.textContent = formatDurationCompactMs(
     sessionSnapshot.protocolElapsedMs,
   );
 
-  elements.remainingTime.textContent = formatMilliseconds(
+  elements.remainingTime.textContent = formatDurationCompactMs(
     sessionSnapshot.protocolRemainingMs,
   );
 
@@ -54,12 +54,7 @@ function formatPhaseRemaining(currentPhase) {
     return "—";
   }
 
-  return formatMilliseconds(currentPhase.remainingTimeMs);
-}
-
-/** Formats milliseconds using the shared seconds-based duration formatter. */
-function formatMilliseconds(timeMs) {
-  return formatDuration(Math.floor(timeMs / 1000));
+  return formatDurationCompactMs(currentPhase.remainingTimeMs);
 }
 
 /** Formats a playback lifecycle state for display. */

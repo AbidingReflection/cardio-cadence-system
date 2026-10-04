@@ -1,4 +1,4 @@
-import { formatDuration } from "/packages/utils/format-duration.js";
+import { formatDurationFixedMs } from "/packages/utils/format-duration.js";
 
 import { ProgressTrack } from "../components/progress-track.js";
 import { TimedProgressController } from "../controllers/timed-progress-controller.js";
@@ -10,6 +10,18 @@ export function initializeTimedProgressRenderer(container) {
 
   const timeLabel = document.createElement("div");
   timeLabel.className = "timed-progress__time";
+
+  const remainingTimeLabel = document.createElement("span");
+  remainingTimeLabel.className = "timed-progress__remaining";
+
+  const timeSeparator = document.createElement("span");
+  timeSeparator.className = "timed-progress__separator";
+  timeSeparator.textContent = "/";
+
+  const durationLabel = document.createElement("span");
+  durationLabel.className = "timed-progress__duration";
+
+  timeLabel.append(remainingTimeLabel, timeSeparator, durationLabel);
 
   const percentLabel = document.createElement("div");
   percentLabel.className = "timed-progress__percent";
@@ -23,6 +35,8 @@ export function initializeTimedProgressRenderer(container) {
     controller,
     progressTrack,
     timeLabel,
+    remainingTimeLabel,
+    durationLabel,
     percentLabel,
   };
 }
@@ -38,12 +52,11 @@ export function renderTimedProgress(
     markerText,
   });
 
-  visualizer.timeLabel.textContent = `${formatMilliseconds(elapsedTimeMs)} / ${formatMilliseconds(durationMs)}`;
+  const remainingTimeMs = durationMs - elapsedTimeMs;
+
+  visualizer.remainingTimeLabel.textContent = `-${formatDurationFixedMs(remainingTimeMs)}`;
+
+  visualizer.durationLabel.textContent = formatDurationFixedMs(durationMs);
 
   visualizer.percentLabel.textContent = `${((elapsedTimeMs / durationMs) * 100).toFixed(1)}%`;
-}
-
-/** Formats milliseconds as H:MM:SS or M:SS. */
-function formatMilliseconds(timeMs) {
-  return formatDuration(Math.floor(timeMs / 1000));
 }

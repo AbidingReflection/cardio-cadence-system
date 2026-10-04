@@ -1,0 +1,88 @@
+.progress-pane {
+  flex: 0 0 auto;
+
+  display: grid;
+  gap: 1px;
+
+  min-width: 0;
+
+  padding: 0 8px 4px;
+}
+
+.progress-pane__track {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+
+  min-width: 0;
+  min-height: 18px;
+}
+
+.progress-pane__label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: right;
+  text-transform: uppercase;
+
+  opacity: 0.6;
+}
+
+.phase-progress,
+.workout-progress {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+  align-items: center;
+
+  min-width: 0;
+}
+
+.timed-progress__track {
+  min-width: 0;
+}
+
+.timed-progress__time,
+.timed-progress__percent {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timed-progress__time {
+  gap: 4px;
+  display: grid;
+  grid-template-columns:
+    8ch
+    1ch
+    7ch;
+  align-items: center;
+
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+}
+
+.timed-progress__remaining,
+.timed-progress__duration {
+  text-align: right;
+}
+
+.timed-progress__separator {
+  text-align: center;
+}
+
+.timed-progress__percent {
+  min-width: 3rem;
+
+  text-align: right;
+}
+
+.workout-progress {
+  width: 100%;
+  min-width: 0;
+}

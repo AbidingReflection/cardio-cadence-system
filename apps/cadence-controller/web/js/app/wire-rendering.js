@@ -5,7 +5,7 @@
  * - Provide cleanup for the application rendering loop.
  */
 
-import { formatDuration } from "/packages/utils/format-duration.js";
+import { formatDurationCompactMs } from "/packages/utils/format-duration.js";
 
 import {
   initializeCadenceVisualizer,
@@ -85,7 +85,7 @@ export function wireRendering(
     renderTimedProgress(workoutProgressVisualizer, {
       elapsedTimeMs: protocolElapsedMs,
       durationMs: playback.protocolExpander.durationMs,
-      markerText: formatDuration(Math.floor(protocolElapsedMs / 1000)),
+      markerText: formatDurationCompactMs(protocolElapsedMs),
     });
 
     const currentPhase = workoutSnapshot.currentPhase;
@@ -97,9 +97,7 @@ export function wireRendering(
       renderTimedProgress(phaseProgressVisualizer, {
         elapsedTimeMs: currentPhase.elapsedTimeMs,
         durationMs: phaseDurationMs,
-        markerText: formatDuration(
-          Math.floor(currentPhase.elapsedTimeMs / 1000),
-        ),
+        markerText: formatDurationCompactMs(currentPhase.elapsedTimeMs),
       });
     }
   }
