@@ -13,13 +13,12 @@
           {
             "id": "6fb87851-0735-4831-9070-efe898d2c9d5",
             "name": "Warm-up",
-            "durationSeconds": 900,
+            "durationSeconds": 120,
             "variables": {
               "cadence": {
-                "type": "stepped",
+                "type": "linear",
                 "start": 40,
-                "end": 55,
-                "step": 5
+                "end": 80
               },
               "resistance": {
                 "type": "stepped",
@@ -41,10 +40,9 @@
             "durationSeconds": 3600,
             "variables": {
               "cadence": {
-                "type": "stepped",
+                "type": "linear",
                 "start": 60,
-                "end": 65,
-                "step": 1
+                "end": 65
               },
               "resistance": {
                 "type": "stepped",
@@ -60,8 +58,9 @@
             "durationSeconds": 300,
             "variables": {
               "cadence": {
-                "type": "steady",
-                "start": 66
+                "type": "linear",
+                "start": 65,
+                "end": 66
               },
               "resistance": {
                 "type": "steady",
@@ -75,8 +74,9 @@
             "durationSeconds": 240,
             "variables": {
               "cadence": {
-                "type": "steady",
-                "start": 67
+                "type": "linear",
+                "start": 66,
+                "end": 67
               },
               "resistance": {
                 "type": "steady",
@@ -90,8 +90,9 @@
             "durationSeconds": 180,
             "variables": {
               "cadence": {
-                "type": "steady",
-                "start": 68
+                "type": "linear",
+                "start": 67,
+                "end": 68
               },
               "resistance": {
                 "type": "steady",
@@ -105,8 +106,9 @@
             "durationSeconds": 120,
             "variables": {
               "cadence": {
-                "type": "steady",
-                "start": 69
+                "type": "linear",
+                "start": 68,
+                "end": 69
               },
               "resistance": {
                 "type": "steady",
@@ -120,8 +122,9 @@
             "durationSeconds": 60,
             "variables": {
               "cadence": {
-                "type": "steady",
-                "start": 70
+                "type": "linear",
+                "start": 69,
+                "end": 70
               },
               "resistance": {
                 "type": "steady",
@@ -141,32 +144,14 @@
             "durationSeconds": 900,
             "variables": {
               "cadence": {
-                "type": "stepped",
-                "start": 65,
-                "end": 40,
-                "step": 5
+                "type": "linear",
+                "start": 70,
+                "end": 40
               },
               "resistance": {
                 "type": "stepped",
                 "start": 18,
                 "end": 4,
-                "step": 1
-              }
-            }
-          },
-          {
-            "id": "3275cd84-f900-4ef5-a753-a118756f0bdd",
-            "name": "Cool-down",
-            "durationSeconds": 180,
-            "variables": {
-              "cadence": {
-                "type": "steady",
-                "start": 40
-              },
-              "resistance": {
-                "type": "stepped",
-                "start": 3,
-                "end": 1,
                 "step": 1
               }
             }

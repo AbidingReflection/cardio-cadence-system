@@ -10,3 +10,14 @@ scripts/context_export/output/
 # Editor / temporary files
 *.kate-swp
 .~lock.*#
+
+jsconfig.json
+
+# Local Node tooling for editor/LSP support
+node_modules/
+package.json
+package-lock.json
+
+data/hr_samples/
+docs/
+data/

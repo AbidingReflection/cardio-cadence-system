@@ -8,17 +8,16 @@ Full Use-case Profile
                 - MPH (Tredmill)
                     - May need tweaking based on stride.  More thought needed
                 - Strokes Per Min (Rowing Machine)
-            - Non-cadence parameter
+            - Non-cadence parameter (Load)
                 - Resistance (Elliptical & Cycle)
                 - Incline (Tredmill)
-                - Drag factor (Rowing Machine)
 
         - Add activity machine profile (Fairly Infrequent)
             - Machine name
-            - Calibration function
-                - Maps (Cadence parameter * Non-cadence parameter) result to cals per second
-                - Perhaps future utility for generating calibration profile
-                    - Must be based on discrete calorie increases during fixed parameter steps covering the expected parameter domains
+                - Calibration Profile
+                    - Maps (Cadence parameter * Non-cadence parameter) result to cals per second
+                    - Perhaps future utility for generating calibration profile
+                        - Must be based on discrete calorie increases during fixed parameter steps covering the expected parameter domains
 
         - Build workout protocol (Frequent (Main use-case))
             - Multipane display
@@ -85,7 +84,7 @@ Cardio Workout Protocol Designer
             - Examples:
                 - Treadmill
                     - Speed (MPH)
-                    - Incline
+                    - Incline  (%)
                 - Stationary Bike
                     - RPM
                     - Resistance
@@ -93,8 +92,9 @@ Cardio Workout Protocol Designer
                     - RPM
                     - Resistance
                 - Ergo-meter (Rowing Machine)
-                    - Drag Factor
-                    - Strokes Per Min
+                    - Drag Factor (Load but always constant)
+                    - Strokes Per Min (SPM)
+
         - Define machine specific relative work metric function in terms of activity variables.
             - Experimentally derived through several well defined experimental sessions covering likely domain of activity specific parameters.
             - Activity variables proportionally combined to create basis parameter for polynomial regression
@@ -120,16 +120,14 @@ Cardio Workout Protocol Designer
             - Cadence Progression Function
                 - A Function that defines how the cadence variable of a given block will change over that block's duration
                 - Examples:
-                    - Linear
+                    - Steady
+                    - Constant
+                    - Stepwise
                     - Ease-In
                     - Ease-Out
-            - Segment
-                - Defines a series of constant cadence frames
-                - Not sold on the use-case here.  Nice for constant and stepwise progression functions as it would prevent frame definition duplication, but for continuous function based progression functions each frame would be in it's own segment.  My thinking is that a series of segments would be consumed by the function that divides the block duration into a series of cadence frames.  More thought needed here.
-            - Cadence Frame
+            - Cadence Cycle
                 - Akin to a video or audio frame
                 - Smallest unit of a workout
-                - Defines a single cadence cycle
             - Cadence Cue
                 - Audio cue to be played regularly through progression of a cadence frame
             - Cadence Cue Points
