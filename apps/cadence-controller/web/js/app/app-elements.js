@@ -26,6 +26,7 @@ export function getAppElements(root = document) {
     loadVisualizer: requireElement(root, "#load-visualizer"),
 
     workoutProgress: requireElement(root, "#workout-progress"),
+    phaseProgress: requireElement(root, "#phase-progress"),
 
     startButton: requireElement(root, "#start-button"),
     pauseButton: requireElement(root, "#pause-button"),

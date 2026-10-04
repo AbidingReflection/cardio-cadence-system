@@ -5,6 +5,8 @@
  * - Provide cleanup for the application rendering loop.
  */
 
+import { formatDuration } from "/packages/utils/format-duration.js";
+
 import {
   initializeCadenceVisualizer,
   renderCadenceVisualizer,
@@ -14,6 +16,11 @@ import {
   initializeLoadVisualizer,
   renderLoadVisualizer,
 } from "../renderers/load-visualizer.js";
+
+import {
+  initializeTimedProgressRenderer,
+  renderTimedProgress,
+} from "../renderers/timed-progress-renderer.js";
 
 import { renderWorkoutStatus } from "../renderers/workout-status-renderer.js";
 
@@ -34,6 +41,14 @@ export function wireRendering(
     playback.loadSegmentTimeline === undefined
       ? undefined
       : initializeLoadVisualizer(elements.loadVisualizer);
+
+  const workoutProgressVisualizer = initializeTimedProgressRenderer(
+    elements.workoutProgress,
+  );
+
+  const phaseProgressVisualizer = initializeTimedProgressRenderer(
+    elements.phaseProgress,
+  );
 
   let frameId = null;
 
@@ -64,6 +79,27 @@ export function wireRendering(
       renderLoadVisualizer(loadVisualizer, {
         value: loadSegment.value,
         progress: loadSegment.progress,
+      });
+    }
+
+    renderTimedProgress(workoutProgressVisualizer, {
+      elapsedTimeMs: protocolElapsedMs,
+      durationMs: playback.protocolExpander.durationMs,
+      markerText: formatDuration(Math.floor(protocolElapsedMs / 1000)),
+    });
+
+    const currentPhase = workoutSnapshot.currentPhase;
+
+    if (currentPhase !== null) {
+      const phaseDurationMs =
+        currentPhase.elapsedTimeMs + currentPhase.remainingTimeMs;
+
+      renderTimedProgress(phaseProgressVisualizer, {
+        elapsedTimeMs: currentPhase.elapsedTimeMs,
+        durationMs: phaseDurationMs,
+        markerText: formatDuration(
+          Math.floor(currentPhase.elapsedTimeMs / 1000),
+        ),
       });
     }
   }

@@ -11,8 +11,8 @@ const TRACK_Y = 15;
 const TICK_TOP_Y = 11;
 const TICK_BOTTOM_Y = 19;
 
-const MARKER_TOP_Y = 8;
-const MARKER_BOTTOM_Y = 22;
+const MARKER_TOP_Y = 12;
+const MARKER_BOTTOM_Y = 18;
 
 /** Renders a reusable linear progression instrument. */
 export class ProgressTrack {

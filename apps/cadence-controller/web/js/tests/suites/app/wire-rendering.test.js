@@ -22,6 +22,8 @@ function createElements() {
 
     cadenceVisualizer: document.createElement("div"),
     loadVisualizer: document.createElement("div"),
+    workoutProgress: document.createElement("div"),
+    phaseProgress: document.createElement("div"),
 
     startButton: document.createElement("button"),
     pauseButton: document.createElement("button"),
@@ -48,6 +50,10 @@ function createPlaybackFake() {
         currentPhase: {
           id: "phase-1",
           name: "Warmup",
+          startTimeMs: 0,
+          endTimeMs: 60_000,
+          elapsedTimeMs: 0,
+          remainingTimeMs: 60_000,
         },
         currentBlock: {
           id: "block-1",
@@ -82,6 +88,10 @@ function createPlaybackFake() {
 
     loadSegments,
     requestedLoadSegmentTimes,
+
+    protocolExpander: {
+      durationMs: 60_000,
+    },
 
     loadSegmentTimeline: {
       segmentAt(timeMs) {
@@ -209,6 +219,10 @@ test("wire-rendering", "uses session protocol time for workout context", () => {
     currentPhase: {
       id: "phase-1",
       name: "Warmup",
+      startTimeMs: 0,
+      endTimeMs: 60_000,
+      elapsedTimeMs: 12_500,
+      remainingTimeMs: 47_500,
     },
     currentBlock: {
       id: "block-2",
@@ -271,6 +285,10 @@ test("wire-rendering", "rerenders on animation frames", () => {
     currentPhase: {
       id: "phase-1",
       name: "Warmup",
+      startTimeMs: 0,
+      endTimeMs: 60_000,
+      elapsedTimeMs: 5_000,
+      remainingTimeMs: 55_000,
     },
     currentBlock: {
       id: "block-1",
@@ -398,5 +416,88 @@ test(
         .getAttribute("stroke-dashoffset"),
       "0",
     );
+  },
+);
+
+test(
+  "wire-rendering",
+  "renders workout progress from session protocol time",
+  () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    wireRendering(elements, playback, {
+      requestFrame: frames.requestFrame,
+      cancelFrame: frames.cancelFrame,
+    });
+
+    const markerText = elements.workoutProgress.querySelector(
+      ".progress-track__marker-text",
+    );
+
+    assertEqual(markerText.textContent, "0:00");
+
+    playback.sessionSnapshots.push({
+      state: "running",
+      protocolElapsedMs: 15000,
+      protocolRemainingMs: 45000,
+      countdownRemainingMs: 0,
+    });
+
+    frames.runNextFrame();
+
+    assertEqual(markerText.textContent, "0:15");
+  },
+);
+
+test(
+  "wire-rendering",
+  "renders phase progress from current workout phase timing",
+  () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    playback.sessionSnapshots.push({
+      state: "running",
+      protocolElapsedMs: 20_000,
+      protocolRemainingMs: 40_000,
+      countdownRemainingMs: 0,
+    });
+
+    playback.workoutSnapshots.set(20_000, {
+      currentPhase: {
+        id: "phase-1",
+        name: "Warmup",
+        startTimeMs: 0,
+        endTimeMs: 90_000,
+        elapsedTimeMs: 20_000,
+        remainingTimeMs: 70_000,
+      },
+      currentBlock: {
+        id: "block-1",
+        name: "Easy",
+      },
+      nextPhase: null,
+      nextBlock: null,
+    });
+
+    wireRendering(elements, playback, {
+      requestFrame: frames.requestFrame,
+      cancelFrame: frames.cancelFrame,
+    });
+
+    const markerText = elements.phaseProgress.querySelector(
+      ".progress-track__marker-text",
+    );
+
+    const progress = elements.phaseProgress.querySelector(
+      ".progress-track__progress",
+    );
+
+    assertEqual(markerText.textContent, "0:20");
+
+    assertEqual(progress.getAttribute("x2"), "25");
   },
 );

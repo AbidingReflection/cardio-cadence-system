@@ -63,12 +63,15 @@
 
   text-wrap: balance;
 
-  -webkit-text-stroke: var(--signal-bank-label-outline-width)
-    var(--signal-bank-label-outline-color);
+  text-shadow:
+    -0.75px -0.75px 0 var(--signal-bank-label-outline-color),
+    0.75px -0.75px 0 var(--signal-bank-label-outline-color),
+    -0.75px 0.75px 0 var(--signal-bank-label-outline-color),
+    0.75px 0.75px 0 var(--signal-bank-label-outline-color);
 }
 
 .signal-bank__signal[data-active="true"] .signal-bank__label {
-  -webkit-text-stroke: 0;
+  text-shadow: none;
 }
 
 @keyframes signal-bank-activation {
