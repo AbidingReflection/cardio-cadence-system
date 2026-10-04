@@ -18,6 +18,7 @@ export function initializeLoadVisualizer(container) {
   const controller = new LoadGuidanceController(progressionCircle);
 
   return {
+    container,
     controller,
     progressionCircle,
     statusContainer,
@@ -25,9 +26,14 @@ export function initializeLoadVisualizer(container) {
 }
 
 /** Renders resolved load-segment guidance into the persistent visualizer. */
-export function renderLoadVisualizer(visualizer, { value, progress }) {
+export function renderLoadVisualizer(
+  visualizer,
+  { value, progress, adjustmentPending = false },
+) {
   visualizer.controller.render({
     progress,
     valueText: String(value),
   });
+
+  visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
 }

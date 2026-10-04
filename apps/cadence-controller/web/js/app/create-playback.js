@@ -12,6 +12,8 @@ import { AudioCueEngine } from "../audio/audio-cue-engine.js";
 import { CadencePhase } from "../playback/cadence-phase.js";
 import { CadenceSession } from "../playback/cadence-session.js";
 import { LoadSegmentTimeline } from "../playback/load-segment-timeline.js";
+import { LoadAdjustmentTracker } from "../playback/load-adjustment-tracker.js";
+import { LoadAlertController } from "../controllers/load-alert-controller.js";
 import { WorkoutContext } from "../playback/workout-context.js";
 
 /** Creates the runtime playback graph for one validated protocol bundle. */
@@ -41,6 +43,19 @@ export function createPlayback(
       ? undefined
       : new LoadSegmentTimeline(protocolExpander, loadVariableId);
 
+  const loadAdjustmentTracker =
+    loadSegmentTimeline === undefined
+      ? undefined
+      : new LoadAdjustmentTracker(loadSegmentTimeline);
+
+  const loadAlertController =
+    loadAdjustmentTracker === undefined
+      ? undefined
+      : new LoadAlertController({
+          audioCueEngine,
+          timer,
+        });
+
   const cadenceSession = new CadenceSession({
     cadencePhase,
     audioCueEngine,
@@ -55,6 +70,8 @@ export function createPlayback(
     cadencePhase,
     loadVariableId,
     loadSegmentTimeline,
+    loadAdjustmentTracker,
+    loadAlertController,
     audioCueEngine,
     cadenceSession,
   };

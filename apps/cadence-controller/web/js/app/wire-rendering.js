@@ -68,6 +68,24 @@ export function wireRendering(
     const loadSegment =
       playback.loadSegmentTimeline?.segmentAt(protocolElapsedMs);
 
+    let loadAdjustmentSnapshot;
+
+    if (
+      playback.loadAdjustmentTracker !== undefined &&
+      sessionSnapshot.state === "running"
+    ) {
+      playback.loadAdjustmentTracker.update(protocolElapsedMs);
+    }
+
+    if (playback.loadAdjustmentTracker !== undefined) {
+      loadAdjustmentSnapshot = playback.loadAdjustmentTracker.getSnapshot();
+    }
+
+    playback.loadAlertController?.update({
+      playbackState: sessionSnapshot.state,
+      adjustmentPending: loadAdjustmentSnapshot?.pending ?? false,
+    });
+
     renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
 
     renderCadenceVisualizer(cadenceVisualizer, {
@@ -79,6 +97,7 @@ export function wireRendering(
       renderLoadVisualizer(loadVisualizer, {
         value: loadSegment.value,
         progress: loadSegment.progress,
+        adjustmentPending: loadAdjustmentSnapshot?.pending ?? false,
       });
     }
 

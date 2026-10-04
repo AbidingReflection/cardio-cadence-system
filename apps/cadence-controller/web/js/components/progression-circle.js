@@ -4,6 +4,11 @@ const VIEW_BOX_SIZE = 100;
 const CENTER = VIEW_BOX_SIZE / 2;
 
 const TRACK_RADIUS = 43;
+
+// Must match .progression-circle__track stroke-width.
+const TRACK_STROKE_WIDTH = 5;
+const BACKGROUND_RADIUS = TRACK_RADIUS - TRACK_STROKE_WIDTH / 2;
+
 const MARKER_RADIUS = 3;
 
 const NOTCH_INNER_RADIUS = 39;
@@ -27,6 +32,13 @@ export class ProgressionCircle {
       class: "progression-circle",
       viewBox: "0 0 100 100",
       preserveAspectRatio: "xMidYMid meet",
+    });
+
+    const background = createSvgElement("circle", {
+      class: "progression-circle__background",
+      cx: CENTER,
+      cy: CENTER,
+      r: BACKGROUND_RADIUS,
     });
 
     const track = createSvgElement("circle", {
@@ -81,6 +93,7 @@ export class ProgressionCircle {
     });
 
     this.#svg.append(
+      background,
       track,
       this.#progress,
       this.#notches,

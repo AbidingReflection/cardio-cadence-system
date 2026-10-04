@@ -32,6 +32,11 @@
   pointer-events: none;
 }
 
+.progression-circle__background {
+  fill: transparent;
+  stroke: none;
+}
+
 .progression-circle__track {
   fill: var(--progression-circle-fill-color);
 

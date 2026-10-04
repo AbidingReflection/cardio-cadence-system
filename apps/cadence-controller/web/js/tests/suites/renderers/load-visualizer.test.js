@@ -204,3 +204,48 @@ test("load-visualizer", "reuses component nodes across renders", () => {
     valueBefore,
   );
 });
+
+test("load-visualizer", "renders normal load adjustment state", () => {
+  const container = document.createElement("div");
+  const visualizer = initializeLoadVisualizer(container);
+
+  renderLoadVisualizer(visualizer, {
+    value: 8,
+    progress: 0.25,
+    adjustmentPending: false,
+  });
+
+  assertEqual(container.dataset.adjustmentPending, "false");
+});
+
+test("load-visualizer", "renders pending load adjustment state", () => {
+  const container = document.createElement("div");
+  const visualizer = initializeLoadVisualizer(container);
+
+  renderLoadVisualizer(visualizer, {
+    value: 8,
+    progress: 0.25,
+    adjustmentPending: true,
+  });
+
+  assertEqual(container.dataset.adjustmentPending, "true");
+});
+
+test("load-visualizer", "clears pending load adjustment state", () => {
+  const container = document.createElement("div");
+  const visualizer = initializeLoadVisualizer(container);
+
+  renderLoadVisualizer(visualizer, {
+    value: 8,
+    progress: 0.25,
+    adjustmentPending: true,
+  });
+
+  renderLoadVisualizer(visualizer, {
+    value: 8,
+    progress: 0.5,
+    adjustmentPending: false,
+  });
+
+  assertEqual(container.dataset.adjustmentPending, "false");
+});

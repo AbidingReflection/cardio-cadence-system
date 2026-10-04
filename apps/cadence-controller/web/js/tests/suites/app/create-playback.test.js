@@ -10,9 +10,11 @@ import { AudioCueEngine } from "../../../audio/audio-cue-engine.js";
 import { CadencePhase } from "../../../playback/cadence-phase.js";
 import { CadenceSession } from "../../../playback/cadence-session.js";
 import { LoadSegmentTimeline } from "../../../playback/load-segment-timeline.js";
+import { LoadAdjustmentTracker } from "../../../playback/load-adjustment-tracker.js";
 import { WorkoutContext } from "../../../playback/workout-context.js";
 import { AudioCueEngineFake } from "../../helpers/audio-cue-engine-fake.js";
 import { TimeSourceFake } from "../../helpers/time-source-fake.js";
+import { LoadAlertController } from "../../../controllers/load-alert-controller.js";
 
 /** Creates a minimal bundle-shaped playback input. */
 function createProtocolBundle() {
@@ -67,7 +69,15 @@ test("create-playback", "creates the complete playback composition", () => {
   assertEqual(playback.workoutContext instanceof WorkoutContext, true);
   assertEqual(playback.cadencePhase instanceof CadencePhase, true);
   assertEqual(playback.cadenceSession instanceof CadenceSession, true);
+  assertEqual(
+    playback.loadAdjustmentTracker instanceof LoadAdjustmentTracker,
+    true,
+  );
   assertEqual(playback.loadVariableId, "resistance");
+  assertEqual(
+    playback.loadAlertController instanceof LoadAlertController,
+    true,
+  );
 });
 
 test("create-playback", "uses the supplied audio cue engine", () => {
@@ -223,5 +233,6 @@ test(
 
     assertEqual(playback.loadVariableId, undefined);
     assertEqual(playback.loadSegmentTimeline, undefined);
+    assertEqual(playback.loadAlertController, undefined);
   },
 );

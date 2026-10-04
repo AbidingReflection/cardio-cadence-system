@@ -94,3 +94,35 @@
   width: 100%;
   height: 100%;
 }
+
+.load-visualizer[data-adjustment-pending="true"] {
+  --progression-circle-track-color: #ff5a5a;
+  --progression-circle-progress-color: #ff5a5a;
+  --progression-circle-notch-color: #ff5a5a;
+  --progression-circle-marker-color: #ff5a5a;
+  --progression-circle-value-color: #ff5a5a;
+  --progression-circle-label-color: #ff5a5a;
+}
+
+.load-visualizer[data-adjustment-pending="true"]
+  .progression-circle__background {
+  animation: load-adjustment-alert 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes load-adjustment-alert {
+  from {
+    fill: rgba(255, 0, 0, 0.06);
+  }
+
+  to {
+    fill: rgba(255, 0, 0, 0.24);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .load-visualizer[data-adjustment-pending="true"]
+    .progression-circle__background {
+    animation: none;
+    fill: rgba(255, 0, 0, 0.18);
+  }
+}

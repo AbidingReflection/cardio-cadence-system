@@ -81,6 +81,16 @@ function createPlaybackFake() {
 
   const requestedLoadSegmentTimes = [];
 
+  const requestedLoadAdjustmentTimes = [];
+
+  const loadAdjustmentSnapshot = {
+    pending: true,
+    fromValue: null,
+    toValue: 4,
+    dueTimeMs: 0,
+    acknowledgedAtTimeMs: null,
+  };
+
   return {
     sessionSnapshots,
     workoutSnapshots,
@@ -88,9 +98,21 @@ function createPlaybackFake() {
 
     loadSegments,
     requestedLoadSegmentTimes,
+    requestedLoadAdjustmentTimes,
+    loadAdjustmentSnapshot,
 
     protocolExpander: {
       durationMs: 60_000,
+    },
+
+    loadAdjustmentTracker: {
+      update(timeMs) {
+        requestedLoadAdjustmentTimes.push(timeMs);
+      },
+
+      getSnapshot() {
+        return loadAdjustmentSnapshot;
+      },
     },
 
     loadSegmentTimeline: {
@@ -353,6 +375,7 @@ test(
     const frames = createFrameScheduler();
 
     playback.loadSegmentTimeline = undefined;
+    playback.loadAdjustmentTracker = undefined;
 
     wireRendering(elements, playback, {
       requestFrame: frames.requestFrame,
@@ -365,6 +388,38 @@ test(
     );
 
     assertEqual(playback.requestedLoadSegmentTimes.length, 0);
+    assertEqual(playback.requestedLoadAdjustmentTimes.length, 0);
+  },
+);
+
+test(
+  "wire-rendering",
+  "updates load adjustment state from session protocol time",
+  () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    playback.sessionSnapshots.push({
+      state: "running",
+      protocolElapsedMs: 30_000,
+      protocolRemainingMs: 30_000,
+      countdownRemainingMs: 0,
+    });
+
+    playback.loadSegments.set(30_000, {
+      value: 4,
+      startTimeMs: 0,
+      endTimeMs: 60_000,
+      progress: 0.5,
+    });
+
+    wireRendering(elements, playback, {
+      requestFrame: frames.requestFrame,
+      cancelFrame: frames.cancelFrame,
+    });
+
+    assertEqual(playback.requestedLoadAdjustmentTimes.at(-1), 30_000);
   },
 );
 
