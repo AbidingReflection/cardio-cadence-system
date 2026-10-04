@@ -1,0 +1,89 @@
+.signal-bank {
+  --signal-bank-gap: 0.5rem;
+
+  --signal-bank-background: transparent;
+
+  --signal-bank-border-color: rgba(255, 255, 255, 0.3);
+
+  --signal-bank-inactive-text-color: #fff;
+  --signal-bank-active-background: #fff;
+  --signal-bank-active-text-color: #000;
+
+  --signal-bank-label-outline-color: #000;
+  --signal-bank-label-outline-width: 1px;
+
+  --signal-bank-active-duration: 500ms;
+
+  display: grid;
+  grid-template-columns: repeat(var(--signal-count), minmax(0, 1fr));
+
+  gap: var(--signal-bank-gap);
+
+  width: 100%;
+  height: 100%;
+
+  color: inherit;
+  font-family: inherit;
+
+  user-select: none;
+  pointer-events: none;
+}
+
+.signal-bank__signal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 0;
+
+  padding: 0.6rem 0.75rem;
+
+  border: 1px solid var(--signal-bank-border-color);
+  border-radius: 0.5rem;
+
+  background: var(--signal-bank-background);
+
+  color: var(--signal-bank-inactive-text-color);
+
+  text-align: center;
+}
+
+.signal-bank__signal[data-active="true"] {
+  animation: signal-bank-activation var(--signal-bank-active-duration) ease-out
+    forwards;
+}
+
+.signal-bank__label {
+  min-width: 0;
+
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+
+  text-wrap: balance;
+
+  -webkit-text-stroke: var(--signal-bank-label-outline-width)
+    var(--signal-bank-label-outline-color);
+}
+
+.signal-bank__signal[data-active="true"] .signal-bank__label {
+  -webkit-text-stroke: 0;
+}
+
+@keyframes signal-bank-activation {
+  0% {
+    background: var(--signal-bank-active-background);
+    color: var(--signal-bank-active-text-color);
+  }
+
+  55% {
+    background: var(--signal-bank-active-background);
+    color: var(--signal-bank-active-text-color);
+  }
+
+  100% {
+    background: var(--signal-bank-background);
+    color: var(--signal-bank-inactive-text-color);
+  }
+}

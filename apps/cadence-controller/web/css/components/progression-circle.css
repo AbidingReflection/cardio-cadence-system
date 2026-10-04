@@ -1,0 +1,85 @@
+.progression-circle {
+  --progression-circle-track-color: currentColor;
+  --progression-circle-track-opacity: 0.18;
+
+  --progression-circle-progress-color: currentColor;
+
+  --progression-circle-notch-color: currentColor;
+  --progression-circle-notch-opacity: 0.65;
+
+  --progression-circle-marker-color: currentColor;
+
+  --progression-circle-fill-color: transparent;
+
+  --progression-circle-value-color: currentColor;
+  --progression-circle-label-color: currentColor;
+  --progression-circle-label-opacity: 0.7;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 100%;
+  max-height: 100%;
+
+  overflow: hidden;
+
+  color: inherit;
+  font-family: inherit;
+
+  user-select: none;
+  pointer-events: none;
+}
+
+.progression-circle__track {
+  fill: var(--progression-circle-fill-color);
+
+  stroke: var(--progression-circle-track-color);
+  stroke-width: 5;
+  stroke-opacity: var(--progression-circle-track-opacity);
+
+  stroke-linecap: round;
+}
+
+.progression-circle__progress {
+  fill: none;
+
+  stroke: var(--progression-circle-progress-color);
+  stroke-width: 5;
+
+  stroke-linecap: round;
+}
+
+.progression-circle__notch {
+  stroke: var(--progression-circle-notch-color);
+  stroke-width: 2;
+  stroke-opacity: var(--progression-circle-notch-opacity);
+
+  stroke-linecap: round;
+}
+
+.progression-circle__marker-dot {
+  fill: var(--progression-circle-marker-color);
+}
+
+.progression-circle__value {
+  fill: var(--progression-circle-value-color);
+
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  dominant-baseline: middle;
+}
+
+.progression-circle__label {
+  fill: var(--progression-circle-label-color);
+  fill-opacity: var(--progression-circle-label-opacity);
+
+  font-size: 6px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+
+  dominant-baseline: middle;
+}
