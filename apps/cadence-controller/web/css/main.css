@@ -201,10 +201,42 @@ button {
 
   opacity: 0.6;
 }
-
 .phase-progress,
 .workout-progress {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+  align-items: center;
+  gap: 8px;
+
   min-width: 0;
+}
+
+.timed-progress__track {
+  min-width: 0;
+}
+
+.timed-progress__time,
+.timed-progress__percent {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  white-space: nowrap;
+}
+
+.timed-progress__time {
+  min-width: 4.5rem;
+
+  text-align: left;
+}
+
+.timed-progress__percent {
+  min-width: 3.5rem;
+
+  text-align: right;
 }
 
 .workout-progress {
