@@ -47,42 +47,38 @@ button {
 
 .cadence-controller {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows:
+    auto
+    auto
+    auto
+    minmax(0, 1fr)
+    auto
+    auto;
 
   width: 100%;
   height: 100dvh;
 
-  overflow: hidden;
-}
-
-.controller-display {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-
-  min-height: 0;
-
-  overflow: hidden;
-}
-
-.guidance-pane,
-.workout-status {
-  min-width: 0;
-  min-height: 0;
-}
-
-.guidance-pane {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 8px;
-
   min-width: 0;
   min-height: 0;
 
-  padding: 8px;
-
   overflow: hidden;
+}
 
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+.controller-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  min-width: 0;
+
+  padding: 8px 12px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.controller-header > div:first-child {
+  min-width: 0;
 }
 
 .controller-header__app-name {
@@ -132,20 +128,43 @@ button {
   text-align: center;
 }
 
+.guidance-pane {
+  --guidance-header-height: 56px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+  gap: 8px;
+
+  min-width: 0;
+  min-height: 0;
+
+  padding: 8px;
+
+  overflow: hidden;
+}
+
+.cadence-visualizer,
 .load-visualizer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   width: 100%;
-  min-height: 72px;
+  height: 100%;
 
-  padding: 4px 8px;
+  min-width: 0;
+  min-height: 0;
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  overflow: hidden;
+}
 
-  background: rgba(255, 255, 255, 0.04);
+.progress-pane {
+  min-width: 0;
+
+  padding: 0 8px 8px;
+}
+
+.workout-progress {
+  width: 100%;
+  min-width: 0;
 }
 
 .playback-controls {
@@ -213,42 +232,4 @@ button {
   white-space: nowrap;
 
   border: 0;
-}
-
-@media (max-width: 640px) {
-  .guidance-pane {
-    gap: 6px;
-
-    padding: 8px;
-  }
-
-  .controller-header__app-name {
-    display: none;
-  }
-
-  .controller-header__protocol-title {
-    font-size: 0.85rem;
-  }
-
-  .playback-state {
-    padding: 3px 6px;
-
-    font-size: 0.6rem;
-  }
-
-  .load-visualizer {
-    min-height: 52px;
-
-    padding: 5px 6px;
-
-    border-radius: 7px;
-  }
-
-  .playback-control {
-    min-height: 44px;
-
-    padding: 6px 3px;
-
-    font-size: 0.72rem;
-  }
 }

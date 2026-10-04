@@ -17,115 +17,105 @@
 
   <body>
     <main class="cadence-controller">
-      <section class="controller-display">
-        <section class="guidance-pane" aria-labelledby="guidance-heading">
-          <h2 id="guidance-heading" class="visually-hidden">
-            Workout Guidance
-          </h2>
+      <header class="controller-header">
+        <div>
+          <p class="controller-header__app-name">Cadence Controller</p>
 
-          <div
-            id="cadence-visualizer"
-            class="cadence-visualizer"
-            aria-label="Cadence guidance"
-          ></div>
+          <h1 id="protocol-title" class="controller-header__protocol-title">
+            Loading protocol...
+          </h1>
+        </div>
 
-          <div
-            id="load-visualizer"
-            class="load-visualizer"
-            aria-label="Load guidance"
-          ></div>
-        </section>
+        <div id="playback-state" class="playback-state" aria-live="polite">
+          Idle
+        </div>
+      </header>
 
-        <section class="workout-status" aria-labelledby="protocol-title">
-          <header class="workout-status__header">
-            <div>
-              <p class="controller-header__app-name">Cadence Controller</p>
+      <div id="countdown" class="playback-countdown" aria-live="polite"></div>
 
-              <h1 id="protocol-title" class="controller-header__protocol-title">
-                Loading protocol...
-              </h1>
-            </div>
+      <section class="workout-status" aria-label="Workout status">
+        <div class="workout-status__primary">
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Current Phase </span>
 
-            <div id="playback-state" class="playback-state" aria-live="polite">
-              Idle
-            </div>
-          </header>
-
-          <div
-            id="countdown"
-            class="playback-countdown"
-            aria-live="polite"
-          ></div>
-
-          <div
-            id="workout-progress"
-            class="workout-progress"
-            aria-label="Workout progress"
-          ></div>
-
-          <div class="workout-status__primary">
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Current Phase </span>
-
-              <span id="current-phase" class="workout-status__value"> — </span>
-            </div>
-
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Phase Remaining </span>
-
-              <span
-                id="phase-remaining-time"
-                class="workout-status__value workout-status__value--time"
-              >
-                —
-              </span>
-            </div>
-
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Current Block </span>
-
-              <span id="current-block" class="workout-status__value"> — </span>
-            </div>
+            <span id="current-phase" class="workout-status__value"> — </span>
           </div>
 
-          <div class="workout-status__upcoming">
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Next Phase </span>
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Phase Remaining </span>
 
-              <span id="next-phase" class="workout-status__value"> — </span>
-            </div>
-
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Next Block </span>
-
-              <span id="next-block" class="workout-status__value"> — </span>
-            </div>
+            <span
+              id="phase-remaining-time"
+              class="workout-status__value workout-status__value--time"
+            >
+              —
+            </span>
           </div>
 
-          <div class="workout-status__time">
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Elapsed </span>
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Current Block </span>
 
-              <span
-                id="elapsed-time"
-                class="workout-status__value workout-status__value--time"
-              >
-                0:00
-              </span>
-            </div>
-
-            <div class="workout-status__metric">
-              <span class="workout-status__label"> Workout Remaining </span>
-
-              <span
-                id="remaining-time"
-                class="workout-status__value workout-status__value--time"
-              >
-                0:00
-              </span>
-            </div>
+            <span id="current-block" class="workout-status__value"> — </span>
           </div>
-        </section>
+        </div>
+
+        <div class="workout-status__upcoming">
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Next Phase </span>
+
+            <span id="next-phase" class="workout-status__value"> — </span>
+          </div>
+
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Next Block </span>
+
+            <span id="next-block" class="workout-status__value"> — </span>
+          </div>
+        </div>
+
+        <div class="workout-status__time">
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Elapsed </span>
+
+            <span
+              id="elapsed-time"
+              class="workout-status__value workout-status__value--time"
+            >
+              0:00
+            </span>
+          </div>
+
+          <div class="workout-status__metric">
+            <span class="workout-status__label"> Workout Remaining </span>
+
+            <span
+              id="remaining-time"
+              class="workout-status__value workout-status__value--time"
+            >
+              0:00
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="guidance-pane" aria-labelledby="guidance-heading">
+        <h2 id="guidance-heading" class="visually-hidden">Workout Guidance</h2>
+
+        <div
+          id="cadence-visualizer"
+          class="cadence-visualizer"
+          aria-label="Cadence guidance"
+        ></div>
+
+        <div
+          id="load-visualizer"
+          class="load-visualizer"
+          aria-label="Load guidance"
+        ></div>
+      </section>
+
+      <section class="progress-pane" aria-label="Workout progress">
+        <div id="workout-progress" class="workout-progress"></div>
       </section>
 
       <section class="playback-controls" aria-label="Playback controls">

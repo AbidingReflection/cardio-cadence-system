@@ -8,13 +8,27 @@ import {
   renderLoadVisualizer,
 } from "../../../renderers/load-visualizer.js";
 
-test("load-visualizer", "initializes progression circle", () => {
-  const container = document.createElement("div");
+test(
+  "load-visualizer",
+  "initializes persistent load visualizer structure",
+  () => {
+    const container = document.createElement("div");
 
-  initializeLoadVisualizer(container);
+    initializeLoadVisualizer(container);
 
-  assertEqual(container.querySelectorAll(".progression-circle").length, 1);
-});
+    assertEqual(
+      container.querySelectorAll(".load-visualizer__status").length,
+      1,
+    );
+
+    assertEqual(
+      container.querySelectorAll(".load-visualizer__circle").length,
+      1,
+    );
+
+    assertEqual(container.querySelectorAll(".progression-circle").length, 1);
+  },
+);
 
 test("load-visualizer", "labels the progression circle with LOAD", () => {
   const container = document.createElement("div");
@@ -138,6 +152,10 @@ test("load-visualizer", "reuses component nodes across renders", () => {
   const container = document.createElement("div");
   const visualizer = initializeLoadVisualizer(container);
 
+  const statusBefore = container.querySelector(".load-visualizer__status");
+
+  const circleBefore = container.querySelector(".load-visualizer__circle");
+
   const markerBefore = container.querySelector(".progression-circle__marker");
 
   const progressBefore = container.querySelector(
@@ -160,6 +178,16 @@ test("load-visualizer", "reuses component nodes across renders", () => {
     value: 10,
     progress: 0.9,
   });
+
+  assertEqual(
+    container.querySelector(".load-visualizer__status"),
+    statusBefore,
+  );
+
+  assertEqual(
+    container.querySelector(".load-visualizer__circle"),
+    circleBefore,
+  );
 
   assertEqual(
     container.querySelector(".progression-circle__marker"),
