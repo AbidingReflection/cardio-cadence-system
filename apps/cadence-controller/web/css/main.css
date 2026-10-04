@@ -64,13 +64,13 @@ button {
   overflow: hidden;
 }
 
-.cadence-pane,
+.guidance-pane,
 .workout-status {
   min-width: 0;
   min-height: 0;
 }
 
-.cadence-pane {
+.guidance-pane {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
@@ -132,13 +132,13 @@ button {
   text-align: center;
 }
 
-.load-display {
+.load-visualizer {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
 
   width: 100%;
+  min-height: 72px;
 
   padding: 4px 8px;
 
@@ -148,18 +148,10 @@ button {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.load-display__label {
-  font-size: 0.55rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-
-  opacity: 0.6;
-}
-
 .load-display__value {
   font-size: 4rem;
   font-weight: 700;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -231,7 +223,7 @@ button {
 }
 
 @media (max-width: 640px) {
-  .cadence-pane {
+  .guidance-pane {
     gap: 6px;
 
     padding: 8px;
@@ -251,16 +243,12 @@ button {
     font-size: 0.6rem;
   }
 
-  .load-display {
-    gap: 5px;
+  .load-visualizer {
+    min-height: 52px;
 
     padding: 5px 6px;
 
     border-radius: 7px;
-  }
-
-  .load-display__label {
-    font-size: 0.55rem;
   }
 
   .load-display__value {

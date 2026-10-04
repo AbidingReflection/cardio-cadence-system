@@ -1,16 +1,16 @@
 import {
-    assertEqual,
-    assertThrows,
-    test,
+  assertEqual,
+  assertThrows,
+  test,
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { getAppElements } from "../../../app/app-elements.js";
 
 /** Creates a complete Cadence Controller application root for DOM tests. */
 function createAppRoot() {
-    const root = document.createElement("div");
+  const root = document.createElement("div");
 
-    root.innerHTML = `
+  root.innerHTML = `
     <h1 id="protocol-title"></h1>
 
     <div id="playback-state"></div>
@@ -24,9 +24,11 @@ function createAppRoot() {
     <div id="next-phase"></div>
     <div id="next-block"></div>
 
-    <div id="resistance-value"></div>
-
     <div id="cadence-visualizer"></div>
+    <div id="load-visualizer"></div>
+    <div id="workout-progress"></div>
+
+    <div id="resistance-value"></div>
 
     <button id="start-button"></button>
     <button id="pause-button"></button>
@@ -34,110 +36,78 @@ function createAppRoot() {
     <button id="stop-button"></button>
     `;
 
-    return root;
+  return root;
 }
 
 test(
-    "app-elements",
-     "resolves the complete application element contract",
-     () => {
-         const root = createAppRoot();
+  "app-elements",
+  "resolves the complete application element contract",
+  () => {
+    const root = createAppRoot();
 
-         const elements = getAppElements(root);
+    const elements = getAppElements(root);
 
-         assertEqual(
-             elements.protocolTitle,
-             root.querySelector("#protocol-title"),
-         );
+    assertEqual(elements.protocolTitle, root.querySelector("#protocol-title"));
 
-         assertEqual(
-             elements.playbackState,
-             root.querySelector("#playback-state"),
-         );
+    assertEqual(elements.playbackState, root.querySelector("#playback-state"));
 
-         assertEqual(
-             elements.countdown,
-             root.querySelector("#countdown"),
-         );
+    assertEqual(elements.countdown, root.querySelector("#countdown"));
 
-         assertEqual(
-             elements.elapsedTime,
-             root.querySelector("#elapsed-time"),
-         );
+    assertEqual(elements.elapsedTime, root.querySelector("#elapsed-time"));
 
-         assertEqual(
-             elements.remainingTime,
-             root.querySelector("#remaining-time"),
-         );
+    assertEqual(elements.remainingTime, root.querySelector("#remaining-time"));
 
-         assertEqual(
-             elements.phaseRemainingTime,
-             root.querySelector("#phase-remaining-time"),
-         );
+    assertEqual(
+      elements.phaseRemainingTime,
+      root.querySelector("#phase-remaining-time"),
+    );
 
-         assertEqual(
-             elements.currentPhase,
-             root.querySelector("#current-phase"),
-         );
+    assertEqual(elements.currentPhase, root.querySelector("#current-phase"));
 
-         assertEqual(
-             elements.currentBlock,
-             root.querySelector("#current-block"),
-         );
+    assertEqual(elements.currentBlock, root.querySelector("#current-block"));
 
-         assertEqual(
-             elements.nextPhase,
-             root.querySelector("#next-phase"),
-         );
+    assertEqual(elements.nextPhase, root.querySelector("#next-phase"));
 
-         assertEqual(
-             elements.nextBlock,
-             root.querySelector("#next-block"),
-         );
+    assertEqual(elements.nextBlock, root.querySelector("#next-block"));
 
-         assertEqual(
-             elements.resistanceValue,
-             root.querySelector("#resistance-value"),
-         );
+    assertEqual(
+      elements.cadenceVisualizer,
+      root.querySelector("#cadence-visualizer"),
+    );
 
-         assertEqual(
-             elements.cadenceVisualizer,
-             root.querySelector("#cadence-visualizer"),
-         );
+    assertEqual(
+      elements.loadVisualizer,
+      root.querySelector("#load-visualizer"),
+    );
 
-         assertEqual(
-             elements.startButton,
-             root.querySelector("#start-button"),
-         );
+    assertEqual(
+      elements.workoutProgress,
+      root.querySelector("#workout-progress"),
+    );
 
-         assertEqual(
-             elements.pauseButton,
-             root.querySelector("#pause-button"),
-         );
+    assertEqual(
+      elements.resistanceValue,
+      root.querySelector("#resistance-value"),
+    );
 
-         assertEqual(
-             elements.resumeButton,
-             root.querySelector("#resume-button"),
-         );
+    assertEqual(elements.startButton, root.querySelector("#start-button"));
 
-         assertEqual(
-             elements.stopButton,
-             root.querySelector("#stop-button"),
-         );
-     },
+    assertEqual(elements.pauseButton, root.querySelector("#pause-button"));
+
+    assertEqual(elements.resumeButton, root.querySelector("#resume-button"));
+
+    assertEqual(elements.stopButton, root.querySelector("#stop-button"));
+  },
 );
 
 test(
-    "app-elements",
-     "throws when a required application element is missing",
-     () => {
-         const root = createAppRoot();
+  "app-elements",
+  "throws when a required application element is missing",
+  () => {
+    const root = createAppRoot();
 
-         root.querySelector("#current-block").remove();
+    root.querySelector("#current-block").remove();
 
-         assertThrows(
-             () => getAppElements(root),
-                      /#current-block/,
-         );
-     },
+    assertThrows(() => getAppElements(root), /#current-block/);
+  },
 );

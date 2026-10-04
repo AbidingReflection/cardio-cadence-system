@@ -9,13 +9,19 @@
     <link rel="stylesheet" href="./css/main.css" />
     <link rel="stylesheet" href="./css/playback.css" />
     <link rel="stylesheet" href="./css/workout-status.css" />
+
+    <link rel="stylesheet" href="./css/components/progression-circle.css" />
+    <link rel="stylesheet" href="./css/components/progress-track.css" />
+    <link rel="stylesheet" href="./css/components/signal-bank.css" />
   </head>
 
   <body>
     <main class="cadence-controller">
       <section class="controller-display">
-        <section class="cadence-pane" aria-labelledby="cadence-heading">
-          <h2 id="cadence-heading" class="visually-hidden">Cadence Guidance</h2>
+        <section class="guidance-pane" aria-labelledby="guidance-heading">
+          <h2 id="guidance-heading" class="visually-hidden">
+            Workout Guidance
+          </h2>
 
           <div
             id="cadence-visualizer"
@@ -23,9 +29,11 @@
             aria-label="Cadence guidance"
           ></div>
 
-          <div class="load-display">
-            <span class="load-display__label"> </span>
-
+          <div
+            id="load-visualizer"
+            class="load-visualizer"
+            aria-label="Load guidance"
+          >
             <span id="resistance-value" class="load-display__value"> — </span>
           </div>
         </section>
@@ -49,6 +57,12 @@
             id="countdown"
             class="playback-countdown"
             aria-live="polite"
+          ></div>
+
+          <div
+            id="workout-progress"
+            class="workout-progress"
+            aria-label="Workout progress"
           ></div>
 
           <div class="workout-status__primary">

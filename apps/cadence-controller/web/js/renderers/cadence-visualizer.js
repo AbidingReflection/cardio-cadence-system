@@ -1,110 +1,78 @@
+import { ProgressionCircle } from "../components/progression-circle.js";
+
+import { SignalBank } from "../components/signal-bank.js";
+
+import { CycleGuidanceController } from "../controllers/cycle-guidance-controller.js";
+
 /**
  * Cadence visualizer responsibilities:
- * - Render normalized cadence-cycle phase.
- * - Render the current cadence target.
- * - Render current left/right cycle-side emphasis.
+ * - Compose generic cycle-guidance visual components.
+ * - Configure elliptical left/right cadence semantics.
+ * - Format the current cadence target for display.
  * - Keep cadence timing and playback state outside visual rendering.
  */
 
-const FULL_ROTATION_DEGREES = 360;
+const CADENCE_CUES = [
+  {
+    id: "left",
+    label: "LEFT",
+    position: 0,
+  },
+  {
+    id: "right",
+    label: "RIGHT",
+    position: 0.5,
+  },
+];
 
 /** Creates the cadence visualizer structure inside its owned container. */
 export function initializeCadenceVisualizer(container) {
-    container.innerHTML = `
-    <div class="cadence-visualizer__cues">
-    <div
-    class="cadence-visualizer__cue cadence-visualizer__cue--left"
-    data-active="false"
-    >
-    LEFT
-    </div>
+  const signalContainer = document.createElement("div");
+  signalContainer.className = "cadence-visualizer__signals";
 
-    <div
-    class="cadence-visualizer__cue cadence-visualizer__cue--right"
-    data-active="false"
-    >
-    RIGHT
-    </div>
-    </div>
+  const circleContainer = document.createElement("div");
+  circleContainer.className = "cadence-visualizer__circle";
 
-    <div class="cadence-visualizer__track">
-    <div class="cadence-visualizer__indicator"></div>
+  container.replaceChildren(signalContainer, circleContainer);
 
-    <div class="cadence-visualizer__cadence">
-    <span class="cadence-visualizer__cadence-value"></span>
-    <span class="cadence-visualizer__cadence-unit">RPM</span>
-    </div>
-    </div>
-    `;
+  const progressionCircle = new ProgressionCircle(circleContainer);
 
-    return {
-        track: container.querySelector(
-            ".cadence-visualizer__track",
-        ),
-        indicator: container.querySelector(
-            ".cadence-visualizer__indicator",
-        ),
-        leftCue: container.querySelector(
-            ".cadence-visualizer__cue--left",
-        ),
-        rightCue: container.querySelector(
-            ".cadence-visualizer__cue--right",
-        ),
-        cadenceValue: container.querySelector(
-            ".cadence-visualizer__cadence-value",
-        ),
-    };
+  const signalBank = new SignalBank(signalContainer, CADENCE_CUES);
+
+  progressionCircle.setLabelText("RPM");
+
+  const controller = new CycleGuidanceController(
+    progressionCircle,
+    signalBank,
+    CADENCE_CUES,
+  );
+
+  return {
+    controller,
+    progressionCircle,
+    signalBank,
+  };
 }
 
 /** Renders current cadence-cycle phase and cadence target. */
-export function renderCadenceVisualizer(
-    visualizer,
-    { phase, cadenceRpm },
-) {
-    validatePhase(phase);
-    validateCadence(cadenceRpm);
+export function renderCadenceVisualizer(visualizer, { phase, cadenceRpm }) {
+  validateCadence(cadenceRpm);
 
-    const rotationDegrees =
-    phase * FULL_ROTATION_DEGREES;
-
-    visualizer.indicator.style.transform =
-    `rotate(${rotationDegrees}deg)`;
-
-    visualizer.cadenceValue.textContent =
-    cadenceRpm.toFixed(1);
-
-    const leftActive = phase < 0.5;
-
-    visualizer.leftCue.dataset.active =
-    String(leftActive);
-
-    visualizer.rightCue.dataset.active =
-    String(!leftActive);
-}
-
-/** Validates normalized cadence-cycle phase. */
-function validatePhase(phase) {
-    if (
-        typeof phase !== "number" ||
-        !Number.isFinite(phase) ||
-        phase < 0 ||
-        phase >= 1
-    ) {
-        throw new RangeError(
-            "Cadence visualizer phase must be within [0, 1).",
-        );
-    }
+  visualizer.controller.render({
+    phase,
+    valueText: cadenceRpm.toFixed(1),
+  });
 }
 
 /** Validates a current cadence target. */
 function validateCadence(cadenceRpm) {
-    if (
-        typeof cadenceRpm !== "number" ||
-        !Number.isFinite(cadenceRpm) ||
-        cadenceRpm < 0
-    ) {
-        throw new RangeError(
-            "Cadence visualizer RPM must be a non-negative finite number.",
-        );
-    }
+  if (
+    typeof cadenceRpm !== "number" ||
+    !Number.isFinite(cadenceRpm) ||
+    cadenceRpm < 0
+  ) {
+    throw new RangeError(
+      "Cadence visualizer RPM must be a non-negative finite number.",
+    );
+  }
 }
