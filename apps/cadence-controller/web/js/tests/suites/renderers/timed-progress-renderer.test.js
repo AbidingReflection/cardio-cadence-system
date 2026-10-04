@@ -28,6 +28,16 @@ test(
     assertDeepEqual(visualizer.timeLabel.className, "timed-progress__time");
 
     assertDeepEqual(
+      visualizer.remainingTimeLabel.className,
+      "timed-progress__remaining",
+    );
+
+    assertDeepEqual(
+      visualizer.durationLabel.className,
+      "timed-progress__duration",
+    );
+
+    assertDeepEqual(
       visualizer.percentLabel.className,
       "timed-progress__percent",
     );
@@ -72,7 +82,9 @@ test(
 
     assertDeepEqual(markerTextCalls, ["0:15"]);
 
-    assertDeepEqual(visualizer.timeLabel.textContent, "0:15 / 1:00");
+    assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:00:45");
+
+    assertDeepEqual(visualizer.durationLabel.textContent, "0:01:00");
 
     assertDeepEqual(visualizer.percentLabel.textContent, "25.0%");
   },
@@ -104,7 +116,9 @@ test("timed-progress-renderer", "renders completed timed progress", () => {
 
   assertDeepEqual(progressCalls, [1]);
 
-  assertDeepEqual(visualizer.timeLabel.textContent, "1:00 / 1:00");
+  assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:00:00");
+
+  assertDeepEqual(visualizer.durationLabel.textContent, "0:01:00");
 
   assertDeepEqual(visualizer.percentLabel.textContent, "100.0%");
 });
@@ -120,7 +134,9 @@ test("timed-progress-renderer", "formats hour-scale timed progress", () => {
     markerText: "1:01:01",
   });
 
-  assertDeepEqual(visualizer.timeLabel.textContent, "1:01:01 / 2:00:00");
+  assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:58:59");
+
+  assertDeepEqual(visualizer.durationLabel.textContent, "2:00:00");
 
   assertDeepEqual(visualizer.percentLabel.textContent, "50.8%");
 });
@@ -135,6 +151,8 @@ test(
 
     const progressTrack = visualizer.progressTrack;
     const timeLabel = visualizer.timeLabel;
+    const remainingTimeLabel = visualizer.remainingTimeLabel;
+    const durationLabel = visualizer.durationLabel;
     const percentLabel = visualizer.percentLabel;
 
     renderTimedProgress(visualizer, {
@@ -159,11 +177,17 @@ test(
 
     assertDeepEqual(visualizer.timeLabel === timeLabel, true);
 
+    assertDeepEqual(visualizer.remainingTimeLabel === remainingTimeLabel, true);
+
+    assertDeepEqual(visualizer.durationLabel === durationLabel, true);
+
     assertDeepEqual(visualizer.percentLabel === percentLabel, true);
 
     assertDeepEqual(container.childElementCount, 3);
 
-    assertDeepEqual(visualizer.timeLabel.textContent, "1:30 / 1:40");
+    assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:00:10");
+
+    assertDeepEqual(visualizer.durationLabel.textContent, "0:01:40");
 
     assertDeepEqual(visualizer.percentLabel.textContent, "90.0%");
   },
