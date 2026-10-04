@@ -28,8 +28,6 @@ function createAppRoot() {
     <div id="load-visualizer"></div>
     <div id="workout-progress"></div>
 
-    <div id="resistance-value"></div>
-
     <button id="start-button"></button>
     <button id="pause-button"></button>
     <button id="resume-button"></button>
@@ -83,11 +81,6 @@ test(
     assertEqual(
       elements.workoutProgress,
       root.querySelector("#workout-progress"),
-    );
-
-    assertEqual(
-      elements.resistanceValue,
-      root.querySelector("#resistance-value"),
     );
 
     assertEqual(elements.startButton, root.querySelector("#start-button"));

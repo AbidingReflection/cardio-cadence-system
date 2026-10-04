@@ -27,8 +27,6 @@ export function getAppElements(root = document) {
 
     workoutProgress: requireElement(root, "#workout-progress"),
 
-    resistanceValue: requireElement(root, "#resistance-value"),
-
     startButton: requireElement(root, "#start-button"),
     pauseButton: requireElement(root, "#pause-button"),
     resumeButton: requireElement(root, "#resume-button"),

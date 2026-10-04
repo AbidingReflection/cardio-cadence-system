@@ -148,13 +148,6 @@ button {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.load-display__value {
-  font-size: 4rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
 .playback-controls {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -249,10 +242,6 @@ button {
     padding: 5px 6px;
 
     border-radius: 7px;
-  }
-
-  .load-display__value {
-    font-size: 2rem;
   }
 
   .playback-control {

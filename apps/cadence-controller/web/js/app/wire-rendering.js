@@ -10,6 +10,11 @@ import {
   renderCadenceVisualizer,
 } from "../renderers/cadence-visualizer.js";
 
+import {
+  initializeLoadVisualizer,
+  renderLoadVisualizer,
+} from "../renderers/load-visualizer.js";
+
 import { renderWorkoutStatus } from "../renderers/workout-status-renderer.js";
 
 /** Wires Cadence Controller state to animation-frame rendering. */
@@ -24,6 +29,11 @@ export function wireRendering(
   const cadenceVisualizer = initializeCadenceVisualizer(
     elements.cadenceVisualizer,
   );
+
+  const loadVisualizer =
+    playback.loadSegmentTimeline === undefined
+      ? undefined
+      : initializeLoadVisualizer(elements.loadVisualizer);
 
   let frameId = null;
 
@@ -40,7 +50,8 @@ export function wireRendering(
 
     const cadenceRpm = playback.cadencePhase.cadenceAt(protocolElapsedMs);
 
-    const loadValue = getLoadValue(playback, protocolElapsedMs);
+    const loadSegment =
+      playback.loadSegmentTimeline?.segmentAt(protocolElapsedMs);
 
     renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
 
@@ -49,8 +60,12 @@ export function wireRendering(
       cadenceRpm,
     });
 
-    elements.resistanceValue.textContent =
-      loadValue === undefined ? "—" : String(loadValue);
+    if (loadVisualizer !== undefined && loadSegment !== undefined) {
+      renderLoadVisualizer(loadVisualizer, {
+        value: loadSegment.value,
+        progress: loadSegment.progress,
+      });
+    }
   }
 
   /** Renders one frame and schedules the next. */
@@ -73,23 +88,4 @@ export function wireRendering(
     cancelFrame(frameId);
     frameId = null;
   };
-}
-
-/** Returns the current authored load target for display. */
-function getLoadValue(playback, protocolElapsedMs) {
-  if (playback.loadVariableId === undefined) {
-    return undefined;
-  }
-
-  if (protocolElapsedMs === playback.protocolExpander.durationMs) {
-    return playback.protocolExpander.valueBefore(
-      playback.loadVariableId,
-      protocolElapsedMs,
-    );
-  }
-
-  return playback.protocolExpander.valueAt(
-    playback.loadVariableId,
-    protocolElapsedMs,
-  );
 }

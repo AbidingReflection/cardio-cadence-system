@@ -5,7 +5,7 @@ import {
 
 import { wireRendering } from "../../../app/wire-rendering.js";
 
-/** Creates the DOM element contract required by the workout status renderer. */
+/** Creates the DOM element contract required by application rendering. */
 function createElements() {
   return {
     playbackState: document.createElement("div"),
@@ -21,7 +21,7 @@ function createElements() {
     nextBlock: document.createElement("div"),
 
     cadenceVisualizer: document.createElement("div"),
-    resistanceValue: document.createElement("div"),
+    loadVisualizer: document.createElement("div"),
 
     startButton: document.createElement("button"),
     pauseButton: document.createElement("button"),
@@ -61,38 +61,33 @@ function createPlaybackFake() {
 
   const requestedWorkoutTimes = [];
 
-  const loadValues = new Map([[0, 4]]);
+  const loadSegments = new Map([
+    [
+      0,
+      {
+        value: 4,
+        startTimeMs: 0,
+        endTimeMs: 10000,
+        progress: 0,
+      },
+    ],
+  ]);
 
-  const requestedLoadTimes = [];
-  const requestedLoadBeforeTimes = [];
+  const requestedLoadSegmentTimes = [];
 
   return {
     sessionSnapshots,
     workoutSnapshots,
     requestedWorkoutTimes,
 
-    loadVariableId: "resistance",
-    loadValues,
-    requestedLoadTimes,
-    requestedLoadBeforeTimes,
+    loadSegments,
+    requestedLoadSegmentTimes,
 
-    protocolExpander: {
-      durationMs: 60000,
+    loadSegmentTimeline: {
+      segmentAt(timeMs) {
+        requestedLoadSegmentTimes.push(timeMs);
 
-      valueAt(variableId, timeMs) {
-        assertEqual(variableId, "resistance");
-
-        requestedLoadTimes.push(timeMs);
-
-        return loadValues.get(timeMs);
-      },
-
-      valueBefore(variableId, timeMs) {
-        assertEqual(variableId, "resistance");
-
-        requestedLoadBeforeTimes.push(timeMs);
-
-        return loadValues.get(timeMs);
+        return loadSegments.get(timeMs);
       },
     },
 
@@ -188,7 +183,14 @@ test("wire-rendering", "renders current state immediately", () => {
   assertEqual(elements.remainingTime.textContent, "1:00");
   assertEqual(elements.currentPhase.textContent, "Warmup");
   assertEqual(elements.currentBlock.textContent, "Easy");
-  assertEqual(elements.resistanceValue.textContent, "4");
+
+  assertEqual(
+    elements.loadVisualizer.querySelector(".progression-circle__value")
+      .textContent,
+    "4",
+  );
+
+  assertEqual(playback.requestedLoadSegmentTimes.at(-1), 0);
 });
 
 test("wire-rendering", "uses session protocol time for workout context", () => {
@@ -216,7 +218,12 @@ test("wire-rendering", "uses session protocol time for workout context", () => {
     nextBlock: null,
   });
 
-  playback.loadValues.set(12500, 8);
+  playback.loadSegments.set(12500, {
+    value: 8,
+    startTimeMs: 10000,
+    endTimeMs: 20000,
+    progress: 0.25,
+  });
 
   wireRendering(elements, playback, {
     requestFrame: frames.requestFrame,
@@ -224,9 +231,23 @@ test("wire-rendering", "uses session protocol time for workout context", () => {
   });
 
   assertEqual(playback.requestedWorkoutTimes.at(-1), 12500);
+
   assertEqual(elements.currentBlock.textContent, "Build");
-  assertEqual(playback.requestedLoadTimes.at(-1), 12500);
-  assertEqual(elements.resistanceValue.textContent, "8");
+
+  assertEqual(playback.requestedLoadSegmentTimes.at(-1), 12500);
+
+  assertEqual(
+    elements.loadVisualizer.querySelector(".progression-circle__value")
+      .textContent,
+    "8",
+  );
+
+  assertEqual(
+    elements.loadVisualizer
+      .querySelector(".progression-circle__marker")
+      .getAttribute("transform"),
+    "rotate(90 50 50)",
+  );
 });
 
 test("wire-rendering", "rerenders on animation frames", () => {
@@ -259,10 +280,28 @@ test("wire-rendering", "rerenders on animation frames", () => {
     nextBlock: null,
   });
 
-  playback.loadValues.set(5000, 6);
+  playback.loadSegments.set(5000, {
+    value: 6,
+    startTimeMs: 0,
+    endTimeMs: 10000,
+    progress: 0.5,
+  });
+
   frames.runNextFrame();
 
-  assertEqual(elements.resistanceValue.textContent, "6");
+  assertEqual(
+    elements.loadVisualizer.querySelector(".progression-circle__value")
+      .textContent,
+    "6",
+  );
+
+  assertEqual(
+    elements.loadVisualizer
+      .querySelector(".progression-circle__progress")
+      .getAttribute("stroke-dashoffset"),
+    "0.5",
+  );
+
   assertEqual(elements.playbackState.textContent, "Running");
   assertEqual(elements.elapsedTime.textContent, "0:05");
   assertEqual(elements.remainingTime.textContent, "0:55");
@@ -289,27 +328,31 @@ test("wire-rendering", "cancels the scheduled frame on teardown", () => {
 
 test(
   "wire-rendering",
-  "renders dash when playback has no load variable",
+  "omits load visualizer when playback has no load timeline",
   () => {
     const elements = createElements();
     const playback = createPlaybackFake();
     const frames = createFrameScheduler();
 
-    playback.loadVariableId = undefined;
+    playback.loadSegmentTimeline = undefined;
 
     wireRendering(elements, playback, {
       requestFrame: frames.requestFrame,
       cancelFrame: frames.cancelFrame,
     });
 
-    assertEqual(elements.resistanceValue.textContent, "—");
-    assertEqual(playback.requestedLoadTimes.length, 0);
+    assertEqual(
+      elements.loadVisualizer.querySelectorAll(".progression-circle").length,
+      0,
+    );
+
+    assertEqual(playback.requestedLoadSegmentTimes.length, 0);
   },
 );
 
 test(
   "wire-rendering",
-  "renders final load value at protocol completion",
+  "renders final load segment at protocol completion",
   () => {
     const elements = createElements();
     const playback = createPlaybackFake();
@@ -322,15 +365,38 @@ test(
       countdownRemainingMs: 0,
     });
 
-    playback.loadValues.set(60000, 3);
+    playback.loadSegments.set(60000, {
+      value: 3,
+      startTimeMs: 50000,
+      endTimeMs: 60000,
+      progress: 1,
+    });
 
     wireRendering(elements, playback, {
       requestFrame: frames.requestFrame,
       cancelFrame: frames.cancelFrame,
     });
 
-    assertEqual(playback.requestedLoadTimes.length, 0);
-    assertEqual(playback.requestedLoadBeforeTimes.at(-1), 60000);
-    assertEqual(elements.resistanceValue.textContent, "3");
+    assertEqual(playback.requestedLoadSegmentTimes.at(-1), 60000);
+
+    assertEqual(
+      elements.loadVisualizer.querySelector(".progression-circle__value")
+        .textContent,
+      "3",
+    );
+
+    assertEqual(
+      elements.loadVisualizer
+        .querySelector(".progression-circle__marker")
+        .getAttribute("transform"),
+      "rotate(0 50 50)",
+    );
+
+    assertEqual(
+      elements.loadVisualizer
+        .querySelector(".progression-circle__progress")
+        .getAttribute("stroke-dashoffset"),
+      "0",
+    );
   },
 );
