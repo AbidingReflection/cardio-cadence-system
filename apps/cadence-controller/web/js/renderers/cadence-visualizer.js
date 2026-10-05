@@ -26,7 +26,7 @@ const CADENCE_CUES = [
 ];
 
 /** Creates the cadence visualizer structure inside its owned container. */
-export function initializeCadenceVisualizer(container) {
+export function initializeCadenceVisualizer(container, label) {
   const signalContainer = document.createElement("div");
   signalContainer.className = "cadence-visualizer__signals";
 
@@ -39,7 +39,7 @@ export function initializeCadenceVisualizer(container) {
 
   const signalBank = new SignalBank(signalContainer, CADENCE_CUES);
 
-  progressionCircle.setLabelText("RPM");
+  progressionCircle.setLabelText(label);
 
   const controller = new CycleGuidanceController(
     progressionCircle,

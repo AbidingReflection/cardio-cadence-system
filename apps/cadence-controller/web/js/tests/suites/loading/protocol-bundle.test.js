@@ -109,6 +109,12 @@ test(
     const bundle = new ProtocolBundle(data);
 
     assertEqual(bundle.cadenceVariableId, "rpm");
+    assertDeepEqual(bundle.cadenceVariable, {
+      id: "rpm",
+      name: "Cadence",
+      unit: "RPM",
+      role: "cadence",
+    });
   },
 );
 
@@ -250,6 +256,12 @@ test("protocol-bundle", "resolves the load variable by activity role", () => {
   const bundle = new ProtocolBundle(data);
 
   assertEqual(bundle.loadVariableId, "level");
+  assertDeepEqual(bundle.loadVariable, {
+    id: "level",
+    name: "Resistance",
+    unit: null,
+    role: "load",
+  });
 });
 
 test(
@@ -270,6 +282,7 @@ test(
     const bundle = new ProtocolBundle(data);
 
     assertEqual(bundle.loadVariableId, undefined);
+    assertEqual(bundle.loadVariable, undefined);
   },
 );
 

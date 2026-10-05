@@ -33,14 +33,21 @@ export function wireRendering(
     cancelFrame = globalThis.cancelAnimationFrame.bind(globalThis),
   } = {},
 ) {
+  const cadenceVariable = playback.protocolBundle.cadenceVariable;
+  const loadVariable = playback.protocolBundle.loadVariable;
+
   const cadenceVisualizer = initializeCadenceVisualizer(
     elements.cadenceVisualizer,
+    cadenceVariable.unit ?? cadenceVariable.name,
   );
 
   const loadVisualizer =
-    playback.loadSegmentTimeline === undefined
-      ? undefined
-      : initializeLoadVisualizer(elements.loadVisualizer);
+  playback.loadSegmentTimeline === undefined
+  ? undefined
+  : initializeLoadVisualizer(
+    elements.loadVisualizer,
+    loadVariable.name,
+  );
 
   const workoutProgressVisualizer = initializeTimedProgressRenderer(
     elements.workoutProgress,

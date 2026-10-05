@@ -101,6 +101,22 @@ function createPlaybackFake() {
     requestedLoadAdjustmentTimes,
     loadAdjustmentSnapshot,
 
+    protocolBundle: {
+      cadenceVariable: {
+        id: "cadence",
+        name: "Cadence",
+        unit: "RPM",
+        role: "cadence",
+      },
+
+      loadVariable: {
+        id: "resistance",
+        name: "Resistance",
+        unit: null,
+        role: "load",
+      },
+    },
+
     protocolExpander: {
       durationMs: 60_000,
     },

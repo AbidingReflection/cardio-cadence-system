@@ -55,14 +55,14 @@ test("cadence-visualizer", "configures cadence cue notches", () => {
   assertEqual(notches[1].getAttribute("transform"), "rotate(180 50 50)");
 });
 
-test("cadence-visualizer", "labels the progression circle with RPM", () => {
+test("cadence-visualizer", "labels the progression circle", () => {
   const container = document.createElement("div");
 
-  initializeCadenceVisualizer(container);
+  initializeCadenceVisualizer(container, "RPM");
 
   assertEqual(
     container.querySelector(".progression-circle__label").textContent,
-    "RPM",
+              "RPM",
   );
 });
 

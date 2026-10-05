@@ -30,14 +30,14 @@ test(
   },
 );
 
-test("load-visualizer", "labels the progression circle with LOAD", () => {
+test("load-visualizer", "labels the progression circle", () => {
   const container = document.createElement("div");
 
-  initializeLoadVisualizer(container);
+  initializeLoadVisualizer(container, "Resistance");
 
   assertEqual(
     container.querySelector(".progression-circle__label").textContent,
-    "LOAD",
+              "Resistance",
   );
 });
 

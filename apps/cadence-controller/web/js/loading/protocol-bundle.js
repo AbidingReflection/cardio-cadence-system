@@ -53,9 +53,21 @@ export class ProtocolBundle {
     return this.#cadenceVariableId;
   }
 
+  /** Returns the activity variable that provides cadence. */
+  get cadenceVariable() {
+    return this.#activityType.getVariable(this.#cadenceVariableId);
+  }
+
   /** Returns the optional activity variable ID that provides load. */
   get loadVariableId() {
     return this.#loadVariableId;
+  }
+
+  /** Returns the optional activity variable that provides load. */
+  get loadVariable() {
+    return this.#loadVariableId === undefined
+    ? undefined
+    : this.#activityType.getVariable(this.#loadVariableId);
   }
 }
 

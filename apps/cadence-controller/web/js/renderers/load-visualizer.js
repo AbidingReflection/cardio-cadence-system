@@ -2,7 +2,7 @@ import { ProgressionCircle } from "../components/progression-circle.js";
 import { LoadGuidanceController } from "../controllers/load-guidance-controller.js";
 
 /** Initializes the persistent load-guidance visualizer scene. */
-export function initializeLoadVisualizer(container) {
+export function initializeLoadVisualizer(container, label) {
   const statusContainer = document.createElement("div");
   statusContainer.className = "load-visualizer__status";
 
@@ -13,7 +13,7 @@ export function initializeLoadVisualizer(container) {
 
   const progressionCircle = new ProgressionCircle(circleContainer);
 
-  progressionCircle.setLabelText("LOAD");
+  progressionCircle.setLabelText(label);
 
   const controller = new LoadGuidanceController(progressionCircle);
 
