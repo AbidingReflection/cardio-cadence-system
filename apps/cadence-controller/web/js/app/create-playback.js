@@ -18,61 +18,54 @@ import { WorkoutContext } from "../playback/workout-context.js";
 
 /** Creates the runtime playback graph for one validated protocol bundle. */
 export function createPlayback(
-  protocolBundle,
-  {
-    startDelaySeconds = 5,
-    audioCueEngine = new AudioCueEngine(),
-    timer = globalThis,
-  } = {},
-) {
-  const protocol = protocolBundle.protocol;
-
-  const protocolExpander = new ProtocolExpander(protocol);
-
-  const workoutContext = new WorkoutContext(protocol, protocolExpander);
-
-  const cadencePhase = new CadencePhase(
-    protocolExpander,
-    protocolBundle.cadenceVariableId,
-  );
-
-  const loadVariableId = protocolBundle.loadVariableId;
-
-  const loadSegmentTimeline =
-    loadVariableId === undefined
-      ? undefined
-      : new LoadSegmentTimeline(protocolExpander, loadVariableId);
-
-  const loadAdjustmentTracker =
-    loadSegmentTimeline === undefined
-      ? undefined
-      : new LoadAdjustmentTracker(loadSegmentTimeline);
-
-  const loadAlertController =
-    loadAdjustmentTracker === undefined
-      ? undefined
-      : new LoadAlertController({
-          audioCueEngine,
-          timer,
-        });
-
-  const cadenceSession = new CadenceSession({
-    cadencePhase,
-    audioCueEngine,
-    startDelaySeconds,
-    timer,
-  });
-
-  return {
     protocolBundle,
-    protocolExpander,
-    workoutContext,
-    cadencePhase,
-    loadVariableId,
-    loadSegmentTimeline,
-    loadAdjustmentTracker,
-    loadAlertController,
-    audioCueEngine,
-    cadenceSession,
-  };
+    { startDelaySeconds = 5, audioCueEngine = new AudioCueEngine(), timer = globalThis } = {},
+) {
+    const protocol = protocolBundle.protocol;
+
+    const protocolExpander = new ProtocolExpander(protocol);
+
+    const workoutContext = new WorkoutContext(protocol, protocolExpander);
+
+    const cadencePhase = new CadencePhase(protocolExpander, protocolBundle.cadenceVariableId);
+
+    const loadVariableId = protocolBundle.loadVariableId;
+
+    const loadSegmentTimeline =
+        loadVariableId === undefined
+            ? undefined
+            : new LoadSegmentTimeline(protocolExpander, loadVariableId);
+
+    const loadAdjustmentTracker =
+        loadSegmentTimeline === undefined
+            ? undefined
+            : new LoadAdjustmentTracker(loadSegmentTimeline);
+
+    const loadAlertController =
+        loadAdjustmentTracker === undefined
+            ? undefined
+            : new LoadAlertController({
+                  audioCueEngine,
+                  timer,
+              });
+
+    const cadenceSession = new CadenceSession({
+        cadencePhase,
+        audioCueEngine,
+        startDelaySeconds,
+        timer,
+    });
+
+    return {
+        protocolBundle,
+        protocolExpander,
+        workoutContext,
+        cadencePhase,
+        loadVariableId,
+        loadSegmentTimeline,
+        loadAdjustmentTracker,
+        loadAlertController,
+        audioCueEngine,
+        cadenceSession,
+    };
 }

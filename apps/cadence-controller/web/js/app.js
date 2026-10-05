@@ -17,22 +17,22 @@ const PROTOCOL_BUNDLE_URL = "/data/true-elliptical-108-minute-session.json";
 
 /** Starts the Cadence Controller application. */
 async function startApp() {
-  const elements = getAppElements();
+    const elements = getAppElements();
 
-  const protocolBundle = await ProtocolBundle.load(PROTOCOL_BUNDLE_URL);
+    const protocolBundle = await ProtocolBundle.load(PROTOCOL_BUNDLE_URL);
 
-  const playback = createPlayback(protocolBundle);
+    const playback = createPlayback(protocolBundle);
 
-  const playbackEvents = createPlaybackEvents(
-    playback.cadenceSession,
-    playback.loadAdjustmentTracker,
-  );
+    const playbackEvents = createPlaybackEvents(
+        playback.cadenceSession,
+        playback.loadAdjustmentTracker,
+    );
 
-  elements.protocolTitle.textContent = protocolBundle.protocol.name;
+    elements.protocolTitle.textContent = protocolBundle.protocol.name;
 
-  wireInteractions(elements, playbackEvents);
+    wireInteractions(elements, playbackEvents);
 
-  wireRendering(elements, playback);
+    wireRendering(elements, playback);
 }
 
 await startApp();

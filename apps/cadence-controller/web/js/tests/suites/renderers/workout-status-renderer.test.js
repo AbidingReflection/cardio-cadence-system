@@ -256,51 +256,29 @@ test("workout-status-renderer", "rejects unsupported playback states", () => {
     );
 });
 
-test(
-    "workout-status-renderer",
-     "renders unavailable phase remaining time as dash",
-     () => {
-         const elements = createElements();
+test("workout-status-renderer", "renders unavailable phase remaining time as dash", () => {
+    const elements = createElements();
 
-         const workoutSnapshot = createWorkoutSnapshot({
-             currentPhase: null,
-         });
+    const workoutSnapshot = createWorkoutSnapshot({
+        currentPhase: null,
+    });
 
-         renderWorkoutStatus(
-             elements,
-             createSessionSnapshot(),
-                             workoutSnapshot,
-         );
+    renderWorkoutStatus(elements, createSessionSnapshot(), workoutSnapshot);
 
-         assertEqual(
-             elements.phaseRemainingTime.textContent,
-             "—",
-         );
-     },
-);
+    assertEqual(elements.phaseRemainingTime.textContent, "—");
+});
 
-test(
-    "workout-status-renderer",
-     "renders current phase remaining time",
-     () => {
-         const elements = createElements();
+test("workout-status-renderer", "renders current phase remaining time", () => {
+    const elements = createElements();
 
-         const workoutSnapshot = createWorkoutSnapshot({
-             currentPhase: {
-                 name: "Warm-up",
-                 remainingTimeMs: 125000,
-             },
-         });
+    const workoutSnapshot = createWorkoutSnapshot({
+        currentPhase: {
+            name: "Warm-up",
+            remainingTimeMs: 125000,
+        },
+    });
 
-         renderWorkoutStatus(
-             elements,
-             createSessionSnapshot(),
-                             workoutSnapshot,
-         );
+    renderWorkoutStatus(elements, createSessionSnapshot(), workoutSnapshot);
 
-         assertEqual(
-             elements.phaseRemainingTime.textContent,
-             "2:05",
-         );
-     },
-);
+    assertEqual(elements.phaseRemainingTime.textContent, "2:05");
+});

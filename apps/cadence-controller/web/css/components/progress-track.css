@@ -1,110 +1,110 @@
 .progress-track {
-  --progress-track-track-color: currentColor;
-  --progress-track-track-opacity: 0.18;
+    --progress-track-track-color: currentColor;
+    --progress-track-track-opacity: 0.18;
 
-  --progress-track-progress-color: currentColor;
+    --progress-track-progress-color: currentColor;
 
-  --progress-track-tick-color: currentColor;
-  --progress-track-tick-opacity: 0.55;
+    --progress-track-tick-color: currentColor;
+    --progress-track-tick-opacity: 0.55;
 
-  --progress-track-marker-color: currentColor;
+    --progress-track-marker-color: currentColor;
 
-  --progress-track-marker-text-color: currentColor;
-  --progress-track-tick-label-color: currentColor;
-  --progress-track-tick-label-opacity: 0.7;
+    --progress-track-marker-text-color: currentColor;
+    --progress-track-tick-label-color: currentColor;
+    --progress-track-tick-label-opacity: 0.7;
 
-  position: relative;
+    position: relative;
 
-  width: 100%;
-  height: 18px;
-  min-width: 0;
-  min-height: 0;
+    width: 100%;
+    height: 18px;
+    min-width: 0;
+    min-height: 0;
 
-  color: inherit;
-  font-family: inherit;
-  font-variant-numeric: tabular-nums;
+    color: inherit;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
 
-  user-select: none;
-  pointer-events: none;
+    user-select: none;
+    pointer-events: none;
 }
 
 .progress-track__svg {
-  position: absolute;
-  inset: 0;
+    position: absolute;
+    inset: 0;
 
-  display: block;
+    display: block;
 
-  width: 100%;
-  height: 18px;
+    width: 100%;
+    height: 18px;
 
-  overflow: visible;
+    overflow: visible;
 }
 
 .progress-track__track {
-  stroke: var(--progress-track-track-color);
-  stroke-width: 4px;
-  stroke-opacity: var(--progress-track-track-opacity);
+    stroke: var(--progress-track-track-color);
+    stroke-width: 4px;
+    stroke-opacity: var(--progress-track-track-opacity);
 
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
 }
 
 .progress-track__progress {
-  stroke: var(--progress-track-progress-color);
-  stroke-width: 4px;
+    stroke: var(--progress-track-progress-color);
+    stroke-width: 4px;
 
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
 }
 
 .progress-track__tick-line {
-  stroke: var(--progress-track-tick-color);
-  stroke-width: 2px;
-  stroke-opacity: var(--progress-track-tick-opacity);
+    stroke: var(--progress-track-tick-color);
+    stroke-width: 2px;
+    stroke-opacity: var(--progress-track-tick-opacity);
 
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
 }
 
 .progress-track__marker-line {
-  stroke: var(--progress-track-marker-color);
-  stroke-width: 3px;
+    stroke: var(--progress-track-marker-color);
+    stroke-width: 3px;
 
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
 }
 
 .progress-track__marker-text {
-  position: absolute;
-  top: 50%;
+    position: absolute;
+    top: 50%;
 
-  transform: translate(-50%, -50%) translateY(-9px);
+    transform: translate(-50%, -50%) translateY(-9px);
 
-  color: var(--progress-track-marker-text-color);
+    color: var(--progress-track-marker-text-color);
 
-  font-size: 0.65rem;
-  font-weight: 700;
-  line-height: 1;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
 
-  white-space: nowrap;
+    white-space: nowrap;
 }
 
 .progress-track__tick-labels {
-  display: none;
+    display: none;
 }
 
 .progress-track__tick-label {
-  position: absolute;
-  bottom: 0;
+    position: absolute;
+    bottom: 0;
 
-  transform: translateX(-50%);
+    transform: translateX(-50%);
 
-  color: var(--progress-track-tick-label-color);
-  opacity: var(--progress-track-tick-label-opacity);
+    color: var(--progress-track-tick-label-color);
+    opacity: var(--progress-track-tick-label-opacity);
 
-  font-size: 0.65rem;
-  font-weight: 600;
-  line-height: 1;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
 
-  white-space: nowrap;
+    white-space: nowrap;
 }

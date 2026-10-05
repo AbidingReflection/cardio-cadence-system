@@ -1,7 +1,7 @@
 import {
-  assertDeepEqual,
-  assertEqual,
-  test,
+    assertDeepEqual,
+    assertEqual,
+    test,
 } from "/packages/js-testing/framework/test-framework.js";
 
 import { ProtocolExpander } from "/packages/protocol-expander/protocol-expander.js";
@@ -18,108 +18,99 @@ import { LoadAlertController } from "../../../controllers/load-alert-controller.
 
 /** Creates a minimal bundle-shaped playback input. */
 function createProtocolBundle() {
-  return {
-    cadenceVariableId: "cadence",
-    loadVariableId: "resistance",
-    protocol: {
-      id: "test-protocol",
-      name: "Test Protocol",
-      activityTypeId: "elliptical",
-      machineProfileId: null,
-      calibrationProfileId: null,
-      phases: [
-        {
-          id: "phase-1",
-          name: "Phase 1",
-          blocks: [
-            {
-              id: "block-1",
-              name: "Block 1",
-              durationSeconds: 60,
-              variables: {
-                cadence: {
-                  type: "steady",
-                  start: 60,
+    return {
+        cadenceVariableId: "cadence",
+        loadVariableId: "resistance",
+        protocol: {
+            id: "test-protocol",
+            name: "Test Protocol",
+            activityTypeId: "elliptical",
+            machineProfileId: null,
+            calibrationProfileId: null,
+            phases: [
+                {
+                    id: "phase-1",
+                    name: "Phase 1",
+                    blocks: [
+                        {
+                            id: "block-1",
+                            name: "Block 1",
+                            durationSeconds: 60,
+                            variables: {
+                                cadence: {
+                                    type: "steady",
+                                    start: 60,
+                                },
+                                resistance: {
+                                    type: "steady",
+                                    start: 8,
+                                },
+                            },
+                        },
+                    ],
                 },
-                resistance: {
-                  type: "steady",
-                  start: 8,
-                },
-              },
-            },
-          ],
+            ],
         },
-      ],
-    },
-  };
+    };
 }
 
 test("create-playback", "creates the complete playback composition", () => {
-  const protocolBundle = createProtocolBundle();
-  const audioCueEngine = new AudioCueEngineFake();
-  const timer = new TimeSourceFake();
+    const protocolBundle = createProtocolBundle();
+    const audioCueEngine = new AudioCueEngineFake();
+    const timer = new TimeSourceFake();
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine,
-    timer,
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine,
+        timer,
+    });
 
-  assertEqual(playback.protocolBundle, protocolBundle);
-  assertEqual(playback.protocolExpander instanceof ProtocolExpander, true);
-  assertEqual(playback.workoutContext instanceof WorkoutContext, true);
-  assertEqual(playback.cadencePhase instanceof CadencePhase, true);
-  assertEqual(playback.cadenceSession instanceof CadenceSession, true);
-  assertEqual(
-    playback.loadAdjustmentTracker instanceof LoadAdjustmentTracker,
-    true,
-  );
-  assertEqual(playback.loadVariableId, "resistance");
-  assertEqual(
-    playback.loadAlertController instanceof LoadAlertController,
-    true,
-  );
+    assertEqual(playback.protocolBundle, protocolBundle);
+    assertEqual(playback.protocolExpander instanceof ProtocolExpander, true);
+    assertEqual(playback.workoutContext instanceof WorkoutContext, true);
+    assertEqual(playback.cadencePhase instanceof CadencePhase, true);
+    assertEqual(playback.cadenceSession instanceof CadenceSession, true);
+    assertEqual(playback.loadAdjustmentTracker instanceof LoadAdjustmentTracker, true);
+    assertEqual(playback.loadVariableId, "resistance");
+    assertEqual(playback.loadAlertController instanceof LoadAlertController, true);
 });
 
 test("create-playback", "uses the supplied audio cue engine", () => {
-  const protocolBundle = createProtocolBundle();
-  const audioCueEngine = new AudioCueEngineFake();
+    const protocolBundle = createProtocolBundle();
+    const audioCueEngine = new AudioCueEngineFake();
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine,
-    timer: new TimeSourceFake(),
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine,
+        timer: new TimeSourceFake(),
+    });
 
-  assertEqual(playback.audioCueEngine, audioCueEngine);
+    assertEqual(playback.audioCueEngine, audioCueEngine);
 });
 
 test("create-playback", "uses bundle cadence variable resolution", () => {
-  const protocolBundle = createProtocolBundle();
+    const protocolBundle = createProtocolBundle();
 
-  protocolBundle.cadenceVariableId = "pedal-rate";
-  protocolBundle.protocol.phases[0].blocks[0].variables = {
-    "pedal-rate": {
-      type: "steady",
-      start: 50,
-    },
-  };
+    protocolBundle.cadenceVariableId = "pedal-rate";
+    protocolBundle.protocol.phases[0].blocks[0].variables = {
+        "pedal-rate": {
+            type: "steady",
+            start: 50,
+        },
+    };
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine: new AudioCueEngineFake(),
-    timer: new TimeSourceFake(),
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine: new AudioCueEngineFake(),
+        timer: new TimeSourceFake(),
+    });
 
-  assertEqual(playback.cadencePhase.cyclesBetween(0, 1200), 1);
+    assertEqual(playback.cadencePhase.cyclesBetween(0, 1200), 1);
 });
 
-test(
-  "create-playback",
-  "shares protocol interpretation across playback components",
-  () => {
+test("create-playback", "shares protocol interpretation across playback components", () => {
     const protocolBundle = createProtocolBundle();
 
     const playback = createPlayback(protocolBundle, {
-      audioCueEngine: new AudioCueEngineFake(),
-      timer: new TimeSourceFake(),
+        audioCueEngine: new AudioCueEngineFake(),
+        timer: new TimeSourceFake(),
     });
 
     const workoutSnapshot = playback.workoutContext.getSnapshot(1000);
@@ -128,111 +119,103 @@ test(
     assertEqual(workoutSnapshot.currentBlock.id, "block-1");
 
     assertEqual(playback.cadencePhase.cyclesAt(1000), 1);
-  },
-);
+});
 
 test("create-playback", "passes start delay into cadence session", async () => {
-  const protocolBundle = createProtocolBundle();
-  const audioCueEngine = new AudioCueEngineFake();
+    const protocolBundle = createProtocolBundle();
+    const audioCueEngine = new AudioCueEngineFake();
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine,
-    timer: new TimeSourceFake(),
-    startDelaySeconds: 7,
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine,
+        timer: new TimeSourceFake(),
+        startDelaySeconds: 7,
+    });
 
-  audioCueEngine.currentTime = 10;
+    audioCueEngine.currentTime = 10;
 
-  await playback.cadenceSession.start();
+    await playback.cadenceSession.start();
 
-  const snapshot = playback.cadenceSession.getSnapshot();
+    const snapshot = playback.cadenceSession.getSnapshot();
 
-  assertEqual(snapshot.state, "countdown");
-  assertEqual(snapshot.countdownRemainingMs, 7000);
+    assertEqual(snapshot.state, "countdown");
+    assertEqual(snapshot.countdownRemainingMs, 7000);
 
-  playback.cadenceSession.stop();
+    playback.cadenceSession.stop();
 });
 
 test("create-playback", "defaults to a five second start delay", async () => {
-  const protocolBundle = createProtocolBundle();
-  const audioCueEngine = new AudioCueEngineFake();
+    const protocolBundle = createProtocolBundle();
+    const audioCueEngine = new AudioCueEngineFake();
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine,
-    timer: new TimeSourceFake(),
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine,
+        timer: new TimeSourceFake(),
+    });
 
-  audioCueEngine.currentTime = 10;
+    audioCueEngine.currentTime = 10;
 
-  await playback.cadenceSession.start();
+    await playback.cadenceSession.start();
 
-  assertEqual(playback.cadenceSession.getSnapshot().countdownRemainingMs, 5000);
+    assertEqual(playback.cadenceSession.getSnapshot().countdownRemainingMs, 5000);
 
-  playback.cadenceSession.stop();
+    playback.cadenceSession.stop();
 });
 
 test("create-playback", "creates a real audio cue engine by default", () => {
-  const playback = createPlayback(createProtocolBundle());
+    const playback = createPlayback(createProtocolBundle());
 
-  assertEqual(playback.audioCueEngine instanceof AudioCueEngine, true);
+    assertEqual(playback.audioCueEngine instanceof AudioCueEngine, true);
 });
 
 test("create-playback", "uses bundle load variable resolution", () => {
-  const protocolBundle = createProtocolBundle();
+    const protocolBundle = createProtocolBundle();
 
-  protocolBundle.loadVariableId = "level";
-  protocolBundle.protocol.phases[0].blocks[0].variables = {
-    cadence: {
-      type: "steady",
-      start: 60,
-    },
-    level: {
-      type: "steady",
-      start: 12,
-    },
-  };
+    protocolBundle.loadVariableId = "level";
+    protocolBundle.protocol.phases[0].blocks[0].variables = {
+        cadence: {
+            type: "steady",
+            start: 60,
+        },
+        level: {
+            type: "steady",
+            start: 12,
+        },
+    };
 
-  const playback = createPlayback(protocolBundle, {
-    audioCueEngine: new AudioCueEngineFake(),
-    timer: new TimeSourceFake(),
-  });
+    const playback = createPlayback(protocolBundle, {
+        audioCueEngine: new AudioCueEngineFake(),
+        timer: new TimeSourceFake(),
+    });
 
-  assertEqual(playback.loadVariableId, "level");
+    assertEqual(playback.loadVariableId, "level");
 
-  assertEqual(
-    playback.loadSegmentTimeline instanceof LoadSegmentTimeline,
-    true,
-  );
+    assertEqual(playback.loadSegmentTimeline instanceof LoadSegmentTimeline, true);
 
-  assertDeepEqual(playback.loadSegmentTimeline.segmentAt(30_000), {
-    value: 12,
-    startTimeMs: 0,
-    endTimeMs: 60_000,
-    progress: 0.5,
-  });
+    assertDeepEqual(playback.loadSegmentTimeline.segmentAt(30_000), {
+        value: 12,
+        startTimeMs: 0,
+        endTimeMs: 60_000,
+        progress: 0.5,
+    });
 });
 
-test(
-  "create-playback",
-  "omits load timeline when bundle has no load variable",
-  () => {
+test("create-playback", "omits load timeline when bundle has no load variable", () => {
     const protocolBundle = createProtocolBundle();
 
     protocolBundle.loadVariableId = undefined;
     protocolBundle.protocol.phases[0].blocks[0].variables = {
-      cadence: {
-        type: "steady",
-        start: 60,
-      },
+        cadence: {
+            type: "steady",
+            start: 60,
+        },
     };
 
     const playback = createPlayback(protocolBundle, {
-      audioCueEngine: new AudioCueEngineFake(),
-      timer: new TimeSourceFake(),
+        audioCueEngine: new AudioCueEngineFake(),
+        timer: new TimeSourceFake(),
     });
 
     assertEqual(playback.loadVariableId, undefined);
     assertEqual(playback.loadSegmentTimeline, undefined);
     assertEqual(playback.loadAlertController, undefined);
-  },
-);
+});

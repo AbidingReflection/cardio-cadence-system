@@ -21,7 +21,5 @@ async function loadSvgIntoContainer(container) {
 export async function loadGraphSvgs() {
     const containers = document.querySelectorAll("[data-svg-src]");
 
-    await Promise.all(
-        [...containers].map((container) => loadSvgIntoContainer(container)),
-    );
+    await Promise.all([...containers].map((container) => loadSvgIntoContainer(container)));
 }

@@ -1,16 +1,12 @@
-import {
-  assertEqual,
-  assertThrows,
-  test,
-} from "/packages/js-testing/framework/test-framework.js";
+import { assertEqual, assertThrows, test } from "/packages/js-testing/framework/test-framework.js";
 
 import { getAppElements } from "../../../app/app-elements.js";
 
 /** Creates a complete Cadence Controller application root for DOM tests. */
 function createAppRoot() {
-  const root = document.createElement("div");
+    const root = document.createElement("div");
 
-  root.innerHTML = `
+    root.innerHTML = `
     <h1 id="protocol-title"></h1>
 
     <div id="playback-state"></div>
@@ -35,13 +31,10 @@ function createAppRoot() {
     <button id="stop-button"></button>
     `;
 
-  return root;
+    return root;
 }
 
-test(
-  "app-elements",
-  "resolves the complete application element contract",
-  () => {
+test("app-elements", "resolves the complete application element contract", () => {
     const root = createAppRoot();
 
     const elements = getAppElements(root);
@@ -56,10 +49,7 @@ test(
 
     assertEqual(elements.remainingTime, root.querySelector("#remaining-time"));
 
-    assertEqual(
-      elements.phaseRemainingTime,
-      root.querySelector("#phase-remaining-time"),
-    );
+    assertEqual(elements.phaseRemainingTime, root.querySelector("#phase-remaining-time"));
 
     assertEqual(elements.currentPhase, root.querySelector("#current-phase"));
 
@@ -69,20 +59,11 @@ test(
 
     assertEqual(elements.nextBlock, root.querySelector("#next-block"));
 
-    assertEqual(
-      elements.cadenceVisualizer,
-      root.querySelector("#cadence-visualizer"),
-    );
+    assertEqual(elements.cadenceVisualizer, root.querySelector("#cadence-visualizer"));
 
-    assertEqual(
-      elements.loadVisualizer,
-      root.querySelector("#load-visualizer"),
-    );
+    assertEqual(elements.loadVisualizer, root.querySelector("#load-visualizer"));
 
-    assertEqual(
-      elements.workoutProgress,
-      root.querySelector("#workout-progress"),
-    );
+    assertEqual(elements.workoutProgress, root.querySelector("#workout-progress"));
 
     assertEqual(elements.startButton, root.querySelector("#start-button"));
 
@@ -91,17 +72,12 @@ test(
     assertEqual(elements.resumeButton, root.querySelector("#resume-button"));
 
     assertEqual(elements.stopButton, root.querySelector("#stop-button"));
-  },
-);
+});
 
-test(
-  "app-elements",
-  "throws when a required application element is missing",
-  () => {
+test("app-elements", "throws when a required application element is missing", () => {
     const root = createAppRoot();
 
     root.querySelector("#current-block").remove();
 
     assertThrows(() => getAppElements(root), /#current-block/);
-  },
-);
+});

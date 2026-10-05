@@ -1,56 +1,56 @@
 .controller-header {
-  /* display: flex; */
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+    /* display: flex; */
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 
-  flex: 0 0 auto;
+    flex: 0 0 auto;
 
-  min-width: 0;
+    min-width: 0;
 
-  padding: 8px 12px;
+    padding: 8px 12px;
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .controller-header > div:first-child {
-  min-width: 0;
+    min-width: 0;
 }
 
 .controller-header__app-name {
-  margin: 0 0 4px;
+    margin: 0 0 4px;
 
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 
-  opacity: 0.55;
+    opacity: 0.55;
 }
 
 .controller-header__protocol-title {
-  margin: 0;
+    margin: 0;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  font-size: clamp(1rem, 2.2vw, 1.5rem);
-  line-height: 1.15;
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    line-height: 1.15;
 
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .playback-state {
-  flex: 0 0 auto;
+    flex: 0 0 auto;
 
-  padding: 5px 9px;
+    padding: 5px 9px;
 
-  border: 1px solid currentColor;
-  border-radius: 999px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
 
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }

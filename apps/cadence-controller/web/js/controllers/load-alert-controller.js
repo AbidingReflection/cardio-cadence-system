@@ -2,64 +2,64 @@
  * Coordinates repeating load-adjustment alert cues from playback state.
  */
 export class LoadAlertController {
-  #audioCueEngine;
-  #timer;
-  #repeatIntervalMs;
-  #intervalId = null;
-  #alerting = false;
+    #audioCueEngine;
+    #timer;
+    #repeatIntervalMs;
+    #intervalId = null;
+    #alerting = false;
 
-  constructor({ audioCueEngine, timer = globalThis, repeatIntervalMs = 200 }) {
-    this.#audioCueEngine = audioCueEngine;
-    this.#timer = timer;
-    this.#repeatIntervalMs = repeatIntervalMs;
-  }
-
-  /** Updates load alerting from current playback and adjustment state. */
-  update({ playbackState, adjustmentPending }) {
-    const shouldAlert = playbackState === "running" && adjustmentPending;
-
-    if (shouldAlert) {
-      this.#startAlerting();
-      return;
+    constructor({ audioCueEngine, timer = globalThis, repeatIntervalMs = 200 }) {
+        this.#audioCueEngine = audioCueEngine;
+        this.#timer = timer;
+        this.#repeatIntervalMs = repeatIntervalMs;
     }
 
-    this.#stopAlerting();
-  }
+    /** Updates load alerting from current playback and adjustment state. */
+    update({ playbackState, adjustmentPending }) {
+        const shouldAlert = playbackState === "running" && adjustmentPending;
 
-  /** Starts immediate and repeating load alert cues. */
-  #startAlerting() {
-    if (this.#alerting) {
-      return;
+        if (shouldAlert) {
+            this.#startAlerting();
+            return;
+        }
+
+        this.#stopAlerting();
     }
 
-    this.#alerting = true;
+    /** Starts immediate and repeating load alert cues. */
+    #startAlerting() {
+        if (this.#alerting) {
+            return;
+        }
 
-    this.#scheduleAlert();
+        this.#alerting = true;
 
-    this.#intervalId = this.#timer.setInterval(() => {
-      this.#scheduleAlert();
-    }, this.#repeatIntervalMs);
-  }
+        this.#scheduleAlert();
 
-  /** Stops repeating load alert cues. */
-  #stopAlerting() {
-    if (!this.#alerting) {
-      return;
+        this.#intervalId = this.#timer.setInterval(() => {
+            this.#scheduleAlert();
+        }, this.#repeatIntervalMs);
     }
 
-    this.#alerting = false;
+    /** Stops repeating load alert cues. */
+    #stopAlerting() {
+        if (!this.#alerting) {
+            return;
+        }
 
-    if (this.#intervalId !== null) {
-      this.#timer.clearInterval(this.#intervalId);
-      this.#intervalId = null;
+        this.#alerting = false;
+
+        if (this.#intervalId !== null) {
+            this.#timer.clearInterval(this.#intervalId);
+            this.#intervalId = null;
+        }
     }
-  }
 
-  /** Schedules one load alert at the current Web Audio time. */
-  #scheduleAlert() {
-    this.#audioCueEngine.scheduleCue({
-      audioTime: this.#audioCueEngine.currentTime,
-      type: "load-alert",
-    });
-  }
+    /** Schedules one load alert at the current Web Audio time. */
+    #scheduleAlert() {
+        this.#audioCueEngine.scheduleCue({
+            audioTime: this.#audioCueEngine.currentTime,
+            type: "load-alert",
+        });
+    }
 }

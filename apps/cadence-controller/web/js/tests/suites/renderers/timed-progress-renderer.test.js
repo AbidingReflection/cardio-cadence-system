@@ -1,24 +1,18 @@
-import {
-  assertDeepEqual,
-  test,
-} from "/packages/js-testing/framework/test-framework.js";
+import { assertDeepEqual, test } from "/packages/js-testing/framework/test-framework.js";
 
 import { ProgressTrack } from "../../../components/progress-track.js";
 
 import {
-  initializeTimedProgressRenderer,
-  renderTimedProgress,
+    initializeTimedProgressRenderer,
+    renderTimedProgress,
 } from "../../../renderers/timed-progress-renderer.js";
 
 /** Creates one detached renderer host for each test. */
 function createContainer() {
-  return document.createElement("div");
+    return document.createElement("div");
 }
 
-test(
-  "timed-progress-renderer",
-  "initializes a persistent progress track and labels",
-  () => {
+test("timed-progress-renderer", "initializes a persistent progress track and labels", () => {
     const container = createContainer();
 
     const visualizer = initializeTimedProgressRenderer(container);
@@ -27,29 +21,16 @@ test(
 
     assertDeepEqual(visualizer.timeLabel.className, "timed-progress__time");
 
-    assertDeepEqual(
-      visualizer.remainingTimeLabel.className,
-      "timed-progress__remaining",
-    );
+    assertDeepEqual(visualizer.remainingTimeLabel.className, "timed-progress__remaining");
 
-    assertDeepEqual(
-      visualizer.durationLabel.className,
-      "timed-progress__duration",
-    );
+    assertDeepEqual(visualizer.durationLabel.className, "timed-progress__duration");
 
-    assertDeepEqual(
-      visualizer.percentLabel.className,
-      "timed-progress__percent",
-    );
+    assertDeepEqual(visualizer.percentLabel.className, "timed-progress__percent");
 
     assertDeepEqual(container.childElementCount, 3);
-  },
-);
+});
 
-test(
-  "timed-progress-renderer",
-  "renders timed progress through the persistent track",
-  () => {
+test("timed-progress-renderer", "renders timed progress through the persistent track", () => {
     const container = createContainer();
 
     const visualizer = initializeTimedProgressRenderer(container);
@@ -59,21 +40,21 @@ test(
     const markerTextCalls = [];
 
     visualizer.progressTrack.setMarkerPosition = (position) => {
-      markerPositionCalls.push(position);
+        markerPositionCalls.push(position);
     };
 
     visualizer.progressTrack.setProgress = (progress) => {
-      progressCalls.push(progress);
+        progressCalls.push(progress);
     };
 
     visualizer.progressTrack.setMarkerText = (text) => {
-      markerTextCalls.push(text);
+        markerTextCalls.push(text);
     };
 
     renderTimedProgress(visualizer, {
-      elapsedTimeMs: 15_000,
-      durationMs: 60_000,
-      markerText: "0:15",
+        elapsedTimeMs: 15_000,
+        durationMs: 60_000,
+        markerText: "0:15",
     });
 
     assertDeepEqual(markerPositionCalls, [0.25]);
@@ -87,64 +68,60 @@ test(
     assertDeepEqual(visualizer.durationLabel.textContent, "0:01:00");
 
     assertDeepEqual(visualizer.percentLabel.textContent, "25.0%");
-  },
-);
+});
 
 test("timed-progress-renderer", "renders completed timed progress", () => {
-  const container = createContainer();
+    const container = createContainer();
 
-  const visualizer = initializeTimedProgressRenderer(container);
+    const visualizer = initializeTimedProgressRenderer(container);
 
-  const markerPositionCalls = [];
-  const progressCalls = [];
+    const markerPositionCalls = [];
+    const progressCalls = [];
 
-  visualizer.progressTrack.setMarkerPosition = (position) => {
-    markerPositionCalls.push(position);
-  };
+    visualizer.progressTrack.setMarkerPosition = (position) => {
+        markerPositionCalls.push(position);
+    };
 
-  visualizer.progressTrack.setProgress = (progress) => {
-    progressCalls.push(progress);
-  };
+    visualizer.progressTrack.setProgress = (progress) => {
+        progressCalls.push(progress);
+    };
 
-  renderTimedProgress(visualizer, {
-    elapsedTimeMs: 60_000,
-    durationMs: 60_000,
-    markerText: "1:00",
-  });
+    renderTimedProgress(visualizer, {
+        elapsedTimeMs: 60_000,
+        durationMs: 60_000,
+        markerText: "1:00",
+    });
 
-  assertDeepEqual(markerPositionCalls, [1]);
+    assertDeepEqual(markerPositionCalls, [1]);
 
-  assertDeepEqual(progressCalls, [1]);
+    assertDeepEqual(progressCalls, [1]);
 
-  assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:00:00");
+    assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:00:00");
 
-  assertDeepEqual(visualizer.durationLabel.textContent, "0:01:00");
+    assertDeepEqual(visualizer.durationLabel.textContent, "0:01:00");
 
-  assertDeepEqual(visualizer.percentLabel.textContent, "100.0%");
+    assertDeepEqual(visualizer.percentLabel.textContent, "100.0%");
 });
 
 test("timed-progress-renderer", "formats hour-scale timed progress", () => {
-  const container = createContainer();
+    const container = createContainer();
 
-  const visualizer = initializeTimedProgressRenderer(container);
+    const visualizer = initializeTimedProgressRenderer(container);
 
-  renderTimedProgress(visualizer, {
-    elapsedTimeMs: 3_661_000,
-    durationMs: 7_200_000,
-    markerText: "1:01:01",
-  });
+    renderTimedProgress(visualizer, {
+        elapsedTimeMs: 3_661_000,
+        durationMs: 7_200_000,
+        markerText: "1:01:01",
+    });
 
-  assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:58:59");
+    assertDeepEqual(visualizer.remainingTimeLabel.textContent, "-0:58:59");
 
-  assertDeepEqual(visualizer.durationLabel.textContent, "2:00:00");
+    assertDeepEqual(visualizer.durationLabel.textContent, "2:00:00");
 
-  assertDeepEqual(visualizer.percentLabel.textContent, "50.8%");
+    assertDeepEqual(visualizer.percentLabel.textContent, "50.8%");
 });
 
-test(
-  "timed-progress-renderer",
-  "reuses rendered progress track nodes across updates",
-  () => {
+test("timed-progress-renderer", "reuses rendered progress track nodes across updates", () => {
     const container = createContainer();
 
     const visualizer = initializeTimedProgressRenderer(container);
@@ -156,21 +133,21 @@ test(
     const percentLabel = visualizer.percentLabel;
 
     renderTimedProgress(visualizer, {
-      elapsedTimeMs: 10_000,
-      durationMs: 100_000,
-      markerText: "0:10",
+        elapsedTimeMs: 10_000,
+        durationMs: 100_000,
+        markerText: "0:10",
     });
 
     renderTimedProgress(visualizer, {
-      elapsedTimeMs: 50_000,
-      durationMs: 100_000,
-      markerText: "0:50",
+        elapsedTimeMs: 50_000,
+        durationMs: 100_000,
+        markerText: "0:50",
     });
 
     renderTimedProgress(visualizer, {
-      elapsedTimeMs: 90_000,
-      durationMs: 100_000,
-      markerText: "1:30",
+        elapsedTimeMs: 90_000,
+        durationMs: 100_000,
+        markerText: "1:30",
     });
 
     assertDeepEqual(visualizer.progressTrack === progressTrack, true);
@@ -190,5 +167,4 @@ test(
     assertDeepEqual(visualizer.durationLabel.textContent, "0:01:40");
 
     assertDeepEqual(visualizer.percentLabel.textContent, "90.0%");
-  },
-);
+});

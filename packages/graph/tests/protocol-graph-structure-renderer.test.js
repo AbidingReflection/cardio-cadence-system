@@ -190,30 +190,34 @@ test("protocol-graph-structure-renderer", "renders one phase label per phase", (
     assertEqual(labels[2].textContent, "Cooldown");
 });
 
-test("protocol-graph-structure-renderer", "maps phase region spans through the graph layout", () => {
-    const svg = createSvg();
-    const layout = createLayout();
-    const renderer = new ProtocolGraphStructureRenderer(svg);
+test(
+    "protocol-graph-structure-renderer",
+    "maps phase region spans through the graph layout",
+    () => {
+        const svg = createSvg();
+        const layout = createLayout();
+        const renderer = new ProtocolGraphStructureRenderer(svg);
 
-    renderer.render({
-        layout,
-        phases: [
-            {
-                id: "work",
-                label: "Work",
-                startTimeMs: 15_000,
-                endTimeMs: 45_000,
-            },
-        ],
-    });
+        renderer.render({
+            layout,
+            phases: [
+                {
+                    id: "work",
+                    label: "Work",
+                    startTimeMs: 15_000,
+                    endTimeMs: 45_000,
+                },
+            ],
+        });
 
-    const region = svg.querySelector(".graph-phase-region");
-    const expectedStart = layout.xAtTime(15_000);
-    const expectedEnd = layout.xAtTime(45_000);
+        const region = svg.querySelector(".graph-phase-region");
+        const expectedStart = layout.xAtTime(15_000);
+        const expectedEnd = layout.xAtTime(45_000);
 
-    assertEqual(Number(region.getAttribute("x")), expectedStart);
-    assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
-});
+        assertEqual(Number(region.getAttribute("x")), expectedStart);
+        assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
+    },
+);
 
 test("protocol-graph-structure-renderer", "renders phase regions across the plot height", () => {
     const svg = createSvg();
@@ -307,20 +311,24 @@ test("protocol-graph-structure-renderer", "renders indexed phase presentation cl
     assertEqual(svg.querySelectorAll(".graph-phase-band--2").length, 1);
 });
 
-test("protocol-graph-structure-renderer", "renders no phase structure for an empty phase list", () => {
-    const svg = createSvg();
-    const renderer = new ProtocolGraphStructureRenderer(svg);
+test(
+    "protocol-graph-structure-renderer",
+    "renders no phase structure for an empty phase list",
+    () => {
+        const svg = createSvg();
+        const renderer = new ProtocolGraphStructureRenderer(svg);
 
-    renderer.render({
-        layout: createLayout(),
-        phases: [],
-    });
+        renderer.render({
+            layout: createLayout(),
+            phases: [],
+        });
 
-    assertEqual(svg.querySelectorAll(".graph-phase-region").length, 0);
-    assertEqual(svg.querySelectorAll(".graph-phase-band").length, 0);
-    assertEqual(svg.querySelectorAll(".graph-phase-label").length, 0);
-    assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
-});
+        assertEqual(svg.querySelectorAll(".graph-phase-region").length, 0);
+        assertEqual(svg.querySelectorAll(".graph-phase-band").length, 0);
+        assertEqual(svg.querySelectorAll(".graph-phase-label").length, 0);
+        assertEqual(svg.querySelectorAll(".graph-phase-boundary").length, 0);
+    },
+);
 
 test("protocol-graph-structure-renderer", "replaces previous structure content on rerender", () => {
     const svg = createSvg();
@@ -547,31 +555,35 @@ test("protocol-graph-structure-renderer", "preserves block identity on block reg
     assertEqual(regions[2].getAttribute("data-phase-id"), "phase-2");
 });
 
-test("protocol-graph-structure-renderer", "maps block region spans through the graph layout", () => {
-    const svg = createSvg();
-    const layout = createLayout();
-    const renderer = new ProtocolGraphStructureRenderer(svg);
+test(
+    "protocol-graph-structure-renderer",
+    "maps block region spans through the graph layout",
+    () => {
+        const svg = createSvg();
+        const layout = createLayout();
+        const renderer = new ProtocolGraphStructureRenderer(svg);
 
-    renderer.render({
-        layout,
-        phases: [],
-        blocks: [
-            {
-                id: "block-1",
-                phaseId: "phase-1",
-                startTimeMs: 20_000,
-                endTimeMs: 40_000,
-            },
-        ],
-    });
+        renderer.render({
+            layout,
+            phases: [],
+            blocks: [
+                {
+                    id: "block-1",
+                    phaseId: "phase-1",
+                    startTimeMs: 20_000,
+                    endTimeMs: 40_000,
+                },
+            ],
+        });
 
-    const region = svg.querySelector(".graph-block-region");
-    const expectedStart = layout.xAtTime(20_000);
-    const expectedEnd = layout.xAtTime(40_000);
+        const region = svg.querySelector(".graph-block-region");
+        const expectedStart = layout.xAtTime(20_000);
+        const expectedEnd = layout.xAtTime(40_000);
 
-    assertEqual(Number(region.getAttribute("x")), expectedStart);
-    assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
-});
+        assertEqual(Number(region.getAttribute("x")), expectedStart);
+        assertEqual(Number(region.getAttribute("width")), expectedEnd - expectedStart);
+    },
+);
 
 test("protocol-graph-structure-renderer", "preserves phase identity on phase regions", () => {
     const svg = createSvg();
@@ -699,60 +711,68 @@ test("protocol-graph-structure-renderer", "renders phase labels above all phase 
     assertEqual(firstLabelIndex > lastBandIndex, true);
 });
 
-test("protocol-graph-structure-renderer", "updates selected phase without rebuilding structure", () => {
-    const svg = createSvg();
-    const renderer = new ProtocolGraphStructureRenderer(svg);
-    const layout = createLayout();
+test(
+    "protocol-graph-structure-renderer",
+    "updates selected phase without rebuilding structure",
+    () => {
+        const svg = createSvg();
+        const renderer = new ProtocolGraphStructureRenderer(svg);
+        const layout = createLayout();
 
-    renderer.render({
-        layout,
-        phases: createPhases(),
-        blocks: createBlocks(),
-    });
+        renderer.render({
+            layout,
+            phases: createPhases(),
+            blocks: createBlocks(),
+        });
 
-    const phaseRegionBefore = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
+        const phaseRegionBefore = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
 
-    const phaseBandBefore = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
+        const phaseBandBefore = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
 
-    renderer.updateSelection({
-        selectedPhaseId: "warmup",
-    });
+        renderer.updateSelection({
+            selectedPhaseId: "warmup",
+        });
 
-    const phaseRegionAfter = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
+        const phaseRegionAfter = svg.querySelector('.graph-phase-region[data-phase-id="warmup"]');
 
-    const phaseBandAfter = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
+        const phaseBandAfter = svg.querySelector('.graph-phase-band[data-phase-id="warmup"]');
 
-    assertEqual(phaseRegionAfter, phaseRegionBefore);
-    assertEqual(phaseBandAfter, phaseBandBefore);
+        assertEqual(phaseRegionAfter, phaseRegionBefore);
+        assertEqual(phaseBandAfter, phaseBandBefore);
 
-    assertEqual(phaseRegionAfter.classList.contains("graph-phase-region--selected"), true);
+        assertEqual(phaseRegionAfter.classList.contains("graph-phase-region--selected"), true);
 
-    assertEqual(phaseBandAfter.classList.contains("graph-phase-band--selected"), true);
-});
+        assertEqual(phaseBandAfter.classList.contains("graph-phase-band--selected"), true);
+    },
+);
 
-test("protocol-graph-structure-renderer", "updates selected block without rebuilding structure", () => {
-    const svg = createSvg();
-    const renderer = new ProtocolGraphStructureRenderer(svg);
-    const layout = createLayout();
+test(
+    "protocol-graph-structure-renderer",
+    "updates selected block without rebuilding structure",
+    () => {
+        const svg = createSvg();
+        const renderer = new ProtocolGraphStructureRenderer(svg);
+        const layout = createLayout();
 
-    renderer.render({
-        layout,
-        phases: createPhases(),
-        blocks: createBlocks(),
-    });
+        renderer.render({
+            layout,
+            phases: createPhases(),
+            blocks: createBlocks(),
+        });
 
-    const blockRegionBefore = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
+        const blockRegionBefore = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
 
-    renderer.updateSelection({
-        selectedBlockId: "block-1",
-    });
+        renderer.updateSelection({
+            selectedBlockId: "block-1",
+        });
 
-    const blockRegionAfter = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
+        const blockRegionAfter = svg.querySelector('.graph-block-region[data-block-id="block-1"]');
 
-    assertEqual(blockRegionAfter, blockRegionBefore);
+        assertEqual(blockRegionAfter, blockRegionBefore);
 
-    assertEqual(blockRegionAfter.classList.contains("graph-block-region--selected"), true);
-});
+        assertEqual(blockRegionAfter.classList.contains("graph-block-region--selected"), true);
+    },
+);
 
 test("protocol-graph-structure-renderer", "switches selection between phase and block", () => {
     const svg = createSvg();
