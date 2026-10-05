@@ -23,3 +23,4 @@ docs/
 data/
 
 .prettierrc.json
+.local/

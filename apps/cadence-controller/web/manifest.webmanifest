@@ -1,0 +1,21 @@
+{
+    "name": "Cardio Cadence Controller",
+    "short_name": "Cadence",
+    "start_url": "/cadence-controller/",
+    "scope": "/cadence-controller/",
+    "display": "standalone",
+    "background_color": "#101318",
+    "theme_color": "#101318",
+    "icons": [
+        {
+            "src": "./assets/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "./assets/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -36,3 +36,7 @@ async function startApp() {
 }
 
 await startApp();
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/cadence-controller/service-worker.js");
+}
