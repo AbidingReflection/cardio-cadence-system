@@ -1,39 +1,55 @@
+import { formatDurationCompactMs } from "/packages/utils/format-duration.js";
+
 import { ProgressionCircle } from "../components/progression-circle.js";
 import { LoadGuidanceController } from "../controllers/load-guidance-controller.js";
 
 /** Initializes the persistent load-guidance visualizer scene. */
 export function initializeLoadVisualizer(container, label) {
-  const statusContainer = document.createElement("div");
-  statusContainer.className = "load-visualizer__status";
+    const statusContainer = document.createElement("div");
+    statusContainer.className = "load-visualizer__status";
 
-  const circleContainer = document.createElement("div");
-  circleContainer.className = "load-visualizer__circle";
+    const remainingElement = document.createElement("div");
+    remainingElement.className = "load-visualizer__remaining";
 
-  container.replaceChildren(statusContainer, circleContainer);
+    const nextElement = document.createElement("div");
+    nextElement.className = "load-visualizer__next";
 
-  const progressionCircle = new ProgressionCircle(circleContainer);
+    statusContainer.append(remainingElement, nextElement);
 
-  progressionCircle.setLabelText(label);
+    const circleContainer = document.createElement("div");
+    circleContainer.className = "load-visualizer__circle";
 
-  const controller = new LoadGuidanceController(progressionCircle);
+    container.replaceChildren(statusContainer, circleContainer);
 
-  return {
-    container,
-    controller,
-    progressionCircle,
-    statusContainer,
-  };
+    const progressionCircle = new ProgressionCircle(circleContainer);
+
+    progressionCircle.setLabelText(label);
+
+    const controller = new LoadGuidanceController(progressionCircle);
+
+    return {
+        container,
+        controller,
+        progressionCircle,
+        statusContainer,
+        remainingElement,
+        nextElement,
+    };
 }
 
 /** Renders resolved load-segment guidance into the persistent visualizer. */
 export function renderLoadVisualizer(
-  visualizer,
-  { value, progress, adjustmentPending = false },
+    visualizer,
+    { value, progress, remainingTimeMs, nextValue, adjustmentPending = false },
 ) {
-  visualizer.controller.render({
-    progress,
-    valueText: String(value),
-  });
+    visualizer.controller.render({
+        progress,
+        valueText: String(value),
+    });
 
-  visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
+    visualizer.remainingElement.textContent = formatDurationCompactMs(remainingTimeMs);
+
+    visualizer.nextElement.textContent = nextValue === null ? "" : String(nextValue);
+
+    visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
 }
