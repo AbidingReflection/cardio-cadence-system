@@ -21,3 +21,5 @@ package-lock.json
 data/hr_samples/
 docs/
 data/
+
+.prettierrc.json
