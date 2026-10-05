@@ -572,9 +572,12 @@ test("wire-rendering", "renders remaining time and next distinct load adjustment
     });
 
     assertEqual(
-        elements.loadVisualizer.querySelector(".load-visualizer__remaining").textContent,
+        elements.loadVisualizer.querySelector(".load-visualizer__remaining-value").textContent,
         "0:05",
     );
 
-    assertEqual(elements.loadVisualizer.querySelector(".load-visualizer__next").textContent, "7");
+    assertEqual(
+        elements.loadVisualizer.querySelector(".load-visualizer__next-value").textContent,
+        "7",
+    );
 });

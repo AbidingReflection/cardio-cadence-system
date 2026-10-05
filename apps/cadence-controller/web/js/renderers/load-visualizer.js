@@ -8,13 +8,31 @@ export function initializeLoadVisualizer(container, label) {
     const statusContainer = document.createElement("div");
     statusContainer.className = "load-visualizer__status";
 
-    const remainingElement = document.createElement("div");
-    remainingElement.className = "load-visualizer__remaining";
+    const remainingContainer = document.createElement("div");
+    remainingContainer.className = "load-visualizer__remaining";
 
-    const nextElement = document.createElement("div");
-    nextElement.className = "load-visualizer__next";
+    const remainingLabelElement = document.createElement("span");
+    remainingLabelElement.className = "load-visualizer__remaining-label";
+    remainingLabelElement.textContent = "CHANGE IN";
 
-    statusContainer.append(remainingElement, nextElement);
+    const remainingValueElement = document.createElement("span");
+    remainingValueElement.className = "load-visualizer__remaining-value";
+
+    remainingContainer.append(remainingLabelElement, remainingValueElement);
+
+    const nextContainer = document.createElement("div");
+    nextContainer.className = "load-visualizer__next";
+
+    const nextLabelElement = document.createElement("span");
+    nextLabelElement.className = "load-visualizer__next-label";
+    nextLabelElement.textContent = "NEXT VALUE";
+
+    const nextValueElement = document.createElement("span");
+    nextValueElement.className = "load-visualizer__next-value";
+
+    nextContainer.append(nextLabelElement, nextValueElement);
+
+    statusContainer.append(remainingContainer, nextContainer);
 
     const circleContainer = document.createElement("div");
     circleContainer.className = "load-visualizer__circle";
@@ -32,8 +50,8 @@ export function initializeLoadVisualizer(container, label) {
         controller,
         progressionCircle,
         statusContainer,
-        remainingElement,
-        nextElement,
+        remainingValueElement,
+        nextValueElement,
     };
 }
 
@@ -47,9 +65,11 @@ export function renderLoadVisualizer(
         valueText: String(value),
     });
 
-    visualizer.remainingElement.textContent = formatDurationCompactMs(remainingTimeMs);
+    visualizer.remainingValueElement.textContent = formatDurationCompactMs(remainingTimeMs);
 
-    visualizer.nextElement.textContent = nextValue === null ? "" : String(nextValue);
+    visualizer.nextValueElement.textContent = nextValue === null ? "" : String(nextValue);
+
+    visualizer.nextValueElement.parentElement.hidden = nextValue === null;
 
     visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
 }

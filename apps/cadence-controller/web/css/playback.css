@@ -69,6 +69,48 @@
     overflow: hidden;
 }
 
+.load-visualizer__status {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+
+    font-variant-numeric: tabular-nums;
+}
+
+.load-visualizer__remaining,
+.load-visualizer__next {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 2px;
+}
+
+.load-visualizer__remaining {
+    padding-left: 15px;
+}
+
+.load-visualizer__next {
+    padding-right: 15px;
+}
+
+.load-visualizer__remaining-label,
+.load-visualizer__next-label {
+    white-space: nowrap;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+}
+
+.load-visualizer__remaining-value,
+.load-visualizer__next-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .cadence-visualizer__signals .signal-bank {
     width: 100%;
     height: 100%;

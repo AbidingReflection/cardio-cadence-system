@@ -204,3 +204,60 @@ test("load-visualizer", "clears pending load adjustment state", () => {
 
     assertEqual(container.dataset.adjustmentPending, "false");
 });
+
+test("load-visualizer", "renders remaining load time", () => {
+    const container = document.createElement("div");
+    const visualizer = initializeLoadVisualizer(container);
+
+    renderLoadVisualizer(visualizer, {
+        value: 8,
+        progress: 0.25,
+        remainingTimeMs: 65_000,
+        nextValue: 10,
+    });
+
+    assertEqual(container.querySelector(".load-visualizer__remaining-value").textContent, "1:05");
+});
+
+test("load-visualizer", "renders next load value", () => {
+    const container = document.createElement("div");
+    const visualizer = initializeLoadVisualizer(container);
+
+    renderLoadVisualizer(visualizer, {
+        value: 8,
+        progress: 0.25,
+        remainingTimeMs: 5_000,
+        nextValue: 10,
+    });
+
+    assertEqual(container.querySelector(".load-visualizer__next-value").textContent, "10");
+});
+
+test("load-visualizer", "clears next load value when no adjustment remains", () => {
+    const container = document.createElement("div");
+    const visualizer = initializeLoadVisualizer(container);
+
+    renderLoadVisualizer(visualizer, {
+        value: 8,
+        progress: 0.25,
+        remainingTimeMs: 5_000,
+        nextValue: 10,
+    });
+
+    renderLoadVisualizer(visualizer, {
+        value: 8,
+        progress: 0.5,
+        remainingTimeMs: 2_500,
+        nextValue: null,
+    });
+
+    assertEqual(container.querySelector(".load-visualizer__next-value").textContent, "");
+});
+
+test("load-visualizer", "labels next load guidance", () => {
+    const container = document.createElement("div");
+
+    initializeLoadVisualizer(container);
+
+    assertEqual(container.querySelector(".load-visualizer__next-label").textContent, "NEXT VALUE");
+});
