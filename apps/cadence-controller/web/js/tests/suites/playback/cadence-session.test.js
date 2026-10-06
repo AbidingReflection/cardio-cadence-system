@@ -467,3 +467,138 @@ test("cadence-session", "alternates left and right cues at half-cycle boundaries
     assertApproximatelyEqual(rightCues[1].audioTime, 11.5, 0.02);
     assertApproximatelyEqual(leftCues[2].audioTime, 12, 0.02);
 });
+
+test("cadence-session", "seeks running playback to an absolute protocol time", async () => {
+    const { session, audioCueEngine } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12;
+
+    session.seek(10_000);
+
+    assertEqual(session.state, "running");
+    assertEqual(session.getSnapshot().protocolElapsedMs, 10_000);
+
+    audioCueEngine.currentTime = 13;
+
+    assertEqual(session.getSnapshot().protocolElapsedMs, 11_000);
+});
+
+test("cadence-session", "cancels and reschedules cadence cues after a running seek", async () => {
+    const { session, audioCueEngine, timer } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12;
+
+    const scheduledCueCountBeforeSeek = audioCueEngine.scheduledCues.length;
+
+    session.seek(10_000);
+
+    assertEqual(audioCueEngine.cancelCalls, 1);
+
+    audioCueEngine.currentTime = 12.4;
+    timer.runIntervals();
+
+    const cuesAfterSeek = audioCueEngine.scheduledCues.slice(scheduledCueCountBeforeSeek);
+    const nextCue = cuesAfterSeek.at(-1);
+
+    assertEqual(nextCue.type, "right");
+    assertApproximatelyEqual(nextCue.audioTime, 12.5, 0.02);
+});
+
+test("cadence-session", "seeks paused playback without resuming", async () => {
+    const { session, audioCueEngine, timer } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12.5;
+
+    session.pause();
+    session.seek(10_000);
+
+    assertEqual(session.state, "paused");
+    assertEqual(session.getSnapshot().protocolElapsedMs, 10_000);
+    assertEqual(timer.activeIntervalCount, 0);
+
+    audioCueEngine.currentTime = 30;
+
+    assertEqual(session.getSnapshot().protocolElapsedMs, 10_000);
+});
+
+test("cadence-session", "resumes from a paused seek position", async () => {
+    const { session, audioCueEngine } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12.5;
+
+    session.pause();
+    session.seek(10_000);
+
+    audioCueEngine.currentTime = 30;
+
+    await session.resume();
+
+    audioCueEngine.currentTime = 31;
+
+    assertEqual(session.state, "running");
+    assertEqual(session.getSnapshot().protocolElapsedMs, 11_000);
+});
+
+test("cadence-session", "rejects seek while idle", () => {
+    const { session } = createSession();
+
+    assertThrows(() => session.seek(10_000), /idle/);
+});
+
+test("cadence-session", "rejects seek during countdown", async () => {
+    const { session, audioCueEngine } = createSession({
+        startDelaySeconds: 5,
+    });
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    assertThrows(() => session.seek(10_000), /countdown/);
+});
+
+test("cadence-session", "rejects seek after completion", async () => {
+    const { session, audioCueEngine } = createSession({
+        protocol: createProtocol({
+            durationSeconds: 1,
+        }),
+    });
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 11;
+
+    assertEqual(session.state, "completed");
+
+    assertThrows(() => session.seek(500), /completed/);
+});
+
+test("cadence-session", "rejects an invalid seek protocol time", async () => {
+    const { session, audioCueEngine } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    for (const protocolTimeMs of [-1, 60_001, NaN, Infinity]) {
+        assertThrows(() => session.seek(protocolTimeMs), /protocolTimeMs/);
+    }
+});

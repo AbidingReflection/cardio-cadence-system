@@ -124,6 +124,33 @@ export class CadenceSession {
         this.#scheduleLookahead();
     }
 
+    /** Repositions active playback to an absolute protocol time. */
+    seek(protocolTimeMs) {
+        this.#updateLifecycle();
+
+        if (this.#state !== "running" && this.#state !== "paused") {
+            throw new Error(`Cannot seek cadence session while ${this.#state}.`);
+        }
+
+        validateProtocolTime(protocolTimeMs, this.#cadencePhase.durationMs);
+
+        if (this.#state === "paused") {
+            this.#pausedProtocolTimeMs = protocolTimeMs;
+            return;
+        }
+
+        this.#audioCueEngine.cancelScheduledCues();
+
+        this.#anchorProtocolTimeMs = protocolTimeMs;
+        this.#anchorAudioTime = this.#audioCueEngine.currentTime;
+
+        const accumulatedCycles = this.#cadencePhase.cyclesAt(protocolTimeMs);
+
+        this.#nextCueCycleCount = getNextCueCycleCount(accumulatedCycles);
+
+        this.#scheduleLookahead();
+    }
+
     /** Stops playback and resets protocol execution to its initial state. */
     stop() {
         if (this.#state === "idle") {
@@ -276,5 +303,12 @@ function getCueType(cycleCount) {
 function validateStartDelay(startDelaySeconds) {
     if (!Number.isInteger(startDelaySeconds) || startDelaySeconds < 0) {
         throw new RangeError("Cadence start delay must be a non-negative whole number of seconds.");
+    }
+}
+
+/** Validates an absolute protocol playback position. */
+function validateProtocolTime(protocolTimeMs, durationMs) {
+    if (!Number.isFinite(protocolTimeMs) || protocolTimeMs < 0 || protocolTimeMs > durationMs) {
+        throw new TypeError(`protocolTimeMs must be a finite number between 0 and ${durationMs}.`);
     }
 }
