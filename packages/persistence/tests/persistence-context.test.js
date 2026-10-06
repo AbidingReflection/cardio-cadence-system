@@ -43,6 +43,7 @@ const EXECUTION = {
     startedAtUnixMs: 1_789_360_200_000,
     endedAtUnixMs: 1_789_360_500_000,
     lastKnownActiveAtUnixMs: 1_789_360_500_000,
+    lastKnownProtocolTimeMs: 0,
     events: [],
 };
 

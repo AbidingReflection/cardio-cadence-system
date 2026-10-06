@@ -14,6 +14,7 @@ export function createExecutedProtocol({
     startedAtUnixMs,
     endedAtUnixMs,
     lastKnownActiveAtUnixMs,
+    lastKnownProtocolTimeMs,
     completionReason,
     events = [],
 }) {
@@ -24,6 +25,7 @@ export function createExecutedProtocol({
         startedAtUnixMs,
         endedAtUnixMs,
         lastKnownActiveAtUnixMs,
+        lastKnownProtocolTimeMs,
         completionReason,
         events,
     };
@@ -51,6 +53,11 @@ export function validateExecutedProtocol(executedProtocol) {
     requireUnixTimestamp(
         executedProtocol.lastKnownActiveAtUnixMs,
         "ExecutedProtocol lastKnownActiveAtUnixMs",
+    );
+
+    requireProtocolTime(
+        executedProtocol.lastKnownProtocolTimeMs,
+        "ExecutedProtocol lastKnownProtocolTimeMs",
     );
 
     validateEndTimestamp(executedProtocol.status, executedProtocol.endedAtUnixMs);
@@ -223,6 +230,8 @@ function validateEvent(event) {
 
 /** Validates a navigation event. */
 function validateNavigationEvent(event) {
+    requireProtocolTime(event.protocolTimeMs, "ExecutedProtocol navigation event protocolTimeMs");
+
     requireObject(event.target, "ExecutedProtocol navigation event target");
 
     requireNonEmptyString(event.target.phaseId, "ExecutedProtocol navigation event target phaseId");
@@ -251,4 +260,16 @@ function validateRecoveryEvent(event) {
         event.lastKnownActiveAtUnixMs,
         "ExecutedProtocol recovery event lastKnownActiveAtUnixMs",
     );
+
+    requireProtocolTime(
+        event.lastKnownProtocolTimeMs,
+        "ExecutedProtocol recovery event lastKnownProtocolTimeMs",
+    );
+}
+
+/** Validates an absolute position on the planned protocol timeline. */
+function requireProtocolTime(value, label) {
+    if (!Number.isFinite(value) || value < 0) {
+        throw new TypeError(`${label} must be a non-negative finite number.`);
+    }
 }

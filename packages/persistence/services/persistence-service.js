@@ -160,11 +160,11 @@ export class PersistenceService {
             status: "in-progress",
             startedAtUnixMs,
             lastKnownActiveAtUnixMs: startedAtUnixMs,
+            lastKnownProtocolTimeMs: 0,
             events: [],
         });
 
         this.#executedProtocolRepository.add(execution);
-
         return execution;
     }
 
@@ -237,6 +237,7 @@ export class PersistenceService {
             type: "recovery",
             occurredAtUnixMs: recoveredAtUnixMs,
             lastKnownActiveAtUnixMs: execution.lastKnownActiveAtUnixMs,
+            lastKnownProtocolTimeMs: execution.lastKnownProtocolTimeMs,
         };
 
         const updatedExecution = {

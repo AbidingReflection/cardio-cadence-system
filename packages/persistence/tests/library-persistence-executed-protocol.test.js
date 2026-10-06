@@ -12,6 +12,7 @@ const CREATED_AT = 1_789_360_000_000;
 const STARTED_AT = 1_789_360_100_000;
 const LAST_ACTIVE_AT = 1_789_360_200_000;
 const ENDED_AT = 1_789_360_300_000;
+const LAST_PROTOCOL_TIME = 600_000;
 
 const PROTOCOL = {
     id: "protocol-1",
@@ -72,6 +73,7 @@ test(
             startedAtUnixMs: STARTED_AT,
             events: EVENTS,
             lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+            lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
             endedAtUnixMs: ENDED_AT,
         });
 
@@ -82,6 +84,7 @@ test(
             startedAtUnixMs: STARTED_AT,
             endedAtUnixMs: ENDED_AT,
             lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+            lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
             completionReason: undefined,
             events: EVENTS,
         });
@@ -107,6 +110,7 @@ test(
             startedAtUnixMs: STARTED_AT,
             events: EVENTS,
             lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+            lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
             endedAtUnixMs: ENDED_AT,
         });
 
@@ -116,6 +120,7 @@ test(
             startedAtUnixMs: STARTED_AT + 1_000_000,
             events: EVENTS,
             lastKnownActiveAtUnixMs: LAST_ACTIVE_AT + 1_000_000,
+            lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
             endedAtUnixMs: ENDED_AT + 1_000_000,
         });
 
@@ -143,6 +148,7 @@ test(
                 startedAtUnixMs: STARTED_AT,
                 events: EVENTS,
                 lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+                lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
                 endedAtUnixMs: ENDED_AT,
             });
         } catch (caughtError) {
@@ -168,6 +174,7 @@ test("library-persistence-executed-protocol", "generates executed protocol ident
         startedAtUnixMs: STARTED_AT,
         events: EVENTS,
         lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+        lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
         endedAtUnixMs: ENDED_AT,
     });
 
@@ -191,6 +198,7 @@ test(
             startedAtUnixMs: STARTED_AT,
             events: EVENTS,
             lastKnownActiveAtUnixMs: LAST_ACTIVE_AT,
+            lastKnownProtocolTimeMs: LAST_PROTOCOL_TIME,
             endedAtUnixMs: ENDED_AT,
         });
 

@@ -155,6 +155,7 @@ export class LibraryPersistence {
         startedAtUnixMs,
         events,
         lastKnownActiveAtUnixMs,
+        lastKnownProtocolTimeMs,
         endedAtUnixMs,
     }) {
         const plannedVersion =
@@ -171,6 +172,7 @@ export class LibraryPersistence {
             startedAtUnixMs,
             events,
             lastKnownActiveAtUnixMs,
+            lastKnownProtocolTimeMs,
             endedAtUnixMs,
         });
 

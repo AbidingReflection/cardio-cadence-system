@@ -33,6 +33,7 @@ const EXECUTION_1 = {
     startedAtUnixMs: 1_789_360_100_000,
     endedAtUnixMs: 1_789_360_700_000,
     lastKnownActiveAtUnixMs: 1_789_360_700_000,
+    lastKnownProtocolTimeMs: 600_000,
     completionReason: undefined,
     events: [],
 };

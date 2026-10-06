@@ -35,6 +35,7 @@ test(
         assertEqual(execution.status, "in-progress");
         assertEqual(execution.startedAtUnixMs, 3000);
         assertEqual(execution.lastKnownActiveAtUnixMs, 3000);
+        assertEqual(execution.lastKnownProtocolTimeMs, 0);
         assertEqual(execution.endedAtUnixMs, undefined);
         assertEqual(execution.completionReason, undefined);
         assertDeepEqual(execution.events, []);
@@ -81,6 +82,7 @@ test(
 
         assertEqual(execution.startedAtUnixMs, 3456);
         assertEqual(execution.lastKnownActiveAtUnixMs, 3456);
+        assertEqual(execution.lastKnownProtocolTimeMs, 0);
     },
 );
 

@@ -19,6 +19,7 @@ test("persistence-service-execution-recovery", "recovers an in-progress executio
 
     assertEqual(recovered.status, "in-progress");
     assertEqual(recovered.lastKnownActiveAtUnixMs, 4000);
+    assertEqual(recovered.lastKnownProtocolTimeMs, 0);
 });
 
 test(
@@ -38,6 +39,7 @@ test(
         assertEqual(recovered.events[0].type, "recovery");
         assertEqual(recovered.events[0].occurredAtUnixMs, 4000);
         assertEqual(recovered.events[0].lastKnownActiveAtUnixMs, 3000);
+        assertEqual(recovered.events[0].lastKnownProtocolTimeMs, 0);
     },
 );
 
@@ -76,6 +78,7 @@ test("persistence-service-execution-recovery", "preserves existing events during
     assertEqual(recovered.events[1].type, "recovery");
     assertEqual(recovered.events[1].occurredAtUnixMs, 5000);
     assertEqual(recovered.events[1].lastKnownActiveAtUnixMs, 3000);
+    assertEqual(recovered.events[1].lastKnownProtocolTimeMs, 0);
 });
 
 test("persistence-service-execution-recovery", "rejects recovery of an unknown execution", () => {
