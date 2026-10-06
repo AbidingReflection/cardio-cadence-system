@@ -24,6 +24,7 @@ function createAppRoot() {
     <div id="load-visualizer"></div>
     <div id="workout-progress"></div>
     <div id="phase-progress"></div>
+    <div id="block-progress"></div>
 
     <button id="start-button"></button>
     <button id="pause-button"></button>

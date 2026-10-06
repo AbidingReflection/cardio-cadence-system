@@ -47,6 +47,8 @@ export function wireRendering(
 
     const phaseProgressVisualizer = initializeTimedProgressRenderer(elements.phaseProgress);
 
+    const blockProgressVisualizer = initializeTimedProgressRenderer(elements.blockProgress);
+
     let frameId = null;
 
     /** Renders current playback and workout state. */
@@ -110,6 +112,18 @@ export function wireRendering(
                 elapsedTimeMs: currentPhase.elapsedTimeMs,
                 durationMs: phaseDurationMs,
                 markerText: formatDurationCompactMs(currentPhase.elapsedTimeMs),
+            });
+        }
+
+        const currentBlock = workoutSnapshot.currentBlock;
+
+        if (currentBlock !== null) {
+            const blockDurationMs = currentBlock.elapsedTimeMs + currentBlock.remainingTimeMs;
+
+            renderTimedProgress(blockProgressVisualizer, {
+                elapsedTimeMs: currentBlock.elapsedTimeMs,
+                durationMs: blockDurationMs,
+                markerText: formatDurationCompactMs(currentBlock.elapsedTimeMs),
             });
         }
     }

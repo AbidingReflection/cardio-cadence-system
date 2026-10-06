@@ -19,6 +19,8 @@ function createElements() {
 
         cadenceVisualizer: document.createElement("div"),
         loadVisualizer: document.createElement("div"),
+
+        blockProgress: document.createElement("div"),
         workoutProgress: document.createElement("div"),
         phaseProgress: document.createElement("div"),
 
@@ -55,6 +57,10 @@ function createPlaybackFake() {
                 currentBlock: {
                     id: "block-1",
                     name: "Easy",
+                    startTimeMs: 0,
+                    endTimeMs: 30_000,
+                    elapsedTimeMs: 0,
+                    remainingTimeMs: 30_000,
                 },
                 nextPhase: null,
                 nextBlock: null,
@@ -271,6 +277,10 @@ test("wire-rendering", "uses session protocol time for workout context", () => {
         currentBlock: {
             id: "block-2",
             name: "Build",
+            startTimeMs: 10_000,
+            endTimeMs: 20_000,
+            elapsedTimeMs: 2_500,
+            remainingTimeMs: 7_500,
         },
         nextPhase: null,
         nextBlock: null,
@@ -336,6 +346,10 @@ test("wire-rendering", "rerenders on animation frames", () => {
         currentBlock: {
             id: "block-1",
             name: "Easy",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 0,
+            remainingTimeMs: 30_000,
         },
         nextPhase: null,
         nextBlock: null,
@@ -528,6 +542,10 @@ test("wire-rendering", "renders phase progress from current workout phase timing
         currentBlock: {
             id: "block-1",
             name: "Easy",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 0,
+            remainingTimeMs: 30_000,
         },
         nextPhase: null,
         nextBlock: null,
@@ -580,4 +598,50 @@ test("wire-rendering", "renders remaining time and next distinct load adjustment
         elements.loadVisualizer.querySelector(".load-visualizer__next-value").textContent,
         "7",
     );
+});
+
+test("wire-rendering", "renders block progress from current workout block timing", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 20_000,
+        protocolRemainingMs: 40_000,
+        countdownRemainingMs: 0,
+    });
+
+    playback.workoutSnapshots.set(20_000, {
+        currentPhase: {
+            id: "phase-1",
+            name: "Warmup",
+            startTimeMs: 0,
+            endTimeMs: 90_000,
+            elapsedTimeMs: 20_000,
+            remainingTimeMs: 70_000,
+        },
+        currentBlock: {
+            id: "block-1",
+            name: "Easy",
+            startTimeMs: 10_000,
+            endTimeMs: 50_000,
+            elapsedTimeMs: 10_000,
+            remainingTimeMs: 30_000,
+        },
+        nextPhase: null,
+        nextBlock: null,
+    });
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+    });
+
+    const markerText = elements.blockProgress.querySelector(".progress-track__marker-text");
+
+    const progress = elements.blockProgress.querySelector(".progress-track__progress");
+
+    assertEqual(markerText.textContent, "0:10");
+    assertEqual(progress.getAttribute("x2"), "27.5");
 });

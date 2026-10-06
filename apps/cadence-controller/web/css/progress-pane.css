@@ -29,6 +29,7 @@
     opacity: 0.6;
 }
 
+.block-progress,
 .phase-progress,
 .workout-progress {
     display: grid;
