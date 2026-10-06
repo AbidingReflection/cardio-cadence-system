@@ -261,3 +261,14 @@ test("load-visualizer", "labels next load guidance", () => {
 
     assertEqual(container.querySelector(".load-visualizer__next-label").textContent, "NEXT VALUE");
 });
+
+test("load-visualizer", "marks the load segment transition target", () => {
+    const container = document.createElement("div");
+
+    initializeLoadVisualizer(container, "Resistance");
+
+    const target = container.querySelector(".progression-circle__target");
+
+    assertEqual(target.dataset.targetId, "segment-end");
+    assertEqual(target.getAttribute("transform"), "rotate(0 50 50)");
+});

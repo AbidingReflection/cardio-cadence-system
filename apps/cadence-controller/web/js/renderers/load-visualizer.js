@@ -43,6 +43,13 @@ export function initializeLoadVisualizer(container, label) {
 
     progressionCircle.setLabelText(label);
 
+    progressionCircle.setTargets([
+        {
+            id: "segment-end",
+            position: 0,
+        },
+    ]);
+
     const controller = new LoadGuidanceController(progressionCircle);
 
     return {

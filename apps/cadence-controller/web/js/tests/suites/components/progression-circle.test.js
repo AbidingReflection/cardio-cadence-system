@@ -26,6 +26,7 @@ test("progression-circle", "creates the SVG structure", () => {
     assert(container.querySelector(".progression-circle__marker") instanceof SVGElement);
     assert(container.querySelector(".progression-circle__value") instanceof SVGElement);
     assert(container.querySelector(".progression-circle__label") instanceof SVGElement);
+    assert(container.querySelector(".progression-circle__targets") instanceof SVGElement);
 });
 
 test("progression-circle", "uses a normalized square view box", () => {
@@ -291,4 +292,87 @@ test("progression-circle", "hides progress at zero", () => {
     circle.setProgress(0.25);
 
     assertEqual(progress.getAttribute("visibility"), "visible");
+});
+
+test("progression-circle", "renders targets at arbitrary positions", () => {
+    const container = createContainer();
+    const circle = new ProgressionCircle(container);
+
+    circle.setTargets([
+        {
+            id: "start",
+            position: 0,
+        },
+        {
+            id: "middle",
+            position: 0.5,
+        },
+        {
+            id: "custom",
+            position: 0.8125,
+        },
+    ]);
+
+    const targets = container.querySelectorAll(".progression-circle__target");
+
+    assertEqual(targets.length, 3);
+
+    assertEqual(targets[0].dataset.targetId, "start");
+    assertEqual(targets[0].getAttribute("transform"), "rotate(0 50 50)");
+
+    assertEqual(targets[1].dataset.targetId, "middle");
+    assertEqual(targets[1].getAttribute("transform"), "rotate(180 50 50)");
+
+    assertEqual(targets[2].dataset.targetId, "custom");
+    assertEqual(targets[2].getAttribute("transform"), "rotate(292.5 50 50)");
+});
+
+test("progression-circle", "replaces existing targets", () => {
+    const container = createContainer();
+    const circle = new ProgressionCircle(container);
+
+    circle.setTargets([
+        {
+            id: "first",
+            position: 0,
+        },
+        {
+            id: "second",
+            position: 0.5,
+        },
+    ]);
+
+    circle.setTargets([
+        {
+            id: "replacement",
+            position: 0.25,
+        },
+    ]);
+
+    const targets = container.querySelectorAll(".progression-circle__target");
+
+    assertEqual(targets.length, 1);
+    assertEqual(targets[0].dataset.targetId, "replacement");
+});
+
+test("progression-circle", "rejects invalid target positions", () => {
+    const circle = new ProgressionCircle(createContainer());
+
+    assertThrows(() =>
+        circle.setTargets([
+            {
+                id: "invalid",
+                position: -0.1,
+            },
+        ]),
+    );
+
+    assertThrows(() =>
+        circle.setTargets([
+            {
+                id: "invalid",
+                position: 1,
+            },
+        ]),
+    );
 });

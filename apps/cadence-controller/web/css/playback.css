@@ -128,7 +128,7 @@
 }
 
 .cadence-visualizer__circle {
-    --progression-circle-track-opacity: 0.65;
+    --progression-circle-track-opacity: 65%;
 }
 
 .cadence-visualizer__circle .progression-circle,

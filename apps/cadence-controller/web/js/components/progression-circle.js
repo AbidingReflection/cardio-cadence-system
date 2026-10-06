@@ -20,6 +20,7 @@ export class ProgressionCircle {
     #svg;
     #progress;
     #notches;
+    #targets;
     #marker;
     #valueText;
     #labelText;
@@ -64,6 +65,10 @@ export class ProgressionCircle {
             class: "progression-circle__notches",
         });
 
+        this.#targets = createSvgElement("g", {
+            class: "progression-circle__targets",
+        });
+
         this.#marker = createSvgElement("g", {
             class: "progression-circle__marker",
             transform: `rotate(0 ${CENTER} ${CENTER})`,
@@ -97,6 +102,7 @@ export class ProgressionCircle {
             track,
             this.#progress,
             this.#notches,
+            this.#targets,
             this.#marker,
             this.#valueText,
             this.#labelText,
@@ -147,6 +153,33 @@ export class ProgressionCircle {
         }
 
         this.#notches.replaceChildren(fragment);
+    }
+
+    /** Replaces the circle's target marker definitions. */
+    setTargets(targets) {
+        if (!Array.isArray(targets)) {
+            throw new TypeError("ProgressionCircle targets must be an array.");
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        for (const target of targets) {
+            validateTarget(target);
+
+            const targetElement = createSvgElement("circle", {
+                class: "progression-circle__target",
+                cx: CENTER,
+                cy: CENTER - TRACK_RADIUS,
+                r: MARKER_RADIUS,
+                transform: `rotate(${target.position * 360} ${CENTER} ${CENTER})`,
+            });
+
+            targetElement.dataset.targetId = target.id;
+
+            fragment.append(targetElement);
+        }
+
+        this.#targets.replaceChildren(fragment);
     }
 
     /** Updates the primary interior value text. */
@@ -216,4 +249,17 @@ function validateNotch(notch) {
     }
 
     validateCircularPosition(notch.position, `ProgressionCircle notch "${notch.id}" position`);
+}
+
+/** Validates one target marker definition. */
+function validateTarget(target) {
+    if (target === null || typeof target !== "object" || Array.isArray(target)) {
+        throw new TypeError("ProgressionCircle target must be an object.");
+    }
+
+    if (typeof target.id !== "string" || target.id.length === 0) {
+        throw new TypeError("ProgressionCircle target id must be a non-empty string.");
+    }
+
+    validateCircularPosition(target.position, `ProgressionCircle target "${target.id}" position`);
 }

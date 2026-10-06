@@ -1,6 +1,6 @@
 .progression-circle {
     --progression-circle-track-color: currentColor;
-    --progression-circle-track-opacity: 0.18;
+    --progression-circle-track-opacity: 18%;
 
     --progression-circle-progress-color: currentColor;
 
@@ -62,6 +62,19 @@
     stroke-opacity: var(--progression-circle-notch-opacity);
 
     stroke-linecap: round;
+}
+
+.progression-circle__target {
+    fill: color-mix(
+        in srgb,
+        var(--progression-circle-track-color) var(--progression-circle-track-opacity),
+        #101318
+    );
+
+    stroke: #000;
+    stroke-width: 1.5px;
+
+    vector-effect: non-scaling-stroke;
 }
 
 .progression-circle__marker-dot {
