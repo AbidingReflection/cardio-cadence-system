@@ -72,11 +72,13 @@ export function renderLoadVisualizer(
         valueText: String(value),
     });
 
-    visualizer.remainingValueElement.textContent = formatDurationCompactMs(remainingTimeMs);
-
-    visualizer.nextValueElement.textContent = nextValue === null ? "" : String(nextValue);
-
-    visualizer.nextValueElement.parentElement.hidden = nextValue === null;
+    if (nextValue === null) {
+        visualizer.remainingValueElement.textContent = "—";
+        visualizer.nextValueElement.textContent = "N/A";
+    } else {
+        visualizer.remainingValueElement.textContent = formatDurationCompactMs(remainingTimeMs);
+        visualizer.nextValueElement.textContent = String(nextValue);
+    }
 
     visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
 }

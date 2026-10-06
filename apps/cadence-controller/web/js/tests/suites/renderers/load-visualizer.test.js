@@ -233,7 +233,7 @@ test("load-visualizer", "renders next load value", () => {
     assertEqual(container.querySelector(".load-visualizer__next-value").textContent, "10");
 });
 
-test("load-visualizer", "clears next load value when no adjustment remains", () => {
+test("load-visualizer", "renders final load guidance placeholders", () => {
     const container = document.createElement("div");
     const visualizer = initializeLoadVisualizer(container);
 
@@ -251,7 +251,12 @@ test("load-visualizer", "clears next load value when no adjustment remains", () 
         nextValue: null,
     });
 
-    assertEqual(container.querySelector(".load-visualizer__next-value").textContent, "");
+    const remainingValue = container.querySelector(".load-visualizer__remaining-value");
+    const nextValue = container.querySelector(".load-visualizer__next-value");
+
+    assertEqual(remainingValue.textContent, "—");
+    assertEqual(nextValue.textContent, "N/A");
+    assertEqual(nextValue.parentElement.hidden, false);
 });
 
 test("load-visualizer", "labels next load guidance", () => {
