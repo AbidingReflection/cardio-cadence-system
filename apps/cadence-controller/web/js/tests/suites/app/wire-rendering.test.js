@@ -42,6 +42,46 @@ function createPlaybackFake() {
         },
     ];
 
+    const phaseRanges = [
+        {
+            id: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+        },
+        {
+            id: "phase-2",
+            startTimeMs: 30_000,
+            endTimeMs: 60_000,
+        },
+    ];
+
+    const blockRanges = [
+        {
+            id: "block-1",
+            phaseId: "phase-1",
+            startTimeMs: 0,
+            endTimeMs: 10_000,
+        },
+        {
+            id: "block-2",
+            phaseId: "phase-1",
+            startTimeMs: 10_000,
+            endTimeMs: 30_000,
+        },
+        {
+            id: "block-3",
+            phaseId: "phase-2",
+            startTimeMs: 30_000,
+            endTimeMs: 45_000,
+        },
+        {
+            id: "block-4",
+            phaseId: "phase-2",
+            startTimeMs: 45_000,
+            endTimeMs: 60_000,
+        },
+    ];
+
     const workoutSnapshots = new Map([
         [
             0,
@@ -122,6 +162,14 @@ function createPlaybackFake() {
 
         protocolExpander: {
             durationMs: 60_000,
+
+            getPhaseRanges() {
+                return structuredClone(phaseRanges);
+            },
+
+            getBlockRanges() {
+                return structuredClone(blockRanges);
+            },
         },
 
         loadAdjustmentTracker: {
@@ -644,4 +692,38 @@ test("wire-rendering", "renders block progress from current workout block timing
 
     assertEqual(markerText.textContent, "0:10");
     assertEqual(progress.getAttribute("x2"), "27.5");
+});
+
+test("wire-rendering", "renders session phase transition markers", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+    });
+
+    const ticks = elements.workoutProgress.querySelectorAll(".progress-track__tick");
+
+    assertEqual(ticks.length, 1);
+    assertEqual(ticks[0].dataset.tickId, "phase-2");
+    assertEqual(ticks[0].style.left, "50%");
+});
+
+test("wire-rendering", "renders current phase block transition markers", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+    });
+
+    const ticks = elements.phaseProgress.querySelectorAll(".progress-track__tick");
+
+    assertEqual(ticks.length, 1);
+    assertEqual(ticks[0].dataset.tickId, "block-2");
+    assertEqual(ticks[0].style.left, "35%");
 });

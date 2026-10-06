@@ -25,7 +25,7 @@ test("progress-track", "creates the persistent track structure", () => {
 
     assert(container.querySelector(".progress-track__track") instanceof SVGElement);
     assert(container.querySelector(".progress-track__progress") instanceof SVGElement);
-    assert(container.querySelector(".progress-track__ticks") instanceof SVGElement);
+    assert(container.querySelector(".progress-track__ticks") instanceof HTMLElement);
     assert(container.querySelector(".progress-track__marker") instanceof SVGElement);
 
     assert(container.querySelector(".progress-track__marker-text") instanceof HTMLElement);
@@ -140,13 +140,18 @@ test("progress-track", "renders ticks at arbitrary positions", () => {
     assertEqual(ticks.length, 3);
 
     assertEqual(ticks[0].dataset.tickId, "start");
-    assertEqual(ticks[0].getAttribute("transform"), "translate(5 0)");
+    assertEqual(ticks[0].style.left, "5%");
 
     assertEqual(ticks[1].dataset.tickId, "middle");
-    assertEqual(ticks[1].getAttribute("transform"), "translate(50 0)");
+    assertEqual(ticks[1].style.left, "50%");
 
     assertEqual(ticks[2].dataset.tickId, "end");
-    assertEqual(ticks[2].getAttribute("transform"), "translate(95 0)");
+    assertEqual(ticks[2].style.left, "95%");
+
+    const tickMarkers = container.querySelectorAll(".progress-track__tick-marker");
+
+    assertEqual(tickMarkers.length, 3);
+    assert(tickMarkers[0] instanceof HTMLElement);
 });
 
 test("progress-track", "renders optional tick labels outside the SVG", () => {

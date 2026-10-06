@@ -57,13 +57,29 @@
     vector-effect: non-scaling-stroke;
 }
 
-.progress-track__tick-line {
-    stroke: var(--progress-track-tick-color);
-    stroke-width: 2px;
-    stroke-opacity: var(--progress-track-tick-opacity);
+.progress-track__ticks {
+    position: absolute;
+    inset: 0;
+}
 
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
+.progress-track__tick {
+    position: absolute;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+}
+
+.progress-track__tick-marker {
+    width: 5px;
+    height: 5px;
+
+    border: 1px solid #000;
+    border-radius: 50%;
+
+    background: var(--progress-track-tick-color);
+    opacity: var(--progress-track-tick-opacity);
+
+    box-sizing: border-box;
 }
 
 .progress-track__marker-line {

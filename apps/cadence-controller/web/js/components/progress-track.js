@@ -51,9 +51,8 @@ export class ProgressTrack {
             y2: TRACK_Y,
         });
 
-        this.#ticks = createSvgElement("g", {
-            class: "progress-track__ticks",
-        });
+        this.#ticks = document.createElement("div");
+        this.#ticks.className = "progress-track__ticks";
 
         this.#marker = createSvgElement("g", {
             class: "progress-track__marker",
@@ -77,9 +76,9 @@ export class ProgressTrack {
         this.#tickLabels = document.createElement("div");
         this.#tickLabels.className = "progress-track__tick-labels";
 
-        this.#svg.append(track, this.#progress, this.#ticks, this.#marker);
+        this.#svg.append(track, this.#progress, this.#marker);
 
-        this.#root.append(this.#svg, this.#markerText, this.#tickLabels);
+        this.#root.append(this.#svg, this.#ticks, this.#markerText, this.#tickLabels);
 
         container.append(this.#root);
     }
@@ -121,22 +120,15 @@ export class ProgressTrack {
 
             const x = positionToX(tick.position);
 
-            const tickElement = createSvgElement("g", {
-                class: "progress-track__tick",
-                transform: `translate(${x} 0)`,
-            });
-
+            const tickElement = document.createElement("div");
+            tickElement.className = "progress-track__tick";
             tickElement.dataset.tickId = tick.id;
+            tickElement.style.left = `${x}%`;
 
-            const tickLine = createSvgElement("line", {
-                class: "progress-track__tick-line",
-                x1: 0,
-                y1: TICK_TOP_Y,
-                x2: 0,
-                y2: TICK_BOTTOM_Y,
-            });
+            const tickMarker = document.createElement("div");
+            tickMarker.className = "progress-track__tick-marker";
 
-            tickElement.append(tickLine);
+            tickElement.append(tickMarker);
             tickFragment.append(tickElement);
 
             if (tick.label !== undefined) {

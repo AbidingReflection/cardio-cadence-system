@@ -49,6 +49,18 @@ export function wireRendering(
 
     const blockProgressVisualizer = initializeTimedProgressRenderer(elements.blockProgress);
 
+    const phaseRanges = playback.protocolExpander.getPhaseRanges();
+    const blockRanges = playback.protocolExpander.getBlockRanges();
+
+    workoutProgressVisualizer.progressTrack.setTicks(
+        phaseRanges.slice(1).map((phaseRange) => ({
+            id: phaseRange.id,
+            position: phaseRange.startTimeMs / playback.protocolExpander.durationMs,
+        })),
+    );
+
+    let renderedPhaseId = null;
+
     let frameId = null;
 
     /** Renders current playback and workout state. */
@@ -106,6 +118,27 @@ export function wireRendering(
         const currentPhase = workoutSnapshot.currentPhase;
 
         if (currentPhase !== null) {
+            if (currentPhase.id !== renderedPhaseId) {
+                const phaseRange = phaseRanges.find((range) => range.id === currentPhase.id);
+
+                const phaseDurationMs = phaseRange.endTimeMs - phaseRange.startTimeMs;
+
+                const phaseBlockTicks = blockRanges
+                    .filter(
+                        (range) =>
+                            range.phaseId === currentPhase.id &&
+                            range.startTimeMs > phaseRange.startTimeMs &&
+                            range.startTimeMs < phaseRange.endTimeMs,
+                    )
+                    .map((range) => ({
+                        id: range.id,
+                        position: (range.startTimeMs - phaseRange.startTimeMs) / phaseDurationMs,
+                    }));
+
+                phaseProgressVisualizer.progressTrack.setTicks(phaseBlockTicks);
+                renderedPhaseId = currentPhase.id;
+            }
+
             const phaseDurationMs = currentPhase.elapsedTimeMs + currentPhase.remainingTimeMs;
 
             renderTimedProgress(phaseProgressVisualizer, {
@@ -113,6 +146,9 @@ export function wireRendering(
                 durationMs: phaseDurationMs,
                 markerText: formatDurationCompactMs(currentPhase.elapsedTimeMs),
             });
+        } else if (renderedPhaseId !== null) {
+            phaseProgressVisualizer.progressTrack.setTicks([]);
+            renderedPhaseId = null;
         }
 
         const currentBlock = workoutSnapshot.currentBlock;
