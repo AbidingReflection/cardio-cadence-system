@@ -115,7 +115,10 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         )
 
     def do_GET(self) -> None:
-        """Handle redirects and test manifests before serving GET requests."""
+        """Handle health checks, redirects, and test manifests before serving GET requests."""
+        if self._handle_health_request(head_only=False):
+            return
+
         if self._handle_redirect():
             return
 
@@ -124,7 +127,19 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         super().do_GET()
 
+
     def do_HEAD(self) -> None:
+        """Handle health checks, redirects, and test manifests before serving HEAD requests."""
+        if self._handle_health_request(head_only=True):
+            return
+
+        if self._handle_redirect():
+            return
+
+        if self._handle_test_manifest_request(head_only=True):
+            return
+
+        super().do_HEAD()
         """Handle redirects and test manifests before serving HEAD requests."""
         if self._handle_redirect():
             return
@@ -182,6 +197,20 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
             return False
 
         self._send_redirect(target)
+
+        return True
+
+    def _handle_health_request(self, *, head_only: bool) -> bool:
+        """Serve the development-server health endpoint."""
+        parsed_url = urllib.parse.urlsplit(self.path)
+
+        if parsed_url.path != "/health":
+            return False
+
+        self.send_response(http.HTTPStatus.NO_CONTENT)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
         return True
 
