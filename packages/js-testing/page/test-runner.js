@@ -24,7 +24,15 @@ if (!Array.isArray(manifest.modules)) {
     throw new Error(`Test manifest must contain a "modules" array: "${manifestUrl}".`);
 }
 
+const suiteMetadata = Object.fromEntries(
+    manifest.modules.map((moduleUrl) => [
+        getSuiteName(moduleUrl),
+        manifest.moduleMetadata?.[moduleUrl] ?? null,
+    ]),
+);
+
 const loadFailures = await loadTestModules(manifest.modules);
+
 for (const failure of loadFailures) {
     console.error(`FAIL: ${failure.suite} - module load`, failure.message);
 }
@@ -37,8 +45,9 @@ const results = [...loadFailures, ...(await runTests())];
 
 renderTestResults(results);
 renderSummary(results);
-renderSuiteSummary(results);
+renderSuiteSummary(results, suiteMetadata);
 
+/** Returns the suite name represented by a test-module URL. */
 function getSuiteName(moduleUrl) {
     const filename = moduleUrl.split("/").pop();
 

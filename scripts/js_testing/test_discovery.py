@@ -3,10 +3,19 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 
 TEST_FILE_SUFFIX = ".test.js"
+
+
+@dataclass(frozen=True)
+class DiscoveredTestModule:
+    """One discovered browser test module and its filesystem path."""
+
+    url: str
+    path: Path
 
 
 def discover_test_modules(
@@ -19,7 +28,26 @@ def discover_test_modules(
     sorted alphabetically by relative path. Duplicate module URLs are omitted
     while preserving their first occurrence.
     """
-    modules: list[str] = []
+    return [
+        module.url
+        for module in discover_test_module_records(
+            test_roots,
+            route_roots,
+        )
+    ]
+
+
+def discover_test_module_records(
+    test_roots: Sequence[str],
+    route_roots: Mapping[str, Path],
+) -> list[DiscoveredTestModule]:
+    """Return discovered test-module URLs with their filesystem paths.
+
+    Test roots are processed in the order provided. Files within each root are
+    sorted alphabetically by relative path. Duplicate module URLs are omitted
+    while preserving their first occurrence.
+    """
+    modules: list[DiscoveredTestModule] = []
     seen_modules: set[str] = set()
 
     for test_root in test_roots:
@@ -33,12 +61,12 @@ def discover_test_modules(
             filesystem_root,
         )
 
-        for module_url in discovered_modules:
-            if module_url in seen_modules:
+        for module in discovered_modules:
+            if module.url in seen_modules:
                 continue
 
-            seen_modules.add(module_url)
-            modules.append(module_url)
+            seen_modules.add(module.url)
+            modules.append(module)
 
     return modules
 
@@ -111,8 +139,8 @@ def _find_matching_route(
 def _discover_modules_in_root(
     test_root: str,
     filesystem_root: Path,
-) -> list[str]:
-    """Return sorted test-module URLs beneath one filesystem root."""
+) -> list[DiscoveredTestModule]:
+    """Return sorted test-module records beneath one filesystem root."""
     relative_files = sorted(
         (
             path.relative_to(filesystem_root)
@@ -125,7 +153,10 @@ def _discover_modules_in_root(
     browser_root = test_root.rstrip("/")
 
     return [
-        f"{browser_root}/{relative_path.as_posix()}"
+        DiscoveredTestModule(
+            url=f"{browser_root}/{relative_path.as_posix()}",
+            path=(filesystem_root / relative_path).resolve(),
+        )
         for relative_path in relative_files
     ]
 

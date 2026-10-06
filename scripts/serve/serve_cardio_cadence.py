@@ -24,6 +24,7 @@ from js_testing.test_manifest import (
     get_test_manifest_request,
     load_test_roots,
 )
+from js_testing.test_metadata_store import TestMetadataStore
 
 from serve.routing import (
     APP_ROUTES,
@@ -32,7 +33,8 @@ from serve.routing import (
 )
 
 
-DEFAULT_HOST = "127.0.0.1"
+# DEFAULT_HOST = "127.0.0.1"
+DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 8080
 
 TEST_PAGE_RELATIVE_PATH = Path(
@@ -81,11 +83,13 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
         self,
         *args,
         project_root: Path,
+        test_metadata_store: TestMetadataStore,
         **kwargs,
     ) -> None:
         self.project_root = project_root.resolve()
         self.data_root = (project_root / "data").resolve()
         self.packages_root = (project_root / "packages").resolve()
+        self.test_metadata_store = test_metadata_store
 
         self.test_page_path = (
             self.packages_root
@@ -231,6 +235,7 @@ class CardioCadenceRequestHandler(http.server.SimpleHTTPRequestHandler):
                     app_route: app_root,
                     "/packages": self.packages_root,
                 },
+                metadata_store=self.test_metadata_store,
             )
 
         except (
@@ -365,10 +370,19 @@ def main() -> int:
             file=sys.stderr,
         )
 
+    test_metadata_store = TestMetadataStore(
+        project_root
+        / "scripts"
+        / "js_testing"
+        / "data"
+        / "test_metadata.sqlite3"
+    )
+
     def handler_factory(*handler_args, **handler_kwargs):
         return CardioCadenceRequestHandler(
             *handler_args,
             project_root=project_root,
+            test_metadata_store=test_metadata_store,
             **handler_kwargs,
         )
 

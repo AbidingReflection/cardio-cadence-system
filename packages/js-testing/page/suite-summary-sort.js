@@ -46,13 +46,17 @@ function sortSuiteSummary(table, button) {
 
 /** Returns a sortable value from a table cell. */
 function getCellValue(row, columnIndex, sortType) {
-    const text = row.cells[columnIndex].textContent.trim();
+    const cell = row.cells[columnIndex];
 
     if (sortType === "number") {
-        return Number(text);
+        return Number(cell.textContent.trim());
     }
 
-    return text;
+    if (sortType === "date") {
+        return Date.parse(cell.dataset.sortValue);
+    }
+
+    return cell.textContent.trim();
 }
 
 /** Compares two normalized sortable values. */

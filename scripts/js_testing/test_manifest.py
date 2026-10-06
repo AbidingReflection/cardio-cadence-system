@@ -6,7 +6,11 @@ import json
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
-from js_testing.test_discovery import discover_test_modules
+from js_testing.test_discovery import (
+    discover_test_module_records,
+    discover_test_modules,
+)
+from js_testing.test_metadata_store import TestMetadataStore
 
 
 DEFAULT_TEST_TARGET = "all"
@@ -116,15 +120,38 @@ def build_test_manifest(
     target: str,
     test_roots: Sequence[str],
     route_roots: Mapping[str, Path],
+    metadata_store: TestMetadataStore | None = None,
 ) -> dict[str, object]:
     """Build a browser test manifest from configured test roots."""
-    modules = discover_test_modules(
+    if metadata_store is None:
+        modules = discover_test_modules(
+            test_roots,
+            route_roots,
+        )
+
+        return {
+            "target": target,
+            "roots": list(test_roots),
+            "modules": modules,
+        }
+
+    module_records = discover_test_module_records(
         test_roots,
         route_roots,
     )
+
+    modules = [module.url for module in module_records]
+
+    module_metadata = {
+        module.url: {
+            "changedAt": metadata_store.observe(module.path).changed_at.isoformat(),
+        }
+        for module in module_records
+    }
 
     return {
         "target": target,
         "roots": list(test_roots),
         "modules": modules,
+        "moduleMetadata": module_metadata,
     }

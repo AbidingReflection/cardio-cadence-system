@@ -70,19 +70,21 @@ export function renderSummary(results) {
 }
 
 /** Renders a summary row for each completed test suite. */
-export function renderSuiteSummary(results) {
+export function renderSuiteSummary(results, suiteMetadata = {}) {
     const tableBody = getRequiredElement("#test-suite-summary");
 
     tableBody.replaceChildren();
 
-    const suites = [...groupResultsBySuite(results).entries()].sort(compareSuiteStatus);
+    const suites = [...groupResultsBySuite(results).entries()].sort((suiteA, suiteB) =>
+        compareSuiteSummary(suiteA, suiteB, suiteMetadata),
+    );
 
     for (const [suite, suiteResults] of suites) {
-        tableBody.append(createSuiteSummaryItem(suite, suiteResults));
+        tableBody.append(createSuiteSummaryItem(suite, suiteResults, suiteMetadata[suite]));
     }
 }
 
-function compareSuiteStatus([suiteA, resultsA], [suiteB, resultsB]) {
+function compareSuiteSummary([suiteA, resultsA], [suiteB, resultsB], suiteMetadata) {
     const statusA = getSuiteStatus(resultsA);
     const statusB = getSuiteStatus(resultsB);
 
@@ -90,6 +92,20 @@ function compareSuiteStatus([suiteA, resultsA], [suiteB, resultsB]) {
 
     if (priorityDifference !== 0) {
         return priorityDifference;
+    }
+
+    const changedAtA = Date.parse(suiteMetadata[suiteA]?.changedAt ?? "");
+    const changedAtB = Date.parse(suiteMetadata[suiteB]?.changedAt ?? "");
+
+    const hasChangedAtA = Number.isFinite(changedAtA);
+    const hasChangedAtB = Number.isFinite(changedAtB);
+
+    if (hasChangedAtA && hasChangedAtB && changedAtA !== changedAtB) {
+        return changedAtB - changedAtA;
+    }
+
+    if (hasChangedAtA !== hasChangedAtB) {
+        return hasChangedAtA ? -1 : 1;
     }
 
     return suiteA.localeCompare(suiteB);
@@ -130,7 +146,7 @@ function createTestSuite(suite) {
 }
 
 /** Creates a summary row linking to a test suite section. */
-function createSuiteSummaryItem(suite, results) {
+function createSuiteSummaryItem(suite, results, metadata) {
     const passed = results.filter((result) => result.status === "PASSED").length;
 
     const failed = results.filter((result) => result.status === "FAILED").length;
@@ -161,9 +177,30 @@ function createSuiteSummaryItem(suite, results) {
     const failedCell = document.createElement("td");
     failedCell.textContent = failed;
 
-    row.append(suiteCell, statusCell, totalCell, passedCell, failedCell);
+    const updatedCell = document.createElement("td");
+    updatedCell.className = "test-suite-summary__updated";
+
+    if (metadata?.changedAt) {
+        updatedCell.dataset.sortValue = metadata.changedAt;
+        updatedCell.textContent = formatUpdatedAt(metadata.changedAt);
+    }
+
+    row.append(suiteCell, statusCell, totalCell, passedCell, failedCell, updatedCell);
 
     return row;
+}
+
+function formatUpdatedAt(value) {
+    const date = new Date(value);
+
+    return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
 }
 
 /** Groups completed test results by suite. */

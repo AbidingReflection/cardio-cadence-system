@@ -172,3 +172,7 @@ th {
     margin-top: 32px;
     scroll-margin-top: 24px;
 }
+
+.test-suite-summary__updated {
+    white-space: nowrap;
+}

@@ -94,47 +94,63 @@ test("test-renderer", "sorts failed suites before passed suites", () => {
     }
 });
 
-test("test-renderer", "sorts suites alphabetically within status groups", () => {
+test("test-renderer", "sorts suites by status then most recently updated", () => {
     const tableBody = document.querySelector("#test-suite-summary");
     const originalContent = tableBody.innerHTML;
 
     try {
-        renderSuiteSummary([
+        renderSuiteSummary(
+            [
+                {
+                    suite: "older-failed",
+                    name: "fails",
+                    status: "FAILED",
+                    message: "Failure",
+                },
+                {
+                    suite: "newer-passed",
+                    name: "passes",
+                    status: "PASSED",
+                    message: "",
+                },
+                {
+                    suite: "newer-failed",
+                    name: "fails",
+                    status: "FAILED",
+                    message: "Failure",
+                },
+                {
+                    suite: "older-passed",
+                    name: "passes",
+                    status: "PASSED",
+                    message: "",
+                },
+            ],
             {
-                suite: "zeta-failed",
-                name: "fails",
-                status: "FAILED",
-                message: "Failure",
+                "older-failed": {
+                    changedAt: "2026-10-05T08:00:00+00:00",
+                },
+                "newer-failed": {
+                    changedAt: "2026-10-06T08:00:00+00:00",
+                },
+                "older-passed": {
+                    changedAt: "2026-10-05T08:00:00+00:00",
+                },
+                "newer-passed": {
+                    changedAt: "2026-10-06T08:00:00+00:00",
+                },
             },
-            {
-                suite: "zeta-passed",
-                name: "passes",
-                status: "PASSED",
-                message: "",
-            },
-            {
-                suite: "alpha-failed",
-                name: "fails",
-                status: "FAILED",
-                message: "Failure",
-            },
-            {
-                suite: "alpha-passed",
-                name: "passes",
-                status: "PASSED",
-                message: "",
-            },
-        ]);
+        );
 
         const suiteNames = [...tableBody.querySelectorAll("tr")].map(
             (row) => row.cells[0].textContent,
         );
 
         assertDeepEqual(suiteNames, [
-            "alpha-failed.test.js",
-            "zeta-failed.test.js",
-            "alpha-passed.test.js",
-            "zeta-passed.test.js",
+            "newer-failed.test.js",
+            "older-failed.test.js",
+            "newer-passed.test.js",
+            "older-passed.test.js",
         ]);
     } finally {
         tableBody.innerHTML = originalContent;
@@ -204,5 +220,37 @@ test("test-renderer", "sorts failed tests first while preserving status-group or
         ]);
     } finally {
         container.innerHTML = originalContent;
+    }
+});
+
+test("test-renderer", "renders suite update metadata", () => {
+    const tableBody = document.querySelector("#test-suite-summary");
+    const originalContent = tableBody.innerHTML;
+
+    try {
+        renderSuiteSummary(
+            [
+                {
+                    suite: "alpha-suite",
+                    name: "passes",
+                    status: "PASSED",
+                    message: "",
+                },
+            ],
+            {
+                "alpha-suite": {
+                    changedAt: "2026-10-06T08:30:00+00:00",
+                },
+            },
+        );
+
+        const row = tableBody.querySelector("tr");
+        const updatedCell = row.cells[5];
+
+        assertEqual(updatedCell.dataset.sortValue, "2026-10-06T08:30:00+00:00");
+
+        assertEqual(updatedCell.textContent, "Oct 06, 2026, 02:30:00 AM");
+    } finally {
+        tableBody.innerHTML = originalContent;
     }
 });
