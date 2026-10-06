@@ -93,7 +93,7 @@ export class ProgressionCircle {
         this.#labelText = createSvgElement("text", {
             class: "progression-circle__label",
             x: CENTER,
-            y: 60,
+            y: 65,
             "text-anchor": "middle",
         });
 
