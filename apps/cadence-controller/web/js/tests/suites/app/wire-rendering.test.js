@@ -745,6 +745,10 @@ test("wire-rendering", "updates workout navigation from protocol time", () => {
         getPendingAction() {
             return null;
         },
+
+        getConfirmedOmissions() {
+            return [];
+        },
     };
 
     wireRendering(elements, playback, {
@@ -783,6 +787,10 @@ test("wire-rendering", "renders pending workout navigation state", () => {
                 triggerTimeMs: 20_000,
                 destinationTimeMs: 40_000,
             };
+        },
+
+        getConfirmedOmissions() {
+            return [];
         },
     };
 
@@ -826,6 +834,10 @@ test("wire-rendering", "passes pending workout action to load guidance", () => {
         getPendingAction() {
             return pendingAction;
         },
+
+        getConfirmedOmissions() {
+            return [];
+        },
     };
 
     wireRendering(elements, playback, {
@@ -837,4 +849,316 @@ test("wire-rendering", "passes pending workout action to load guidance", () => {
     assertEqual(guidanceCalls.length, 1);
     assertEqual(guidanceCalls[0].timeMs, 0);
     assertEqual(guidanceCalls[0].pendingAction, pendingAction);
+});
+
+test("wire-rendering", "renders pending omission on session progress", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return {
+                action: "skip-phase",
+                triggerTimeMs: 20_000,
+                destinationTimeMs: 50_000,
+            };
+        },
+
+        getConfirmedOmissions() {
+            return [];
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame() {
+            return 1;
+        },
+
+        cancelFrame() {},
+
+        workoutNavigationController,
+    });
+
+    const range = elements.workoutProgress.querySelector(
+        '.progress-track__range[data-range-id="pending-omission"]',
+    );
+
+    assertEqual(range !== null, true);
+    assertEqual(range.dataset.state, "pending-omission");
+    assertEqual(range.getAttribute("x1"), "35");
+    assertEqual(range.getAttribute("x2"), "80");
+});
+
+test("wire-rendering", "renders pending omission on current phase progress", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 20_000,
+        protocolRemainingMs: 40_000,
+        countdownRemainingMs: 0,
+    });
+
+    playback.workoutSnapshots.set(20_000, {
+        currentPhase: {
+            id: "phase-1",
+            name: "Warmup",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 20_000,
+            remainingTimeMs: 10_000,
+        },
+        currentBlock: {
+            id: "block-2",
+            name: "Build",
+            startTimeMs: 10_000,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 10_000,
+            remainingTimeMs: 10_000,
+        },
+        nextPhase: {
+            id: "phase-2",
+            name: "Work",
+            startTimeMs: 30_000,
+            endTimeMs: 60_000,
+        },
+        nextBlock: {
+            id: "block-3",
+            name: "Hard",
+            startTimeMs: 30_000,
+            endTimeMs: 45_000,
+        },
+    });
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return {
+                action: "skip-phase",
+                triggerTimeMs: 20_000,
+                destinationTimeMs: 50_000,
+            };
+        },
+
+        getConfirmedOmissions() {
+            return [];
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame() {
+            return 1;
+        },
+
+        cancelFrame() {},
+
+        workoutNavigationController,
+    });
+
+    const range = elements.phaseProgress.querySelector(
+        '.progress-track__range[data-range-id="pending-omission"]',
+    );
+
+    assertEqual(range !== null, true);
+    assertEqual(range.getAttribute("x1"), "65");
+    assertEqual(range.getAttribute("x2"), "95");
+});
+
+test("wire-rendering", "does not render pending omission outside current phase", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 10_000,
+        protocolRemainingMs: 50_000,
+        countdownRemainingMs: 0,
+    });
+
+    playback.workoutSnapshots.set(10_000, {
+        currentPhase: {
+            id: "phase-1",
+            name: "Warmup",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 10_000,
+            remainingTimeMs: 20_000,
+        },
+        currentBlock: {
+            id: "block-1",
+            name: "Easy",
+            startTimeMs: 0,
+            endTimeMs: 10_000,
+            elapsedTimeMs: 10_000,
+            remainingTimeMs: 0,
+        },
+        nextPhase: {
+            id: "phase-2",
+            name: "Work",
+            startTimeMs: 30_000,
+            endTimeMs: 60_000,
+        },
+        nextBlock: {
+            id: "block-2",
+            name: "Build",
+            startTimeMs: 10_000,
+            endTimeMs: 30_000,
+        },
+    });
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return {
+                action: "skip-phase",
+                triggerTimeMs: 40_000,
+                destinationTimeMs: 50_000,
+            };
+        },
+
+        getConfirmedOmissions() {
+            return [];
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame() {
+            return 1;
+        },
+
+        cancelFrame() {},
+
+        workoutNavigationController,
+    });
+
+    assertEqual(elements.phaseProgress.querySelectorAll(".progress-track__range").length, 0);
+});
+
+test("wire-rendering", "renders confirmed omissions on session progress", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return null;
+        },
+
+        getConfirmedOmissions() {
+            return [
+                {
+                    action: "skip-block",
+                    startTimeMs: 10_000,
+                    endTimeMs: 20_000,
+                },
+                {
+                    action: "skip-phase",
+                    startTimeMs: 30_000,
+                    endTimeMs: 50_000,
+                },
+            ];
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame() {
+            return 1;
+        },
+
+        cancelFrame() {},
+
+        workoutNavigationController,
+    });
+
+    const ranges = elements.workoutProgress.querySelectorAll(
+        '.progress-track__range[data-state="confirmed-omission"]',
+    );
+
+    assertEqual(ranges.length, 2);
+
+    assertEqual(ranges[0].getAttribute("x1"), "20");
+    assertEqual(ranges[0].getAttribute("x2"), "35");
+
+    assertEqual(ranges[1].getAttribute("x1"), "50");
+    assertEqual(ranges[1].getAttribute("x2"), "80");
+});
+
+test("wire-rendering", "renders confirmed omission intersecting current phase", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 20_000,
+        protocolRemainingMs: 40_000,
+        countdownRemainingMs: 0,
+    });
+
+    playback.workoutSnapshots.set(20_000, {
+        currentPhase: {
+            id: "phase-1",
+            name: "Warmup",
+            startTimeMs: 0,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 20_000,
+            remainingTimeMs: 10_000,
+        },
+        currentBlock: {
+            id: "block-2",
+            name: "Build",
+            startTimeMs: 10_000,
+            endTimeMs: 30_000,
+            elapsedTimeMs: 10_000,
+            remainingTimeMs: 10_000,
+        },
+        nextPhase: {
+            id: "phase-2",
+            name: "Work",
+            startTimeMs: 30_000,
+            endTimeMs: 60_000,
+        },
+        nextBlock: null,
+    });
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return null;
+        },
+
+        getConfirmedOmissions() {
+            return [
+                {
+                    action: "skip-block",
+                    startTimeMs: 10_000,
+                    endTimeMs: 20_000,
+                },
+            ];
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame() {
+            return 1;
+        },
+
+        cancelFrame() {},
+
+        workoutNavigationController,
+    });
+
+    const range = elements.phaseProgress.querySelector(
+        '.progress-track__range[data-state="confirmed-omission"]',
+    );
+
+    assertEqual(range !== null, true);
+    assertEqual(range.getAttribute("x1"), "35");
+    assertEqual(range.getAttribute("x2"), "65");
 });

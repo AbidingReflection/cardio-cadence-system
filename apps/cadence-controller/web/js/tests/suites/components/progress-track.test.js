@@ -309,3 +309,113 @@ test("progress-track", "keeps text outside the stretched SVG", () => {
     assertEqual(svg.contains(markerText), false);
     assertEqual(svg.contains(tickLabels), false);
 });
+
+test("progress-track", "renders normalized SVG ranges", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    progressTrack.setRanges([
+        {
+            id: "pending-omission",
+            start: 0.25,
+            end: 0.75,
+            state: "pending-omission",
+        },
+    ]);
+
+    const range = container.querySelector(".progress-track__range");
+
+    assert(range !== null);
+    assertEqual(range.dataset.rangeId, "pending-omission");
+    assertEqual(range.dataset.state, "pending-omission");
+    assertEqual(range.getAttribute("x1"), "27.5");
+    assertEqual(range.getAttribute("x2"), "72.5");
+});
+
+test("progress-track", "replaces existing ranges", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    progressTrack.setRanges([
+        {
+            id: "first",
+            start: 0.1,
+            end: 0.3,
+            state: "pending-omission",
+        },
+    ]);
+
+    progressTrack.setRanges([
+        {
+            id: "second",
+            start: 0.5,
+            end: 0.8,
+            state: "pending-omission",
+        },
+    ]);
+
+    const ranges = container.querySelectorAll(".progress-track__range");
+
+    assertEqual(ranges.length, 1);
+    assertEqual(ranges[0].dataset.rangeId, "second");
+    assertEqual(ranges[0].getAttribute("x1"), "50");
+    assertEqual(ranges[0].getAttribute("x2"), "77");
+});
+
+test("progress-track", "clears rendered ranges", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    progressTrack.setRanges([
+        {
+            id: "pending-omission",
+            start: 0.25,
+            end: 0.75,
+            state: "pending-omission",
+        },
+    ]);
+
+    progressTrack.setRanges([]);
+
+    assertEqual(container.querySelectorAll(".progress-track__range").length, 0);
+});
+
+test("progress-track", "rejects invalid ranges", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    assertThrows(() => progressTrack.setRanges(null));
+
+    assertThrows(() =>
+        progressTrack.setRanges([
+            {
+                id: "",
+                start: 0.25,
+                end: 0.75,
+                state: "pending-omission",
+            },
+        ]),
+    );
+
+    assertThrows(() =>
+        progressTrack.setRanges([
+            {
+                id: "invalid",
+                start: -0.1,
+                end: 0.5,
+                state: "pending-omission",
+            },
+        ]),
+    );
+
+    assertThrows(() =>
+        progressTrack.setRanges([
+            {
+                id: "invalid",
+                start: 0.75,
+                end: 0.25,
+                state: "pending-omission",
+            },
+        ]),
+    );
+});

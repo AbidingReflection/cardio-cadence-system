@@ -23,6 +23,7 @@ export class ProgressTrack {
     #tickLabels;
     #marker;
     #markerText;
+    #ranges;
 
     /** Creates a persistent progress track inside the supplied container. */
     constructor(container) {
@@ -67,6 +68,10 @@ export class ProgressTrack {
             y2: MARKER_BOTTOM_Y,
         });
 
+        this.#ranges = createSvgElement("g", {
+            class: "progress-track__ranges",
+        });
+
         this.#marker.append(markerLine);
 
         this.#markerText = document.createElement("span");
@@ -76,7 +81,12 @@ export class ProgressTrack {
         this.#tickLabels = document.createElement("div");
         this.#tickLabels.className = "progress-track__tick-labels";
 
-        this.#svg.append(track, this.#progress, this.#marker);
+        this.#svg.append(
+            track,
+            this.#progress,
+            this.#ranges,
+            this.#marker,
+        );
 
         this.#root.append(this.#svg, this.#ticks, this.#markerText, this.#tickLabels);
 
@@ -99,6 +109,33 @@ export class ProgressTrack {
         validateNormalizedPosition(progress, "ProgressTrack progress");
 
         this.#progress.setAttribute("x2", String(positionToX(progress)));
+    }
+
+    /** Replaces the track's normalized range definitions. */
+    setRanges(ranges) {
+        if (!Array.isArray(ranges)) {
+            throw new TypeError("ProgressTrack ranges must be an array.");
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        for (const range of ranges) {
+            validateRange(range);
+
+            const rangeElement = createSvgElement("line", {
+                class: "progress-track__range",
+                x1: positionToX(range.start),
+                y1: TRACK_Y,
+                x2: positionToX(range.end),
+                y2: TRACK_Y,
+                "data-range-id": range.id,
+                "data-state": range.state,
+            });
+
+            fragment.append(rangeElement);
+        }
+
+        this.#ranges.replaceChildren(fragment);
     }
 
     /** Updates the text displayed with the current marker. */
@@ -197,4 +234,27 @@ function validateTick(tick) {
     }
 
     validateNormalizedPosition(tick.position, `ProgressTrack tick "${tick.id}" position`);
+}
+
+/** Validates one normalized track range definition. */
+function validateRange(range) {
+    if (range === null || typeof range !== "object" || Array.isArray(range)) {
+        throw new TypeError("ProgressTrack range must be an object.");
+    }
+
+    if (typeof range.id !== "string" || range.id.length === 0) {
+        throw new TypeError("ProgressTrack range id must be a non-empty string.");
+    }
+
+    if (typeof range.state !== "string" || range.state.length === 0) {
+        throw new TypeError("ProgressTrack range state must be a non-empty string.");
+    }
+
+    validateNormalizedPosition(range.start, `ProgressTrack range "${range.id}" start`);
+
+    validateNormalizedPosition(range.end, `ProgressTrack range "${range.id}" end`);
+
+    if (range.end < range.start) {
+        throw new RangeError(`ProgressTrack range "${range.id}" end must not precede its start.`);
+    }
 }

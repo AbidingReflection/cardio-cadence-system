@@ -5,6 +5,7 @@ export class WorkoutNavigationController {
     #cadenceSession;
     #workoutContext;
     #pendingAction = null;
+    #confirmedOmissions = [];
 
     /** Creates a workout navigation controller. */
     constructor({ cadenceSession, workoutContext }) {
@@ -65,6 +66,11 @@ export class WorkoutNavigationController {
         return this.#pendingAction === null ? null : { ...this.#pendingAction };
     }
 
+    /** Returns confirmed omitted protocol intervals. */
+    getConfirmedOmissions() {
+        return this.#confirmedOmissions.map((omission) => ({ ...omission }));
+    }
+
     /** Executes a pending workout action once its trigger time has been reached. */
     update(protocolElapsedMs) {
         if (this.#pendingAction === null || protocolElapsedMs < this.#pendingAction.triggerTimeMs) {
@@ -76,6 +82,12 @@ export class WorkoutNavigationController {
         this.#pendingAction = null;
 
         if (pendingAction.action === "skip-phase") {
+            this.#confirmedOmissions.push({
+                action: "skip-phase",
+                startTimeMs: pendingAction.triggerTimeMs,
+                endTimeMs: pendingAction.destinationTimeMs,
+            });
+
             this.#cadenceSession.seek(pendingAction.destinationTimeMs);
             return;
         }
@@ -91,12 +103,21 @@ export class WorkoutNavigationController {
 
     /** Seeks to one upcoming structural boundary when available. */
     #navigateTo(targetKey) {
-        const workoutSnapshot = this.#getCurrentWorkoutSnapshot();
+        const { protocolElapsedMs } = this.#cadenceSession.getSnapshot();
+
+        const workoutSnapshot = this.#workoutContext.getSnapshot(protocolElapsedMs);
+
         const destination = workoutSnapshot[targetKey];
 
         if (destination === null) {
             return false;
         }
+
+        this.#confirmedOmissions.push({
+            action: targetKey === "nextBlock" ? "skip-block" : "skip-phase",
+            startTimeMs: protocolElapsedMs,
+            endTimeMs: destination.startTimeMs,
+        });
 
         this.#cadenceSession.seek(destination.startTimeMs);
 

@@ -20,6 +20,7 @@ import {
 } from "../renderers/timed-progress-renderer.js";
 
 import { renderWorkoutStatus } from "../renderers/workout-status-renderer.js";
+import { getPendingOmissionRange } from "../playback/pending-omission.js";
 
 /** Wires Cadence Controller state to animation-frame rendering. */
 export function wireRendering(
@@ -82,6 +83,13 @@ export function wireRendering(
 
         const pendingAction = workoutNavigationController?.getPendingAction() ?? null;
 
+        const confirmedOmissions = workoutNavigationController?.getConfirmedOmissions() ?? [];
+
+        const pendingOmission = getPendingOmissionRange(
+            pendingAction,
+            playback.protocolExpander.durationMs,
+        );
+
         const loadGuidance = playback.loadSegmentTimeline?.guidanceAt(
             protocolElapsedMs,
             pendingAction,
@@ -101,6 +109,24 @@ export function wireRendering(
             playbackState: sessionSnapshot.state,
             adjustmentPending: loadAdjustmentSnapshot?.pending ?? false,
         });
+
+        const workoutOmissionRanges = confirmedOmissions.map((omission, index) => ({
+            id: `confirmed-omission-${index}`,
+            start: omission.startTimeMs / playback.protocolExpander.durationMs,
+            end: omission.endTimeMs / playback.protocolExpander.durationMs,
+            state: "confirmed-omission",
+        }));
+
+        if (pendingOmission !== null) {
+            workoutOmissionRanges.push({
+                id: "pending-omission",
+                start: pendingOmission.startTimeMs / playback.protocolExpander.durationMs,
+                end: pendingOmission.endTimeMs / playback.protocolExpander.durationMs,
+                state: "pending-omission",
+            });
+        }
+
+        workoutProgressVisualizer.progressTrack.setRanges(workoutOmissionRanges);
 
         renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot, pendingAction);
 
@@ -128,10 +154,12 @@ export function wireRendering(
         const currentPhase = workoutSnapshot.currentPhase;
 
         if (currentPhase !== null) {
+            const phaseDurationMs = currentPhase.elapsedTimeMs + currentPhase.remainingTimeMs;
+
             if (currentPhase.id !== renderedPhaseId) {
                 const phaseRange = phaseRanges.find((range) => range.id === currentPhase.id);
 
-                const phaseDurationMs = phaseRange.endTimeMs - phaseRange.startTimeMs;
+                const phaseRangeDurationMs = phaseRange.endTimeMs - phaseRange.startTimeMs;
 
                 const phaseBlockTicks = blockRanges
                     .filter(
@@ -142,14 +170,58 @@ export function wireRendering(
                     )
                     .map((range) => ({
                         id: range.id,
-                        position: (range.startTimeMs - phaseRange.startTimeMs) / phaseDurationMs,
+                        position:
+                            (range.startTimeMs - phaseRange.startTimeMs) / phaseRangeDurationMs,
                     }));
 
                 phaseProgressVisualizer.progressTrack.setTicks(phaseBlockTicks);
                 renderedPhaseId = currentPhase.id;
             }
 
-            const phaseDurationMs = currentPhase.elapsedTimeMs + currentPhase.remainingTimeMs;
+            const phaseOmissionRanges = confirmedOmissions
+                .map((omission, index) => {
+                    const omissionStartTimeMs = Math.max(
+                        omission.startTimeMs,
+                        currentPhase.startTimeMs,
+                    );
+
+                    const omissionEndTimeMs = Math.min(omission.endTimeMs, currentPhase.endTimeMs);
+
+                    if (omissionStartTimeMs >= omissionEndTimeMs) {
+                        return null;
+                    }
+
+                    return {
+                        id: `confirmed-omission-${index}`,
+                        start: (omissionStartTimeMs - currentPhase.startTimeMs) / phaseDurationMs,
+                        end: (omissionEndTimeMs - currentPhase.startTimeMs) / phaseDurationMs,
+                        state: "confirmed-omission",
+                    };
+                })
+                .filter((range) => range !== null);
+
+            if (pendingOmission !== null) {
+                const omissionStartTimeMs = Math.max(
+                    pendingOmission.startTimeMs,
+                    currentPhase.startTimeMs,
+                );
+
+                const omissionEndTimeMs = Math.min(
+                    pendingOmission.endTimeMs,
+                    currentPhase.endTimeMs,
+                );
+
+                if (omissionStartTimeMs < omissionEndTimeMs) {
+                    phaseOmissionRanges.push({
+                        id: "pending-omission",
+                        start: (omissionStartTimeMs - currentPhase.startTimeMs) / phaseDurationMs,
+                        end: (omissionEndTimeMs - currentPhase.startTimeMs) / phaseDurationMs,
+                        state: "pending-omission",
+                    });
+                }
+            }
+
+            phaseProgressVisualizer.progressTrack.setRanges(phaseOmissionRanges);
 
             renderTimedProgress(phaseProgressVisualizer, {
                 elapsedTimeMs: currentPhase.elapsedTimeMs,
@@ -158,6 +230,7 @@ export function wireRendering(
             });
         } else if (renderedPhaseId !== null) {
             phaseProgressVisualizer.progressTrack.setTicks([]);
+            phaseProgressVisualizer.progressTrack.setRanges([]);
             renderedPhaseId = null;
         }
 

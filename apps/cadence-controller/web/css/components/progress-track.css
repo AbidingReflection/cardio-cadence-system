@@ -124,3 +124,16 @@
 
     white-space: nowrap;
 }
+
+.progress-track__range {
+    stroke-width: 4;
+    stroke-linecap: butt;
+}
+
+.progress-track__range[data-state="pending-omission"] {
+    stroke: rgba(176, 78, 52, 0.9);
+}
+
+.progress-track__range[data-state="confirmed-omission"] {
+    stroke: rgba(120, 120, 120, 0.9);
+}

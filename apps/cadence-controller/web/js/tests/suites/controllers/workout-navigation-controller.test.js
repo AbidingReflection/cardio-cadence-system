@@ -261,3 +261,80 @@ test("workout-navigation-controller", "does not execute a cancelled pending acti
     assertEqual(seekCalls.length, 0);
     assertEqual(getEndCalls(), 0);
 });
+
+test("workout-navigation-controller", "records omitted range for immediate block skip", () => {
+    const { controller } = createController({
+        protocolElapsedMs: 10_000,
+        nextBlock: {
+            id: "block-2",
+            startTimeMs: 20_000,
+        },
+    });
+
+    controller.skipBlock();
+
+    const omissions = controller.getConfirmedOmissions();
+
+    assertEqual(omissions.length, 1);
+    assertEqual(omissions[0].action, "skip-block");
+    assertEqual(omissions[0].startTimeMs, 10_000);
+    assertEqual(omissions[0].endTimeMs, 20_000);
+});
+
+test("workout-navigation-controller", "records omitted range for immediate phase skip", () => {
+    const { controller } = createController({
+        protocolElapsedMs: 10_000,
+        nextPhase: {
+            id: "phase-2",
+            startTimeMs: 40_000,
+        },
+    });
+
+    controller.skipPhase();
+
+    const omissions = controller.getConfirmedOmissions();
+
+    assertEqual(omissions.length, 1);
+    assertEqual(omissions[0].action, "skip-phase");
+    assertEqual(omissions[0].startTimeMs, 10_000);
+    assertEqual(omissions[0].endTimeMs, 40_000);
+});
+
+test(
+    "workout-navigation-controller",
+    "records omitted range when deferred phase skip executes",
+    () => {
+        const { controller } = createController();
+
+        controller.scheduleSkipPhaseAfterBlock();
+        controller.update(20_000);
+
+        const omissions = controller.getConfirmedOmissions();
+
+        assertEqual(omissions.length, 1);
+        assertEqual(omissions[0].action, "skip-phase");
+        assertEqual(omissions[0].startTimeMs, 20_000);
+        assertEqual(omissions[0].endTimeMs, 40_000);
+    },
+);
+
+test("workout-navigation-controller", "returns confirmed omissions as copies", () => {
+    const { controller } = createController();
+
+    controller.skipBlock();
+
+    const omissions = controller.getConfirmedOmissions();
+
+    omissions[0].startTimeMs = 999;
+    omissions.push({
+        action: "skip-phase",
+        startTimeMs: 0,
+        endTimeMs: 999,
+    });
+
+    const freshOmissions = controller.getConfirmedOmissions();
+
+    assertEqual(freshOmissions.length, 1);
+    assertEqual(freshOmissions[0].startTimeMs, 10_000);
+    assertEqual(freshOmissions[0].endTimeMs, 20_000);
+});

@@ -51,15 +51,18 @@ function createPlaybackEventsFake() {
         },
     };
 }
-
 /** Records workout navigation calls for wiring tests. */
-function createWorkoutNavigationControllerFake() {
+function createWorkoutNavigationControllerFake({
+    pendingAction = null,
+    confirmedOmissions = [],
+} = {}) {
     return {
         skipBlockCalls: 0,
         skipPhaseCalls: 0,
         scheduleSkipPhaseAfterBlockCalls: 0,
         scheduleEndWorkoutAfterBlockCalls: 0,
         cancelPendingActionCalls: 0,
+        updateCalls: [],
 
         skipBlock() {
             this.skipBlockCalls += 1;
@@ -79,6 +82,18 @@ function createWorkoutNavigationControllerFake() {
 
         cancelPendingAction() {
             this.cancelPendingActionCalls += 1;
+        },
+
+        update(protocolElapsedMs) {
+            this.updateCalls.push(protocolElapsedMs);
+        },
+
+        getPendingAction() {
+            return pendingAction === null ? null : { ...pendingAction };
+        },
+
+        getConfirmedOmissions() {
+            return confirmedOmissions.map((omission) => ({ ...omission }));
         },
     };
 }
