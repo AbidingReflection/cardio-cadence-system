@@ -3,6 +3,7 @@
 import { GraphPaneController } from "../controllers/graph-pane-controller.js";
 import { ProtocolGraphController } from "../controllers/protocol-graph-controller.js";
 import { ProtocolNewController } from "../controllers/protocol-new-controller.js";
+import { ProtocolImportController } from "../controllers/protocol-import-controller.js";
 
 /** Creates Protocol Designer controllers from application dependencies. */
 export function createControllers({
@@ -50,9 +51,17 @@ export function createControllers({
         preferences,
     });
 
+    const protocolImportController = new ProtocolImportController({
+        protocolModel,
+        editorState,
+        protocolSessionState,
+        preferences,
+    });
+
     return {
         graphPaneController,
         protocolGraphController,
         protocolNewController,
+        protocolImportController,
     };
 }

@@ -11,6 +11,7 @@ import { wireProtocolSetupEvents } from "../interactions/protocol-setup-events.j
 import { wireProtocolTreeEvents } from "../interactions/protocol-tree-events.js";
 import { wireProtocolNewEvents } from "../interactions/protocol-new-events.js";
 import { wireProtocolExportEvents } from "../interactions/protocol-export-events.js";
+import { wireProtocolImportEvents } from "../interactions/protocol-import-events.js";
 
 /** Wires Protocol Designer interaction handlers. */
 export function wireInteractions({
@@ -28,6 +29,7 @@ export function wireInteractions({
     setPendingToggleFocus,
     setPendingPhaseNameFocus,
     setPendingStructuralFocus,
+    protocolImportController,
 }) {
     wireProtocolNewEvents({
         newButton: elements.new.button,
@@ -38,6 +40,13 @@ export function wireInteractions({
     wireProtocolExportEvents({
         exportButton: elements.export.button,
         protocolModel,
+    });
+
+    wireProtocolImportEvents({
+        importButton: elements.import.button,
+        importInput: elements.import.input,
+        protocolImportController,
+        protocolUnsavedChanges,
     });
 
     wireProtocolSaveMenuEvents({

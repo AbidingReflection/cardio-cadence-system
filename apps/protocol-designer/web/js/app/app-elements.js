@@ -39,8 +39,13 @@ export function getAppElements() {
             button: requireElement("#protocol-new-button"),
         },
 
+        import: {
+            button: requireElement("#protocol-import-button"),
+            input: requireElement("#protocol-import-input"),
+        },
+
         export: {
-            button: document.querySelector("#protocol-export-button"),
+            button: requireElement("#protocol-export-button"),
         },
 
         save: {
