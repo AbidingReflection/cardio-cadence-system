@@ -460,3 +460,90 @@ test("load-segment-timeline", "returns no next adjustment for the final load val
         nextAdjustment: null,
     });
 });
+
+test("load-segment-timeline", "skips unreachable load adjustments for pending phase skip", () => {
+    const expander = createPiecewiseExpander(
+        [
+            {
+                startTimeMs: 0,
+                endTimeMs: 20_000,
+                value: 4,
+            },
+            {
+                startTimeMs: 20_000,
+                endTimeMs: 30_000,
+                value: 6,
+            },
+            {
+                startTimeMs: 30_000,
+                endTimeMs: 40_000,
+                value: 8,
+            },
+        ],
+        [20_000, 30_000],
+    );
+
+    const timeline = new LoadSegmentTimeline(expander, "resistance");
+
+    const guidance = timeline.guidanceAt(10_000, {
+        action: "skip-phase",
+        triggerTimeMs: 20_000,
+        destinationTimeMs: 30_000,
+    });
+
+    assertEqual(guidance.currentSegment.value, 4);
+    assertEqual(guidance.remainingTimeMs, 10_000);
+
+    assertDeepEqual(guidance.nextAdjustment, {
+        value: 8,
+        dueTimeMs: 20_000,
+    });
+});
+
+test(
+    "load-segment-timeline",
+    "continues past a pending skip when destination load matches current load",
+    () => {
+        const expander = createPiecewiseExpander(
+            [
+                {
+                    startTimeMs: 0,
+                    endTimeMs: 20_000,
+                    value: 4,
+                },
+                {
+                    startTimeMs: 20_000,
+                    endTimeMs: 30_000,
+                    value: 6,
+                },
+                {
+                    startTimeMs: 30_000,
+                    endTimeMs: 40_000,
+                    value: 4,
+                },
+                {
+                    startTimeMs: 40_000,
+                    endTimeMs: 50_000,
+                    value: 8,
+                },
+            ],
+            [20_000, 30_000, 40_000],
+        );
+
+        const timeline = new LoadSegmentTimeline(expander, "resistance");
+
+        const guidance = timeline.guidanceAt(10_000, {
+            action: "skip-phase",
+            triggerTimeMs: 20_000,
+            destinationTimeMs: 30_000,
+        });
+
+        assertEqual(guidance.currentSegment.value, 4);
+        assertEqual(guidance.remainingTimeMs, 20_000);
+
+        assertDeepEqual(guidance.nextAdjustment, {
+            value: 8,
+            dueTimeMs: 40_000,
+        });
+    },
+);

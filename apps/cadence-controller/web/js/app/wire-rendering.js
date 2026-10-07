@@ -80,7 +80,12 @@ export function wireRendering(
 
         const cadenceRpm = playback.cadencePhase.cadenceAt(protocolElapsedMs);
 
-        const loadGuidance = playback.loadSegmentTimeline?.guidanceAt(protocolElapsedMs);
+        const pendingAction = workoutNavigationController?.getPendingAction() ?? null;
+
+        const loadGuidance = playback.loadSegmentTimeline?.guidanceAt(
+            protocolElapsedMs,
+            pendingAction,
+        );
 
         let loadAdjustmentSnapshot;
 
@@ -97,7 +102,6 @@ export function wireRendering(
             adjustmentPending: loadAdjustmentSnapshot?.pending ?? false,
         });
 
-        const pendingAction = workoutNavigationController?.getPendingAction() ?? null;
         renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot, pendingAction);
 
         renderCadenceVisualizer(cadenceVisualizer, {

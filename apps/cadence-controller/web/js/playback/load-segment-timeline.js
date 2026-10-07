@@ -45,32 +45,112 @@ export class LoadSegmentTimeline {
         };
     }
 
-    /** Returns current load guidance and the next distinct adjustment. */
-    guidanceAt(timeMs) {
+    /** Returns current load guidance and the next distinct effective adjustment. */
+    guidanceAt(timeMs, pendingAction = null) {
         const currentSegment = this.segmentAt(timeMs);
 
         if (currentSegment === undefined) {
             return undefined;
         }
 
+        if (!isApplicablePendingSkip(pendingAction, timeMs, this.#durationMs)) {
+            const currentIndex = this.#segments.findIndex(
+                (segment) => segment.startTimeMs === currentSegment.startTimeMs,
+            );
+
+            const nextSegment = this.#segments[currentIndex + 1];
+
+            return {
+                currentSegment,
+                remainingTimeMs: Math.max(0, currentSegment.endTimeMs - timeMs),
+                nextAdjustment:
+                    nextSegment === undefined
+                        ? null
+                        : {
+                              value: nextSegment.value,
+                              dueTimeMs: nextSegment.startTimeMs,
+                          },
+            };
+        }
+
+        const { triggerTimeMs, destinationTimeMs } = pendingAction;
+
         const currentIndex = this.#segments.findIndex(
             (segment) => segment.startTimeMs === currentSegment.startTimeMs,
         );
 
-        const nextSegment = this.#segments[currentIndex + 1];
+        const nextBeforeTrigger = this.#segments
+            .slice(currentIndex + 1)
+            .find((segment) => segment.startTimeMs < triggerTimeMs);
+
+        if (nextBeforeTrigger !== undefined) {
+            return {
+                currentSegment,
+                remainingTimeMs: nextBeforeTrigger.startTimeMs - timeMs,
+                nextAdjustment: {
+                    value: nextBeforeTrigger.value,
+                    dueTimeMs: nextBeforeTrigger.startTimeMs,
+                },
+            };
+        }
+
+        const destinationSegment = this.segmentAt(destinationTimeMs);
+
+        if (
+            destinationSegment !== undefined &&
+            !Object.is(destinationSegment.value, currentSegment.value)
+        ) {
+            return {
+                currentSegment,
+                remainingTimeMs: triggerTimeMs - timeMs,
+                nextAdjustment: {
+                    value: destinationSegment.value,
+                    dueTimeMs: triggerTimeMs,
+                },
+            };
+        }
+
+        const destinationIndex =
+            destinationSegment === undefined
+                ? this.#segments.length
+                : this.#segments.findIndex(
+                      (segment) => segment.startTimeMs === destinationSegment.startTimeMs,
+                  );
+
+        const nextAfterDestination = this.#segments
+            .slice(destinationIndex + 1)
+            .find((segment) => !Object.is(segment.value, currentSegment.value));
+
+        if (nextAfterDestination !== undefined) {
+            return {
+                currentSegment,
+                remainingTimeMs:
+                    triggerTimeMs - timeMs + (nextAfterDestination.startTimeMs - destinationTimeMs),
+                nextAdjustment: {
+                    value: nextAfterDestination.value,
+                    dueTimeMs: nextAfterDestination.startTimeMs,
+                },
+            };
+        }
 
         return {
             currentSegment,
-            remainingTimeMs: Math.max(0, currentSegment.endTimeMs - timeMs),
-            nextAdjustment:
-                nextSegment === undefined
-                    ? null
-                    : {
-                          value: nextSegment.value,
-                          dueTimeMs: nextSegment.startTimeMs,
-                      },
+            remainingTimeMs: triggerTimeMs - timeMs + (this.#durationMs - destinationTimeMs),
+            nextAdjustment: null,
         };
     }
+}
+
+/** Returns whether a pending phase skip affects future guidance from this time. */
+function isApplicablePendingSkip(pendingAction, timeMs, durationMs) {
+    return (
+        pendingAction?.action === "skip-phase" &&
+        Number.isFinite(pendingAction.triggerTimeMs) &&
+        Number.isFinite(pendingAction.destinationTimeMs) &&
+        timeMs < pendingAction.triggerTimeMs &&
+        pendingAction.triggerTimeMs < pendingAction.destinationTimeMs &&
+        pendingAction.destinationTimeMs <= durationMs
+    );
 }
 
 /** Builds merged constant-value load segments for the complete protocol. */

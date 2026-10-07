@@ -794,3 +794,46 @@ test("wire-rendering", "renders pending workout navigation state", () => {
     assertEqual(elements.changeWorkoutButton.textContent, "After Block");
     assertEqual(elements.changeWorkoutButton.classList.contains("playback-control--pending"), true);
 });
+
+test("wire-rendering", "passes pending workout action to load guidance", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frameScheduler = createFrameScheduler();
+
+    const guidanceCalls = [];
+
+    playback.loadSegmentTimeline = {
+        guidanceAt(timeMs, pendingAction) {
+            guidanceCalls.push({
+                timeMs,
+                pendingAction,
+            });
+
+            return undefined;
+        },
+    };
+
+    const pendingAction = {
+        action: "skip-phase",
+        triggerTimeMs: 20_000,
+        destinationTimeMs: 30_000,
+    };
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return pendingAction;
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame: frameScheduler.requestFrame,
+        cancelFrame: frameScheduler.cancelFrame,
+        workoutNavigationController,
+    });
+
+    assertEqual(guidanceCalls.length, 1);
+    assertEqual(guidanceCalls[0].timeMs, 0);
+    assertEqual(guidanceCalls[0].pendingAction, pendingAction);
+});
