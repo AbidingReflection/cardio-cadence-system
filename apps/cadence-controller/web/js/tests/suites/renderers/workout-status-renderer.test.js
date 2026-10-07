@@ -22,6 +22,7 @@ function createElements() {
         resumeButton: document.createElement("button"),
         stopButton: document.createElement("button"),
         changeWorkoutButton: document.createElement("button"),
+        cancelPendingActionButton: document.createElement("button"),
     };
 }
 
@@ -335,5 +336,29 @@ test(
             elements.changeWorkoutButton.classList.contains("playback-control--pending"),
             false,
         );
+    },
+);
+
+test("workout-status-renderer", "hides cancel pending action without pending action", () => {
+    const elements = createElements();
+
+    renderWorkoutStatus(elements, createSessionSnapshot(), createWorkoutSnapshot(), null);
+
+    assertEqual(elements.cancelPendingActionButton.hidden, true);
+});
+
+test(
+    "workout-status-renderer",
+    "shows cancel pending action when workout action is pending",
+    () => {
+        const elements = createElements();
+
+        renderWorkoutStatus(elements, createSessionSnapshot(), createWorkoutSnapshot(), {
+            action: "skip-phase",
+            triggerTimeMs: 20_000,
+            destinationTimeMs: 40_000,
+        });
+
+        assertEqual(elements.cancelPendingActionButton.hidden, false);
     },
 );

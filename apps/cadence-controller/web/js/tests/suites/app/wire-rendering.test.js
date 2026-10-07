@@ -29,6 +29,7 @@ function createElements() {
         resumeButton: document.createElement("button"),
         stopButton: document.createElement("button"),
         changeWorkoutButton: document.createElement("button"),
+        cancelPendingActionButton: document.createElement("button"),
     };
 }
 

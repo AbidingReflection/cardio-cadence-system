@@ -102,6 +102,7 @@ function renderControls(elements, state, workoutSnapshot, pendingAction) {
 
     elements.changeWorkoutButton.textContent = pending ? "After Block" : "Change";
     elements.changeWorkoutButton.classList.toggle("playback-control--pending", pending);
+    elements.cancelPendingActionButton.hidden = pendingAction === null;
 }
 
 /** Returns available playback actions for one lifecycle state. */
