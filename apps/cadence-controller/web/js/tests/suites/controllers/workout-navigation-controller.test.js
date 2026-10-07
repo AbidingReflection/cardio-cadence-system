@@ -5,6 +5,11 @@ import { WorkoutNavigationController } from "../../../controllers/workout-naviga
 /** Creates a navigation controller with controllable playback dependencies. */
 function createController({
     protocolElapsedMs = 10_000,
+    currentBlock = {
+        id: "block-1",
+        startTimeMs: 0,
+        endTimeMs: 20_000,
+    },
     nextBlock = {
         id: "block-2",
         startTimeMs: 20_000,
@@ -16,6 +21,7 @@ function createController({
 } = {}) {
     const seekCalls = [];
     const workoutContextCalls = [];
+    let endCalls = 0;
 
     const cadenceSession = {
         getSnapshot() {
@@ -27,6 +33,10 @@ function createController({
         seek(timeMs) {
             seekCalls.push(timeMs);
         },
+
+        end() {
+            endCalls += 1;
+        },
     };
 
     const workoutContext = {
@@ -34,6 +44,7 @@ function createController({
             workoutContextCalls.push(timeMs);
 
             return {
+                currentBlock,
                 nextBlock,
                 nextPhase,
             };
@@ -49,6 +60,9 @@ function createController({
         controller,
         seekCalls,
         workoutContextCalls,
+        getEndCalls() {
+            return endCalls;
+        },
     };
 }
 
@@ -96,4 +110,154 @@ test("workout-navigation-controller", "does not skip when there is no next phase
 
     assertEqual(navigated, false);
     assertEqual(seekCalls.length, 0);
+});
+
+test(
+    "workout-navigation-controller",
+    "schedules phase skip for the end of the current block",
+    () => {
+        const { controller } = createController();
+
+        const scheduled = controller.scheduleSkipPhaseAfterBlock();
+
+        const pendingAction = controller.getPendingAction();
+
+        assertEqual(scheduled, true);
+        assertEqual(pendingAction.action, "skip-phase");
+        assertEqual(pendingAction.triggerTimeMs, 20_000);
+        assertEqual(pendingAction.destinationTimeMs, 40_000);
+    },
+);
+
+test("workout-navigation-controller", "does not schedule phase skip without a next phase", () => {
+    const { controller } = createController({
+        nextPhase: null,
+    });
+
+    const scheduled = controller.scheduleSkipPhaseAfterBlock();
+
+    assertEqual(scheduled, false);
+    assertEqual(controller.getPendingAction(), null);
+});
+
+test(
+    "workout-navigation-controller",
+    "schedules workout end for the end of the current block",
+    () => {
+        const { controller } = createController();
+
+        const scheduled = controller.scheduleEndWorkoutAfterBlock();
+
+        const pendingAction = controller.getPendingAction();
+
+        assertEqual(scheduled, true);
+        assertEqual(pendingAction.action, "end-workout");
+        assertEqual(pendingAction.triggerTimeMs, 20_000);
+    },
+);
+
+test(
+    "workout-navigation-controller",
+    "does not schedule a deferred action without a current block",
+    () => {
+        const { controller } = createController({
+            currentBlock: null,
+        });
+
+        assertEqual(controller.scheduleSkipPhaseAfterBlock(), false);
+        assertEqual(controller.scheduleEndWorkoutAfterBlock(), false);
+        assertEqual(controller.getPendingAction(), null);
+    },
+);
+
+test("workout-navigation-controller", "replaces an existing pending action", () => {
+    const { controller } = createController();
+
+    controller.scheduleSkipPhaseAfterBlock();
+    controller.scheduleEndWorkoutAfterBlock();
+
+    const pendingAction = controller.getPendingAction();
+
+    assertEqual(pendingAction.action, "end-workout");
+    assertEqual(pendingAction.triggerTimeMs, 20_000);
+    assertEqual(pendingAction.destinationTimeMs, undefined);
+});
+
+test("workout-navigation-controller", "cancels the pending action", () => {
+    const { controller } = createController();
+
+    controller.scheduleSkipPhaseAfterBlock();
+
+    controller.cancelPendingAction();
+
+    assertEqual(controller.getPendingAction(), null);
+});
+
+test(
+    "workout-navigation-controller",
+    "does not execute a pending action before its trigger",
+    () => {
+        const { controller, seekCalls, getEndCalls } = createController();
+
+        controller.scheduleSkipPhaseAfterBlock();
+
+        controller.update(19_999);
+
+        assertEqual(seekCalls.length, 0);
+        assertEqual(getEndCalls(), 0);
+        assertEqual(controller.getPendingAction().action, "skip-phase");
+    },
+);
+
+test("workout-navigation-controller", "executes pending phase skip at the block boundary", () => {
+    const { controller, seekCalls } = createController();
+
+    controller.scheduleSkipPhaseAfterBlock();
+
+    controller.update(20_000);
+
+    assertEqual(seekCalls.length, 1);
+    assertEqual(seekCalls[0], 40_000);
+    assertEqual(controller.getPendingAction(), null);
+});
+
+test(
+    "workout-navigation-controller",
+    "executes pending phase skip after crossing the block boundary",
+    () => {
+        const { controller, seekCalls } = createController();
+
+        controller.scheduleSkipPhaseAfterBlock();
+
+        controller.update(20_016);
+
+        assertEqual(seekCalls.length, 1);
+        assertEqual(seekCalls[0], 40_000);
+        assertEqual(controller.getPendingAction(), null);
+    },
+);
+
+test("workout-navigation-controller", "ends workout at the exact block boundary", () => {
+    const { controller, seekCalls, getEndCalls } = createController();
+
+    controller.scheduleEndWorkoutAfterBlock();
+
+    controller.update(20_016);
+
+    assertEqual(seekCalls.length, 1);
+    assertEqual(seekCalls[0], 20_000);
+    assertEqual(getEndCalls(), 1);
+    assertEqual(controller.getPendingAction(), null);
+});
+
+test("workout-navigation-controller", "does not execute a cancelled pending action", () => {
+    const { controller, seekCalls, getEndCalls } = createController();
+
+    controller.scheduleEndWorkoutAfterBlock();
+    controller.cancelPendingAction();
+
+    controller.update(20_000);
+
+    assertEqual(seekCalls.length, 0);
+    assertEqual(getEndCalls(), 0);
 });

@@ -38,7 +38,9 @@ async function startApp() {
 
     wireInteractions(elements, playbackEvents, workoutNavigationController);
 
-    wireRendering(elements, playback);
+    wireRendering(elements, playback, {
+        workoutNavigationController,
+    });
 }
 
 await startApp();

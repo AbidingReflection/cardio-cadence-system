@@ -31,6 +31,15 @@ function createAppRoot() {
     <button id="resume-button"></button>
     <button id="stop-button"></button>
     <button id="change-workout-button"></button>
+
+    <div id="change-workout-panel" hidden>
+    <button id="skip-block-button"></button>
+    <button id="skip-phase-button"></button>
+    <button id="finish-block-skip-phase-button"></button>
+    <button id="finish-block-end-workout-button"></button>
+    <button id="cancel-pending-action-button"></button>
+    <button id="cancel-change-workout-button"></button>
+    </div>
     `;
 
     return root;

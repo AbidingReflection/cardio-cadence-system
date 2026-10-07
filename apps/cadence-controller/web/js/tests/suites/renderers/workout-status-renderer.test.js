@@ -305,3 +305,35 @@ test("workout-status-renderer", "disables unavailable workout navigation", () =>
 
     assertEqual(elements.changeWorkoutButton.disabled, true);
 });
+
+test("workout-status-renderer", "renders pending workout change state", () => {
+    const elements = createElements();
+
+    renderWorkoutStatus(elements, createSessionSnapshot(), createWorkoutSnapshot(), {
+        action: "skip-phase",
+        triggerTimeMs: 120000,
+        destinationTimeMs: 180000,
+    });
+
+    assertEqual(elements.changeWorkoutButton.textContent, "After Block");
+    assertEqual(elements.changeWorkoutButton.classList.contains("playback-control--pending"), true);
+});
+
+test(
+    "workout-status-renderer",
+    "renders normal workout change state without pending action",
+    () => {
+        const elements = createElements();
+
+        elements.changeWorkoutButton.textContent = "After Block";
+        elements.changeWorkoutButton.classList.add("playback-control--pending");
+
+        renderWorkoutStatus(elements, createSessionSnapshot(), createWorkoutSnapshot(), null);
+
+        assertEqual(elements.changeWorkoutButton.textContent, "Change");
+        assertEqual(
+            elements.changeWorkoutButton.classList.contains("playback-control--pending"),
+            false,
+        );
+    },
+);

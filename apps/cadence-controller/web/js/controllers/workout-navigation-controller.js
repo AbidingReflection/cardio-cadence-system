@@ -4,6 +4,7 @@
 export class WorkoutNavigationController {
     #cadenceSession;
     #workoutContext;
+    #pendingAction = null;
 
     /** Creates a workout navigation controller. */
     constructor({ cadenceSession, workoutContext }) {
@@ -21,11 +22,76 @@ export class WorkoutNavigationController {
         return this.#navigateTo("nextPhase");
     }
 
+    /** Schedules a phase skip for the end of the current block. */
+    scheduleSkipPhaseAfterBlock() {
+        const workoutSnapshot = this.#getCurrentWorkoutSnapshot();
+
+        if (workoutSnapshot.currentBlock === null || workoutSnapshot.nextPhase === null) {
+            return false;
+        }
+
+        this.#pendingAction = {
+            action: "skip-phase",
+            triggerTimeMs: workoutSnapshot.currentBlock.endTimeMs,
+            destinationTimeMs: workoutSnapshot.nextPhase.startTimeMs,
+        };
+
+        return true;
+    }
+
+    /** Schedules workout termination for the end of the current block. */
+    scheduleEndWorkoutAfterBlock() {
+        const workoutSnapshot = this.#getCurrentWorkoutSnapshot();
+
+        if (workoutSnapshot.currentBlock === null) {
+            return false;
+        }
+
+        this.#pendingAction = {
+            action: "end-workout",
+            triggerTimeMs: workoutSnapshot.currentBlock.endTimeMs,
+        };
+
+        return true;
+    }
+
+    /** Cancels any pending deferred workout action. */
+    cancelPendingAction() {
+        this.#pendingAction = null;
+    }
+
+    /** Returns the current pending workout action. */
+    getPendingAction() {
+        return this.#pendingAction === null ? null : { ...this.#pendingAction };
+    }
+
+    /** Executes a pending workout action once its trigger time has been reached. */
+    update(protocolElapsedMs) {
+        if (this.#pendingAction === null || protocolElapsedMs < this.#pendingAction.triggerTimeMs) {
+            return;
+        }
+
+        const pendingAction = this.#pendingAction;
+
+        this.#pendingAction = null;
+
+        if (pendingAction.action === "skip-phase") {
+            this.#cadenceSession.seek(pendingAction.destinationTimeMs);
+            return;
+        }
+
+        if (pendingAction.action === "end-workout") {
+            this.#cadenceSession.seek(pendingAction.triggerTimeMs);
+            this.#cadenceSession.end();
+            return;
+        }
+
+        throw new RangeError(`Unsupported pending workout action "${pendingAction.action}".`);
+    }
+
     /** Seeks to one upcoming structural boundary when available. */
     #navigateTo(targetKey) {
-        const { protocolElapsedMs } = this.#cadenceSession.getSnapshot();
-
-        const workoutSnapshot = this.#workoutContext.getSnapshot(protocolElapsedMs);
+        const workoutSnapshot = this.#getCurrentWorkoutSnapshot();
         const destination = workoutSnapshot[targetKey];
 
         if (destination === null) {
@@ -35,5 +101,12 @@ export class WorkoutNavigationController {
         this.#cadenceSession.seek(destination.startTimeMs);
 
         return true;
+    }
+
+    /** Returns workout context at the current protocol position. */
+    #getCurrentWorkoutSnapshot() {
+        const { protocolElapsedMs } = this.#cadenceSession.getSnapshot();
+
+        return this.#workoutContext.getSnapshot(protocolElapsedMs);
     }
 }

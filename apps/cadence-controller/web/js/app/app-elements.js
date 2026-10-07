@@ -39,6 +39,10 @@ export function getAppElements(root = document) {
         skipBlockButton: requireElement(root, "#skip-block-button"),
         skipPhaseButton: requireElement(root, "#skip-phase-button"),
         cancelChangeWorkoutButton: requireElement(root, "#cancel-change-workout-button"),
+
+        finishBlockSkipPhaseButton: requireElement(root, "#finish-block-skip-phase-button"),
+        finishBlockEndWorkoutButton: requireElement(root, "#finish-block-end-workout-button"),
+        cancelPendingActionButton: requireElement(root, "#cancel-pending-action-button"),
     };
 }
 

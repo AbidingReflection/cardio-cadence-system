@@ -728,3 +728,69 @@ test("wire-rendering", "renders current phase block transition markers", () => {
     assertEqual(ticks[0].dataset.tickId, "block-2");
     assertEqual(ticks[0].style.left, "35%");
 });
+
+test("wire-rendering", "updates workout navigation from protocol time", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frameScheduler = createFrameScheduler();
+
+    const updateCalls = [];
+
+    const workoutNavigationController = {
+        update(protocolElapsedMs) {
+            updateCalls.push(protocolElapsedMs);
+        },
+
+        getPendingAction() {
+            return null;
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame: frameScheduler.requestFrame,
+        cancelFrame: frameScheduler.cancelFrame,
+        workoutNavigationController,
+    });
+
+    assertEqual(updateCalls.length, 1);
+    assertEqual(updateCalls[0], 0);
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 12_500,
+        protocolRemainingMs: 47_500,
+        countdownRemainingMs: 0,
+    });
+
+    frameScheduler.runNextFrame();
+
+    assertEqual(updateCalls.length, 2);
+    assertEqual(updateCalls[1], 12_500);
+});
+
+test("wire-rendering", "renders pending workout navigation state", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frameScheduler = createFrameScheduler();
+
+    const workoutNavigationController = {
+        update() {},
+
+        getPendingAction() {
+            return {
+                action: "skip-phase",
+                triggerTimeMs: 20_000,
+                destinationTimeMs: 40_000,
+            };
+        },
+    };
+
+    wireRendering(elements, playback, {
+        requestFrame: frameScheduler.requestFrame,
+        cancelFrame: frameScheduler.cancelFrame,
+        workoutNavigationController,
+    });
+
+    assertEqual(elements.changeWorkoutButton.textContent, "After Block");
+    assertEqual(elements.changeWorkoutButton.classList.contains("playback-control--pending"), true);
+});

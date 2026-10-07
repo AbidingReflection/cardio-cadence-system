@@ -3,7 +3,7 @@
  * - Connect playback controls to application playback events.
  * - Connect load acknowledgement interaction to playback events.
  * - Manage workout-change panel interaction.
- * - Delegate structural navigation to WorkoutNavigationController.
+ * - Delegate structural navigation and deferred actions to WorkoutNavigationController.
  * - Provide cleanup for registered DOM event listeners.
  */
 
@@ -48,6 +48,21 @@ export function wireInteractions(elements, playbackEvents, workoutNavigationCont
         closeChangeWorkoutPanel();
     };
 
+    const onFinishBlockSkipPhase = () => {
+        workoutNavigationController.scheduleSkipPhaseAfterBlock();
+        closeChangeWorkoutPanel();
+    };
+
+    const onFinishBlockEndWorkout = () => {
+        workoutNavigationController.scheduleEndWorkoutAfterBlock();
+        closeChangeWorkoutPanel();
+    };
+
+    const onCancelPendingAction = () => {
+        workoutNavigationController.cancelPendingAction();
+        closeChangeWorkoutPanel();
+    };
+
     const onCancelChangeWorkout = () => {
         closeChangeWorkoutPanel();
     };
@@ -62,6 +77,13 @@ export function wireInteractions(elements, playbackEvents, workoutNavigationCont
     elements.changeWorkoutButton.addEventListener("click", onChangeWorkout);
     elements.skipBlockButton.addEventListener("click", onSkipBlock);
     elements.skipPhaseButton.addEventListener("click", onSkipPhase);
+
+    elements.finishBlockSkipPhaseButton.addEventListener("click", onFinishBlockSkipPhase);
+
+    elements.finishBlockEndWorkoutButton.addEventListener("click", onFinishBlockEndWorkout);
+
+    elements.cancelPendingActionButton.addEventListener("click", onCancelPendingAction);
+
     elements.cancelChangeWorkoutButton.addEventListener("click", onCancelChangeWorkout);
 
     /** Removes all registered application interaction listeners. */
@@ -76,6 +98,13 @@ export function wireInteractions(elements, playbackEvents, workoutNavigationCont
         elements.changeWorkoutButton.removeEventListener("click", onChangeWorkout);
         elements.skipBlockButton.removeEventListener("click", onSkipBlock);
         elements.skipPhaseButton.removeEventListener("click", onSkipPhase);
+
+        elements.finishBlockSkipPhaseButton.removeEventListener("click", onFinishBlockSkipPhase);
+
+        elements.finishBlockEndWorkoutButton.removeEventListener("click", onFinishBlockEndWorkout);
+
+        elements.cancelPendingActionButton.removeEventListener("click", onCancelPendingAction);
+
         elements.cancelChangeWorkoutButton.removeEventListener("click", onCancelChangeWorkout);
     };
 }

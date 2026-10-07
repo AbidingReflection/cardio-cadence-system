@@ -9,14 +9,15 @@ function createElements() {
         pauseButton: document.createElement("button"),
         resumeButton: document.createElement("button"),
         stopButton: document.createElement("button"),
-
-        loadVisualizer: document.createElement("div"),
-
         changeWorkoutButton: document.createElement("button"),
         changeWorkoutPanel: document.createElement("div"),
         skipBlockButton: document.createElement("button"),
         skipPhaseButton: document.createElement("button"),
+        finishBlockSkipPhaseButton: document.createElement("button"),
+        finishBlockEndWorkoutButton: document.createElement("button"),
+        cancelPendingActionButton: document.createElement("button"),
         cancelChangeWorkoutButton: document.createElement("button"),
+        loadVisualizer: document.createElement("div"),
     };
 }
 
@@ -56,6 +57,9 @@ function createWorkoutNavigationControllerFake() {
     return {
         skipBlockCalls: 0,
         skipPhaseCalls: 0,
+        scheduleSkipPhaseAfterBlockCalls: 0,
+        scheduleEndWorkoutAfterBlockCalls: 0,
+        cancelPendingActionCalls: 0,
 
         skipBlock() {
             this.skipBlockCalls += 1;
@@ -63,6 +67,18 @@ function createWorkoutNavigationControllerFake() {
 
         skipPhase() {
             this.skipPhaseCalls += 1;
+        },
+
+        scheduleSkipPhaseAfterBlock() {
+            this.scheduleSkipPhaseAfterBlockCalls += 1;
+        },
+
+        scheduleEndWorkoutAfterBlock() {
+            this.scheduleEndWorkoutAfterBlockCalls += 1;
+        },
+
+        cancelPendingAction() {
+            this.cancelPendingActionCalls += 1;
         },
     };
 }
@@ -158,4 +174,20 @@ test("wire-interactions", "wires workout navigation controls", () => {
 
     assertEqual(workoutNavigationController.skipBlockCalls, 1);
     assertEqual(workoutNavigationController.skipPhaseCalls, 1);
+});
+
+test("wire-interactions", "wires deferred workout actions", () => {
+    const elements = createElements();
+    const playbackEvents = createPlaybackEventsFake();
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
+
+    elements.finishBlockSkipPhaseButton.click();
+    elements.finishBlockEndWorkoutButton.click();
+    elements.cancelPendingActionButton.click();
+
+    assertEqual(workoutNavigationController.scheduleSkipPhaseAfterBlockCalls, 1);
+    assertEqual(workoutNavigationController.scheduleEndWorkoutAfterBlockCalls, 1);
+    assertEqual(workoutNavigationController.cancelPendingActionCalls, 1);
 });

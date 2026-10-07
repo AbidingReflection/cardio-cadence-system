@@ -151,6 +151,24 @@ export class CadenceSession {
         this.#scheduleLookahead();
     }
 
+    /** Ends active playback while preserving the current protocol position. */
+    end() {
+        this.#updateLifecycle();
+
+        if (this.#state !== "running" && this.#state !== "paused") {
+            throw new Error(`Cannot end cadence session while ${this.#state}.`);
+        }
+
+        const protocolElapsedMs = this.#getProtocolElapsedTimeMs();
+
+        this.#audioCueEngine.cancelScheduledCues();
+        this.#stopScheduler();
+
+        this.#state = "ended";
+        this.#pausedProtocolTimeMs = protocolElapsedMs;
+        this.#nextCueCycleCount = undefined;
+    }
+
     /** Stops playback and resets protocol execution to its initial state. */
     stop() {
         if (this.#state === "idle") {
@@ -246,7 +264,7 @@ export class CadenceSession {
             return 0;
         }
 
-        if (this.#state === "paused" || this.#state === "completed") {
+        if (this.#state === "paused" || this.#state === "completed" || this.#state === "ended") {
             return this.#pausedProtocolTimeMs;
         }
 

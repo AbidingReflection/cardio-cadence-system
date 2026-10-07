@@ -28,6 +28,7 @@ export function wireRendering(
     {
         requestFrame = globalThis.requestAnimationFrame.bind(globalThis),
         cancelFrame = globalThis.cancelAnimationFrame.bind(globalThis),
+        workoutNavigationController = undefined,
     } = {},
 ) {
     const cadenceVariable = playback.protocolBundle.cadenceVariable;
@@ -65,7 +66,11 @@ export function wireRendering(
 
     /** Renders current playback and workout state. */
     function render() {
-        const sessionSnapshot = playback.cadenceSession.getSnapshot();
+        let sessionSnapshot = playback.cadenceSession.getSnapshot();
+
+        workoutNavigationController?.update(sessionSnapshot.protocolElapsedMs);
+
+        sessionSnapshot = playback.cadenceSession.getSnapshot();
 
         const protocolElapsedMs = sessionSnapshot.protocolElapsedMs;
 
@@ -92,7 +97,8 @@ export function wireRendering(
             adjustmentPending: loadAdjustmentSnapshot?.pending ?? false,
         });
 
-        renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot);
+        const pendingAction = workoutNavigationController?.getPendingAction() ?? null;
+        renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot, pendingAction);
 
         renderCadenceVisualizer(cadenceVisualizer, {
             phase: cadencePhase,

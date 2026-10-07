@@ -33,6 +33,12 @@
     cursor: pointer;
 }
 
+.playback-control--pending {
+    background: #d6a72b;
+    border-color: #e4bd4f;
+    color: #101318;
+}
+
 .playback-control:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.08);
 }

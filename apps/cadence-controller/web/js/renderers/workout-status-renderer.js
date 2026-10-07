@@ -8,7 +8,12 @@
 import { formatDurationCompactMs } from "/packages/utils/format-duration.js";
 
 /** Renders current Cadence Controller playback and workout status. */
-export function renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot) {
+export function renderWorkoutStatus(
+    elements,
+    sessionSnapshot,
+    workoutSnapshot,
+    pendingAction = null,
+) {
     elements.playbackState.textContent = formatPlaybackState(sessionSnapshot.state);
 
     elements.countdown.textContent = formatCountdown(sessionSnapshot.countdownRemainingMs);
@@ -29,7 +34,7 @@ export function renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot) 
 
     elements.nextBlock.textContent = formatStructure(workoutSnapshot.nextBlock);
 
-    renderControls(elements, sessionSnapshot.state, workoutSnapshot);
+    renderControls(elements, sessionSnapshot.state, workoutSnapshot, pendingAction);
 }
 
 /** Formats remaining time in the current phase. */
@@ -79,7 +84,7 @@ function formatStructure(structure) {
 }
 
 /** Updates playback control availability from session and workout state. */
-function renderControls(elements, state, workoutSnapshot) {
+function renderControls(elements, state, workoutSnapshot, pendingAction) {
     const controls = getControlState(state);
 
     elements.startButton.disabled = !controls.start;
@@ -92,6 +97,11 @@ function renderControls(elements, state, workoutSnapshot) {
         (workoutSnapshot.nextBlock !== null || workoutSnapshot.nextPhase !== null);
 
     elements.changeWorkoutButton.disabled = !navigationAvailable;
+
+    const pending = pendingAction !== null;
+
+    elements.changeWorkoutButton.textContent = pending ? "After Block" : "Change";
+    elements.changeWorkoutButton.classList.toggle("playback-control--pending", pending);
 }
 
 /** Returns available playback actions for one lifecycle state. */

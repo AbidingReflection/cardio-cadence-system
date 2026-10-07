@@ -602,3 +602,75 @@ test("cadence-session", "rejects an invalid seek protocol time", async () => {
         assertThrows(() => session.seek(protocolTimeMs), /protocolTimeMs/);
     }
 });
+
+test("cadence-session", "ends running playback at the current protocol time", async () => {
+    const { session, audioCueEngine, timer } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12.5;
+
+    session.end();
+
+    assertEqual(session.state, "ended");
+    assertEqual(session.getSnapshot().protocolElapsedMs, 2500);
+    assertEqual(audioCueEngine.cancelCalls, 1);
+    assertEqual(timer.activeIntervalCount, 0);
+
+    audioCueEngine.currentTime = 30;
+
+    assertEqual(session.getSnapshot().protocolElapsedMs, 2500);
+});
+
+test("cadence-session", "ends paused playback at its frozen protocol time", async () => {
+    const { session, audioCueEngine, timer } = createSession();
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 12.5;
+
+    session.pause();
+    session.end();
+
+    assertEqual(session.state, "ended");
+    assertEqual(session.getSnapshot().protocolElapsedMs, 2500);
+    assertEqual(timer.activeIntervalCount, 0);
+});
+
+test("cadence-session", "rejects end outside active playback", async () => {
+    const idleSession = createSession().session;
+
+    assertThrows(() => idleSession.end(), /idle/);
+
+    const { session: countdownSession, audioCueEngine: countdownAudioCueEngine } = createSession({
+        startDelaySeconds: 5,
+    });
+
+    countdownAudioCueEngine.currentTime = 10;
+
+    await countdownSession.start();
+
+    assertThrows(() => countdownSession.end(), /countdown/);
+});
+
+test("cadence-session", "rejects end after completion", async () => {
+    const { session, audioCueEngine } = createSession({
+        protocol: createProtocol({
+            durationSeconds: 1,
+        }),
+    });
+
+    audioCueEngine.currentTime = 10;
+
+    await session.start();
+
+    audioCueEngine.currentTime = 11;
+
+    assertEqual(session.state, "completed");
+
+    assertThrows(() => session.end(), /completed/);
+});
