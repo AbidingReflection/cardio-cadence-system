@@ -9,7 +9,14 @@ function createElements() {
         pauseButton: document.createElement("button"),
         resumeButton: document.createElement("button"),
         stopButton: document.createElement("button"),
+
         loadVisualizer: document.createElement("div"),
+
+        changeWorkoutButton: document.createElement("button"),
+        changeWorkoutPanel: document.createElement("div"),
+        skipBlockButton: document.createElement("button"),
+        skipPhaseButton: document.createElement("button"),
+        cancelChangeWorkoutButton: document.createElement("button"),
     };
 }
 
@@ -44,11 +51,29 @@ function createPlaybackEventsFake() {
     };
 }
 
+/** Records workout navigation calls for wiring tests. */
+function createWorkoutNavigationControllerFake() {
+    return {
+        skipBlockCalls: 0,
+        skipPhaseCalls: 0,
+
+        skipBlock() {
+            this.skipBlockCalls += 1;
+        },
+
+        skipPhase() {
+            this.skipPhaseCalls += 1;
+        },
+    };
+}
+
 test("wire-interactions", "wires playback controls to playback events", async () => {
     const elements = createElements();
     const playbackEvents = createPlaybackEventsFake();
 
-    wireInteractions(elements, playbackEvents);
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
 
     elements.startButton.click();
     elements.pauseButton.click();
@@ -67,7 +92,9 @@ test("wire-interactions", "does not cross-wire playback controls", async () => {
     const elements = createElements();
     const playbackEvents = createPlaybackEventsFake();
 
-    wireInteractions(elements, playbackEvents);
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
 
     elements.pauseButton.click();
 
@@ -78,13 +105,17 @@ test("wire-interactions", "does not cross-wire playback controls", async () => {
     assertEqual(playbackEvents.resumeCalls, 0);
     assertEqual(playbackEvents.stopCalls, 0);
     assertEqual(playbackEvents.acknowledgeLoadAdjustmentCalls, 0);
+    assertEqual(workoutNavigationController.skipBlockCalls, 0);
+    assertEqual(workoutNavigationController.skipPhaseCalls, 0);
 });
 
 test("wire-interactions", "acknowledges load adjustment from load visualizer", () => {
     const elements = createElements();
     const playbackEvents = createPlaybackEventsFake();
 
-    wireInteractions(elements, playbackEvents);
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
 
     elements.loadVisualizer.click();
 
@@ -95,7 +126,8 @@ test("wire-interactions", "removes registered playback listeners", async () => {
     const elements = createElements();
     const playbackEvents = createPlaybackEventsFake();
 
-    const unwire = wireInteractions(elements, playbackEvents);
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+    const unwire = wireInteractions(elements, playbackEvents, workoutNavigationController);
 
     unwire();
 
@@ -112,4 +144,18 @@ test("wire-interactions", "removes registered playback listeners", async () => {
     assertEqual(playbackEvents.resumeCalls, 0);
     assertEqual(playbackEvents.stopCalls, 0);
     assertEqual(playbackEvents.acknowledgeLoadAdjustmentCalls, 0);
+});
+
+test("wire-interactions", "wires workout navigation controls", () => {
+    const elements = createElements();
+    const playbackEvents = createPlaybackEventsFake();
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
+
+    elements.skipBlockButton.click();
+    elements.skipPhaseButton.click();
+
+    assertEqual(workoutNavigationController.skipBlockCalls, 1);
+    assertEqual(workoutNavigationController.skipPhaseCalls, 1);
 });

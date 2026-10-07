@@ -145,7 +145,29 @@
                 <button id="stop-button" type="button" class="playback-control" disabled>
                     Stop
                 </button>
+
+                <button id="change-workout-button" type="button" class="playback-control" disabled>
+                    Change
+                </button>
             </section>
+            <div id="change-workout-panel" class="change-workout-panel" hidden>
+                <button id="skip-block-button" type="button" class="change-workout-panel__action">
+                    Skip Block
+                </button>
+
+                <button id="skip-phase-button" type="button" class="change-workout-panel__action">
+                    Skip Phase
+                </button>
+
+                <button
+                    id="cancel-change-workout-button"
+                    type="button"
+                    class="change-workout-panel__action"
+                >
+                    Cancel
+                </button>
+            </div>
+
             <div id="countdown" class="playback-countdown" aria-live="polite"></div>
         </main>
 

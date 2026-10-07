@@ -21,6 +21,7 @@ function createElements() {
         pauseButton: document.createElement("button"),
         resumeButton: document.createElement("button"),
         stopButton: document.createElement("button"),
+        changeWorkoutButton: document.createElement("button"),
     };
 }
 
@@ -73,6 +74,7 @@ test("workout-status-renderer", "renders running workout status", () => {
     assertEqual(elements.currentBlock.textContent, "Build");
     assertEqual(elements.nextPhase.textContent, "Intervals");
     assertEqual(elements.nextBlock.textContent, "Work 1");
+    assertEqual(elements.changeWorkoutButton.disabled, false);
 });
 
 test("workout-status-renderer", "renders countdown as whole seconds remaining", () => {
@@ -162,6 +164,7 @@ test("workout-status-renderer", "enables only start while idle", () => {
     assertEqual(elements.pauseButton.disabled, true);
     assertEqual(elements.resumeButton.disabled, true);
     assertEqual(elements.stopButton.disabled, true);
+    assertEqual(elements.changeWorkoutButton.disabled, true);
 });
 
 test("workout-status-renderer", "enables only stop during countdown", () => {
@@ -181,6 +184,7 @@ test("workout-status-renderer", "enables only stop during countdown", () => {
     assertEqual(elements.pauseButton.disabled, true);
     assertEqual(elements.resumeButton.disabled, true);
     assertEqual(elements.stopButton.disabled, false);
+    assertEqual(elements.changeWorkoutButton.disabled, true);
 });
 
 test("workout-status-renderer", "enables pause and stop while running", () => {
@@ -215,6 +219,7 @@ test("workout-status-renderer", "enables resume and stop while paused", () => {
     assertEqual(elements.pauseButton.disabled, true);
     assertEqual(elements.resumeButton.disabled, false);
     assertEqual(elements.stopButton.disabled, false);
+    assertEqual(elements.changeWorkoutButton.disabled, false);
 });
 
 test("workout-status-renderer", "enables only stop after completion", () => {
@@ -238,6 +243,7 @@ test("workout-status-renderer", "enables only stop after completion", () => {
     assertEqual(elements.pauseButton.disabled, true);
     assertEqual(elements.resumeButton.disabled, true);
     assertEqual(elements.stopButton.disabled, false);
+    assertEqual(elements.changeWorkoutButton.disabled, true);
 });
 
 test("workout-status-renderer", "rejects unsupported playback states", () => {
@@ -281,4 +287,21 @@ test("workout-status-renderer", "renders current phase remaining time", () => {
     renderWorkoutStatus(elements, createSessionSnapshot(), workoutSnapshot);
 
     assertEqual(elements.phaseRemainingTime.textContent, "2:05");
+});
+
+test("workout-status-renderer", "disables unavailable workout navigation", () => {
+    const elements = createElements();
+
+    renderWorkoutStatus(
+        elements,
+        createSessionSnapshot({
+            state: "running",
+        }),
+        createWorkoutSnapshot({
+            nextBlock: null,
+            nextPhase: null,
+        }),
+    );
+
+    assertEqual(elements.changeWorkoutButton.disabled, true);
 });

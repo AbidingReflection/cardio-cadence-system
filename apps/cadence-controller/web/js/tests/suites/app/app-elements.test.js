@@ -30,6 +30,7 @@ function createAppRoot() {
     <button id="pause-button"></button>
     <button id="resume-button"></button>
     <button id="stop-button"></button>
+    <button id="change-workout-button"></button>
     `;
 
     return root;
@@ -73,6 +74,8 @@ test("app-elements", "resolves the complete application element contract", () =>
     assertEqual(elements.resumeButton, root.querySelector("#resume-button"));
 
     assertEqual(elements.stopButton, root.querySelector("#stop-button"));
+
+    assertEqual(elements.changeWorkoutButton, root.querySelector("#change-workout-button"));
 });
 
 test("app-elements", "throws when a required application element is missing", () => {

@@ -12,6 +12,7 @@ import { wireRendering } from "./app/wire-rendering.js";
 
 import { createPlaybackEvents } from "./interactions/playback-events.js";
 import { ProtocolBundle } from "./loading/protocol-bundle.js";
+import { WorkoutNavigationController } from "./controllers/workout-navigation-controller.js";
 
 const PROTOCOL_BUNDLE_URL = "/data/true-elliptical-108-minute-session.json";
 
@@ -23,6 +24,11 @@ async function startApp() {
 
     const playback = createPlayback(protocolBundle);
 
+    const workoutNavigationController = new WorkoutNavigationController({
+        cadenceSession: playback.cadenceSession,
+        workoutContext: playback.workoutContext,
+    });
+
     const playbackEvents = createPlaybackEvents(
         playback.cadenceSession,
         playback.loadAdjustmentTracker,
@@ -30,7 +36,7 @@ async function startApp() {
 
     elements.protocolTitle.textContent = protocolBundle.protocol.name;
 
-    wireInteractions(elements, playbackEvents);
+    wireInteractions(elements, playbackEvents, workoutNavigationController);
 
     wireRendering(elements, playback);
 }

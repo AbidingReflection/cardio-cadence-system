@@ -29,7 +29,7 @@ export function renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot) 
 
     elements.nextBlock.textContent = formatStructure(workoutSnapshot.nextBlock);
 
-    renderControls(elements, sessionSnapshot.state);
+    renderControls(elements, sessionSnapshot.state, workoutSnapshot);
 }
 
 /** Formats remaining time in the current phase. */
@@ -78,14 +78,20 @@ function formatStructure(structure) {
     return structure?.name ?? "—";
 }
 
-/** Updates playback control availability from session state. */
-function renderControls(elements, state) {
+/** Updates playback control availability from session and workout state. */
+function renderControls(elements, state, workoutSnapshot) {
     const controls = getControlState(state);
 
     elements.startButton.disabled = !controls.start;
     elements.pauseButton.disabled = !controls.pause;
     elements.resumeButton.disabled = !controls.resume;
     elements.stopButton.disabled = !controls.stop;
+
+    const navigationAvailable =
+        (state === "running" || state === "paused") &&
+        (workoutSnapshot.nextBlock !== null || workoutSnapshot.nextPhase !== null);
+
+    elements.changeWorkoutButton.disabled = !navigationAvailable;
 }
 
 /** Returns available playback actions for one lifecycle state. */
