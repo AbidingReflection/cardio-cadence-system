@@ -1,8 +1,8 @@
 body {
     margin: 0;
     font-family: sans-serif;
-    background: #f7f7f7;
-    color: #222;
+    background: #2c2c2c;
+    color: #ffffff;
 }
 
 .test-page {
@@ -27,7 +27,7 @@ h1 {
 table {
     width: 100%;
     border-collapse: collapse;
-    background: #fff;
+    background: #141618;
 }
 
 th,
@@ -39,12 +39,12 @@ td {
 }
 
 th {
-    background: #ededed;
+    background: #292c30;
     font-weight: 600;
 }
 
 .test-summary {
-    width: 45%;
+    width: 65%;
     table-layout: fixed;
 }
 
@@ -78,16 +78,17 @@ th {
 
 .test-status {
     text-align: center;
+    align-content: center;
     font-weight: 700;
 }
 
 .test-status--passed {
-    background: #dff3e4;
+    background: #0dd03e;
     color: #165c2c;
 }
 
 .test-status--failed {
-    background: #f8d7da;
+    background: #ff0a00;
     color: #842029;
 }
 
