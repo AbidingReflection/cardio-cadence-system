@@ -126,7 +126,7 @@
 }
 
 .progress-track__range {
-    stroke-width: 4;
+    stroke-width: 7px;
     stroke-linecap: butt;
 }
 

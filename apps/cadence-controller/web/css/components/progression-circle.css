@@ -80,8 +80,8 @@
 .progression-circle__marker-dot {
     fill: var(--progression-circle-marker-color);
 
-    stroke: #000;
-    stroke-width: 1.5px;
+    /*    stroke: #000;
+    stroke-width: 1.5px;*/
     vector-effect: non-scaling-stroke;
 }
 
