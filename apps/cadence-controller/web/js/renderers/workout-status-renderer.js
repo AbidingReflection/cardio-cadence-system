@@ -13,6 +13,7 @@ export function renderWorkoutStatus(
     sessionSnapshot,
     workoutSnapshot,
     pendingAction = null,
+    executionStatus = null,
 ) {
     setTextContent(elements.playbackState, formatPlaybackState(sessionSnapshot.state));
 
@@ -38,7 +39,13 @@ export function renderWorkoutStatus(
 
     setTextContent(elements.nextBlock, formatStructure(workoutSnapshot.nextBlock));
 
-    renderControls(elements, sessionSnapshot.state, workoutSnapshot, pendingAction);
+    renderControls(
+        elements,
+        sessionSnapshot.state,
+        workoutSnapshot,
+        pendingAction,
+        executionStatus,
+    );
 }
 
 /** Formats remaining time in the current phase. */
@@ -68,6 +75,9 @@ function formatPlaybackState(state) {
         case "completed":
             return "Completed";
 
+        case "ended":
+            return "Ended";
+
         default:
             throw new RangeError(`Unsupported playback state "${state}".`);
     }
@@ -87,14 +97,22 @@ function formatStructure(structure) {
     return structure?.name ?? "—";
 }
 
-/** Updates playback control availability from session and workout state. */
-function renderControls(elements, state, workoutSnapshot, pendingAction) {
+/** Updates playback control availability from session, workout, and execution state. */
+function renderControls(elements, state, workoutSnapshot, pendingAction, executionStatus) {
     const controls = getControlState(state);
 
     setDisabled(elements.startButton, !controls.start);
     setDisabled(elements.pauseButton, !controls.pause);
     setDisabled(elements.resumeButton, !controls.resume);
     setDisabled(elements.stopButton, !controls.stop);
+
+    if (isFinalizedExecutionStatus(executionStatus)) {
+        setDisabled(elements.changeWorkoutButton, false);
+        setTextContent(elements.changeWorkoutButton, "Download");
+        setClassEnabled(elements.changeWorkoutButton, "playback-control--pending", false);
+        setHidden(elements.cancelPendingActionButton, true);
+        return;
+    }
 
     const navigationAvailable =
         (state === "running" || state === "paused") &&
@@ -109,6 +127,11 @@ function renderControls(elements, state, workoutSnapshot, pendingAction) {
     setClassEnabled(elements.changeWorkoutButton, "playback-control--pending", pending);
 
     setHidden(elements.cancelPendingActionButton, !pending);
+}
+
+/** Returns whether an execution status represents a finalized execution. */
+function isFinalizedExecutionStatus(status) {
+    return status === "completed" || status === "ended-early" || status === "interrupted";
 }
 
 /** Updates text content only when its rendered value has changed. */
@@ -177,6 +200,7 @@ function getControlState(state) {
             };
 
         case "completed":
+        case "ended":
             return {
                 start: false,
                 pause: false,

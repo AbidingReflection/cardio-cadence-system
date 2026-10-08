@@ -51,6 +51,7 @@ function createPlaybackEventsFake() {
         },
     };
 }
+
 /** Records workout navigation calls for wiring tests. */
 function createWorkoutNavigationControllerFake({
     pendingAction = null,
@@ -94,6 +95,23 @@ function createWorkoutNavigationControllerFake({
 
         getConfirmedOmissions() {
             return confirmedOmissions.map((omission) => ({ ...omission }));
+        },
+    };
+}
+
+/** Creates a fake execution exporter for interaction wiring tests. */
+function createFakeExecutionExporter({ available = false } = {}) {
+    return {
+        downloadCalls: 0,
+
+        /** Returns whether a finalized execution is available for download. */
+        isAvailable() {
+            return available;
+        },
+
+        /** Records one execution download request. */
+        download() {
+            this.downloadCalls += 1;
         },
     };
 }
@@ -205,4 +223,22 @@ test("wire-interactions", "wires deferred workout actions", () => {
     assertEqual(workoutNavigationController.scheduleSkipPhaseAfterBlockCalls, 1);
     assertEqual(workoutNavigationController.scheduleEndWorkoutAfterBlockCalls, 1);
     assertEqual(workoutNavigationController.cancelPendingActionCalls, 1);
+});
+
+test("wire-interactions", "downloads finalized execution from change workout control", () => {
+    const elements = createElements();
+    const playbackEvents = createPlaybackEventsFake();
+    const workoutNavigationController = createWorkoutNavigationControllerFake();
+    const executionExporter = createFakeExecutionExporter({
+        available: true,
+    });
+
+    elements.changeWorkoutPanel.hidden = true;
+
+    wireInteractions(elements, playbackEvents, workoutNavigationController, executionExporter);
+
+    elements.changeWorkoutButton.click();
+
+    assertEqual(executionExporter.downloadCalls, 1);
+    assertEqual(elements.changeWorkoutPanel.hidden, true);
 });

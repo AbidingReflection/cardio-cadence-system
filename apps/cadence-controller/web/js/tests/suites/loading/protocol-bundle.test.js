@@ -292,3 +292,50 @@ test("protocol-bundle", "rejects multiple load variables", () => {
 
     assertThrows(() => new ProtocolBundle(data));
 });
+
+test("protocol-bundle", "returns a defensive snapshot of the self-contained bundle", () => {
+    const data = createValidBundleData();
+
+    data.machineProfile = {
+        id: "machine-1",
+        name: "Test Machine",
+    };
+
+    data.calibrationProfile = {
+        id: "calibration-1",
+        name: "Test Calibration",
+    };
+
+    const bundle = new ProtocolBundle(data);
+
+    assertDeepEqual(bundle.getSnapshot(), data);
+});
+
+test("protocol-bundle", "protects internal bundle data returned by snapshot", () => {
+    const data = createValidBundleData();
+
+    data.machineProfile = {
+        id: "machine-1",
+        name: "Test Machine",
+    };
+
+    data.calibrationProfile = {
+        id: "calibration-1",
+        name: "Test Calibration",
+    };
+
+    const bundle = new ProtocolBundle(data);
+    const snapshot = bundle.getSnapshot();
+
+    snapshot.protocol.name = "Changed";
+    snapshot.activityType.name = "Changed Activity";
+    snapshot.machineProfile.name = "Changed Machine";
+    snapshot.calibrationProfile.name = "Changed Calibration";
+
+    const freshSnapshot = bundle.getSnapshot();
+
+    assertEqual(freshSnapshot.protocol.name, "Test Protocol");
+    assertEqual(freshSnapshot.activityType.name, "Elliptical");
+    assertEqual(freshSnapshot.machineProfile.name, "Test Machine");
+    assertEqual(freshSnapshot.calibrationProfile.name, "Test Calibration");
+});

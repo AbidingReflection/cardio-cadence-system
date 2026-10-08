@@ -4,13 +4,16 @@
 export class WorkoutNavigationController {
     #cadenceSession;
     #workoutContext;
+    #executionRecorder;
     #pendingAction = null;
+    #pendingNavigationTarget = null;
     #confirmedOmissions = [];
 
     /** Creates a workout navigation controller. */
-    constructor({ cadenceSession, workoutContext }) {
+    constructor({ cadenceSession, workoutContext, executionRecorder = undefined }) {
         this.#cadenceSession = cadenceSession;
         this.#workoutContext = workoutContext;
+        this.#executionRecorder = executionRecorder;
     }
 
     /** Skips immediately to the next block boundary. */
@@ -37,6 +40,10 @@ export class WorkoutNavigationController {
             destinationTimeMs: workoutSnapshot.nextPhase.startTimeMs,
         };
 
+        this.#pendingNavigationTarget = {
+            phaseId: workoutSnapshot.nextPhase.id,
+        };
+
         return true;
     }
 
@@ -53,12 +60,15 @@ export class WorkoutNavigationController {
             triggerTimeMs: workoutSnapshot.currentBlock.endTimeMs,
         };
 
+        this.#pendingNavigationTarget = null;
+
         return true;
     }
 
     /** Cancels any pending deferred workout action. */
     cancelPendingAction() {
         this.#pendingAction = null;
+        this.#pendingNavigationTarget = null;
     }
 
     /** Returns the current pending workout action. */
@@ -78,8 +88,10 @@ export class WorkoutNavigationController {
         }
 
         const pendingAction = this.#pendingAction;
+        const pendingNavigationTarget = this.#pendingNavigationTarget;
 
         this.#pendingAction = null;
+        this.#pendingNavigationTarget = null;
 
         if (pendingAction.action === "skip-phase") {
             this.#confirmedOmissions.push({
@@ -89,12 +101,23 @@ export class WorkoutNavigationController {
             });
 
             this.#cadenceSession.seek(pendingAction.destinationTimeMs);
+
+            this.#executionRecorder?.navigate({
+                protocolTimeMs: pendingAction.triggerTimeMs,
+                destinationProtocolTimeMs: pendingAction.destinationTimeMs,
+                target: pendingNavigationTarget,
+                action: "skip-phase",
+            });
+
             return;
         }
 
         if (pendingAction.action === "end-workout") {
             this.#cadenceSession.seek(pendingAction.triggerTimeMs);
             this.#cadenceSession.end();
+
+            this.#executionRecorder?.endEarly(pendingAction.triggerTimeMs, "end-after-block");
+
             return;
         }
 
@@ -113,13 +136,43 @@ export class WorkoutNavigationController {
             return false;
         }
 
+        const action = targetKey === "nextBlock" ? "skip-block" : "skip-phase";
+
+        let navigationTarget;
+
+        if (this.#executionRecorder !== undefined) {
+            if (action === "skip-block") {
+                const destinationSnapshot = this.#workoutContext.getSnapshot(
+                    destination.startTimeMs,
+                );
+
+                navigationTarget = {
+                    phaseId: destinationSnapshot.currentPhase.id,
+                    blockId: destinationSnapshot.currentBlock.id,
+                };
+            } else {
+                navigationTarget = {
+                    phaseId: destination.id,
+                };
+            }
+        }
+
         this.#confirmedOmissions.push({
-            action: targetKey === "nextBlock" ? "skip-block" : "skip-phase",
+            action,
             startTimeMs: protocolElapsedMs,
             endTimeMs: destination.startTimeMs,
         });
 
         this.#cadenceSession.seek(destination.startTimeMs);
+
+        if (this.#executionRecorder !== undefined) {
+            this.#executionRecorder.navigate({
+                protocolTimeMs: protocolElapsedMs,
+                destinationProtocolTimeMs: destination.startTimeMs,
+                target: navigationTarget,
+                action,
+            });
+        }
 
         return true;
     }

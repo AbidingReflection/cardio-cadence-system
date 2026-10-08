@@ -13,6 +13,8 @@ import { wireRendering } from "./app/wire-rendering.js";
 import { createPlaybackEvents } from "./interactions/playback-events.js";
 import { ProtocolBundle } from "./loading/protocol-bundle.js";
 import { WorkoutNavigationController } from "./controllers/workout-navigation-controller.js";
+import { ExecutionRecorder } from "./execution/execution-recorder.js";
+import { ExecutionExporter } from "./execution/execution-exporter.js";
 
 const PROTOCOL_BUNDLE_URL = "/data/true-elliptical-108-minute-session.json";
 
@@ -23,23 +25,32 @@ async function startApp() {
     const protocolBundle = await ProtocolBundle.load(PROTOCOL_BUNDLE_URL);
 
     const playback = createPlayback(protocolBundle);
+    const executionRecorder = new ExecutionRecorder();
+
+    const executionExporter = new ExecutionExporter({
+        protocolBundle,
+        executionRecorder,
+    });
 
     const workoutNavigationController = new WorkoutNavigationController({
         cadenceSession: playback.cadenceSession,
         workoutContext: playback.workoutContext,
+        executionRecorder,
     });
 
     const playbackEvents = createPlaybackEvents(
         playback.cadenceSession,
         playback.loadAdjustmentTracker,
+        executionRecorder,
     );
 
     elements.protocolTitle.textContent = protocolBundle.protocol.name;
 
-    wireInteractions(elements, playbackEvents, workoutNavigationController);
+    wireInteractions(elements, playbackEvents, workoutNavigationController, executionExporter);
 
     wireRendering(elements, playback, {
         workoutNavigationController,
+        executionRecorder,
     });
 }
 

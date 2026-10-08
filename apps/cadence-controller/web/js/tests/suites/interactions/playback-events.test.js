@@ -1,4 +1,8 @@
-import { assertEqual, test } from "/packages/js-testing/framework/test-framework.js";
+import {
+    assertDeepEqual,
+    assertEqual,
+    test,
+} from "/packages/js-testing/framework/test-framework.js";
 
 import { createPlaybackEvents } from "../../../interactions/playback-events.js";
 
@@ -25,6 +29,7 @@ class CadenceSessionFake {
 
     stop() {
         this.stopCalls += 1;
+        this.protocolElapsedMs = 0;
     }
 
     getSnapshot() {
@@ -40,6 +45,36 @@ class LoadAdjustmentTrackerFake {
 
     acknowledge(timeMs) {
         this.acknowledgedTimes.push(timeMs);
+    }
+}
+
+/** Records execution-recorder calls for playback interaction tests. */
+class ExecutionRecorderFake {
+    pauseCalls = [];
+    resumeCalls = [];
+    endEarlyCalls = [];
+
+    snapshot = {
+        status: "in-progress",
+    };
+
+    pause(protocolTimeMs) {
+        this.pauseCalls.push(protocolTimeMs);
+    }
+
+    resume(protocolTimeMs) {
+        this.resumeCalls.push(protocolTimeMs);
+    }
+
+    endEarly(protocolTimeMs, reason) {
+        this.endEarlyCalls.push({
+            protocolTimeMs,
+            reason,
+        });
+    }
+
+    getSnapshot() {
+        return this.snapshot;
     }
 }
 
@@ -98,4 +133,62 @@ test("playback-events", "ignores load acknowledgement when no tracker exists", (
     const events = createPlaybackEvents(cadenceSession);
 
     events.acknowledgeLoadAdjustment();
+});
+
+test("playback-events", "records pause at the frozen protocol position", () => {
+    const cadenceSession = new CadenceSessionFake();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    cadenceSession.protocolElapsedMs = 42_500;
+
+    const events = createPlaybackEvents(cadenceSession, undefined, executionRecorder);
+
+    events.pause();
+
+    assertDeepEqual(executionRecorder.pauseCalls, [42_500]);
+});
+
+test("playback-events", "records resume at the current protocol position", async () => {
+    const cadenceSession = new CadenceSessionFake();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    cadenceSession.protocolElapsedMs = 42_500;
+
+    const events = createPlaybackEvents(cadenceSession, undefined, executionRecorder);
+
+    await events.resume();
+
+    assertDeepEqual(executionRecorder.resumeCalls, [42_500]);
+});
+
+test("playback-events", "records manual stop before playback position is reset", () => {
+    const cadenceSession = new CadenceSessionFake();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    cadenceSession.protocolElapsedMs = 42_500;
+
+    const events = createPlaybackEvents(cadenceSession, undefined, executionRecorder);
+
+    events.stop();
+
+    assertDeepEqual(executionRecorder.endEarlyCalls, [
+        {
+            protocolTimeMs: 42_500,
+            reason: "manual-stop",
+        },
+    ]);
+});
+
+test("playback-events", "does not record stop before execution has started", () => {
+    const cadenceSession = new CadenceSessionFake();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    executionRecorder.snapshot = null;
+
+    const events = createPlaybackEvents(cadenceSession, undefined, executionRecorder);
+
+    events.stop();
+
+    assertEqual(cadenceSession.stopCalls, 1);
+    assertEqual(executionRecorder.endEarlyCalls.length, 0);
 });

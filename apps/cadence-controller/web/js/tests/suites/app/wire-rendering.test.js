@@ -279,6 +279,48 @@ function createFrameScheduler() {
     };
 }
 
+/** Records execution-recorder calls for rendering lifecycle tests. */
+class ExecutionRecorderFake {
+    startCalls = [];
+    updateCalls = [];
+    completeCalls = [];
+
+    snapshot = null;
+
+    /** Returns the current fake execution status. */
+    get status() {
+        return this.snapshot?.status ?? null;
+    }
+
+    /** Records execution start and transitions the fake to in-progress. */
+    start(protocolTimeMs) {
+        this.startCalls.push(protocolTimeMs);
+
+        this.snapshot = {
+            status: "in-progress",
+        };
+    }
+
+    /** Records one active execution heartbeat. */
+    update(protocolTimeMs) {
+        this.updateCalls.push(protocolTimeMs);
+    }
+
+    /** Records natural execution completion and transitions the fake to completed. */
+    complete(protocolTimeMs) {
+        this.completeCalls.push(protocolTimeMs);
+
+        this.snapshot = {
+            status: "completed",
+        };
+    }
+
+    /** Returns the current fake execution snapshot. */
+    getSnapshot() {
+        return this.snapshot;
+    }
+}
+
 test("wire-rendering", "renders current state immediately", () => {
     const elements = createElements();
     const playback = createPlaybackFake();
@@ -1161,4 +1203,102 @@ test("wire-rendering", "renders confirmed omission intersecting current phase", 
     assertEqual(range !== null, true);
     assertEqual(range.getAttribute("x1"), "35");
     assertEqual(range.getAttribute("x2"), "65");
+});
+
+test("wire-rendering", "starts execution recording when playback begins running", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    playback.sessionSnapshots.push({
+        state: "countdown",
+        protocolElapsedMs: 0,
+        protocolRemainingMs: 60_000,
+        countdownRemainingMs: 1_000,
+    });
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+        executionRecorder,
+    });
+
+    assertEqual(executionRecorder.startCalls.length, 0);
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 0,
+        protocolRemainingMs: 60_000,
+        countdownRemainingMs: 0,
+    });
+
+    frames.runNextFrame();
+    frames.runNextFrame();
+
+    assertEqual(executionRecorder.startCalls.length, 1);
+    assertEqual(executionRecorder.startCalls[0], 0);
+});
+
+test("wire-rendering", "updates execution recording on subsequent running frames", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 5_000,
+        protocolRemainingMs: 55_000,
+        countdownRemainingMs: 0,
+    });
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+        executionRecorder,
+    });
+
+    playback.sessionSnapshots.push({
+        state: "running",
+        protocolElapsedMs: 6_000,
+        protocolRemainingMs: 54_000,
+        countdownRemainingMs: 0,
+    });
+
+    frames.runNextFrame();
+
+    assertEqual(executionRecorder.startCalls.length, 1);
+    assertEqual(executionRecorder.startCalls[0], 5_000);
+    assertEqual(executionRecorder.updateCalls.length, 1);
+    assertEqual(executionRecorder.updateCalls[0], 6_000);
+});
+
+test("wire-rendering", "completes execution recording once at natural completion", () => {
+    const elements = createElements();
+    const playback = createPlaybackFake();
+    const frames = createFrameScheduler();
+    const executionRecorder = new ExecutionRecorderFake();
+
+    executionRecorder.snapshot = {
+        status: "in-progress",
+    };
+
+    playback.sessionSnapshots.push({
+        state: "completed",
+        protocolElapsedMs: 60_000,
+        protocolRemainingMs: 0,
+        countdownRemainingMs: 0,
+    });
+
+    wireRendering(elements, playback, {
+        requestFrame: frames.requestFrame,
+        cancelFrame: frames.cancelFrame,
+        executionRecorder,
+    });
+
+    frames.runNextFrame();
+
+    assertEqual(executionRecorder.completeCalls.length, 1);
+    assertEqual(executionRecorder.completeCalls[0], 60_000);
 });

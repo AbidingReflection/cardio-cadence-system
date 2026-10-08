@@ -13,19 +13,21 @@ export class ProtocolBundle {
     #activityType;
     #cadenceVariableId;
     #loadVariableId;
+    #data;
 
     /** Creates a ProtocolBundle from raw self-contained bundle data. */
     constructor(data) {
         validateProtocolBundle(data);
 
-        const activityType = new ActivityType(data.activityType);
+        const bundleData = structuredClone(data);
+        const activityType = new ActivityType(bundleData.activityType);
 
-        validateActivityTypeReference(data.protocol, activityType);
+        validateActivityTypeReference(bundleData.protocol, activityType);
 
         const cadenceVariable = resolveCadenceVariable(activityType);
         const loadVariable = resolveLoadVariable(activityType);
 
-        this.#protocol = structuredClone(data.protocol);
+        this.#data = bundleData;
         this.#activityType = activityType;
         this.#cadenceVariableId = cadenceVariable.id;
         this.#loadVariableId = loadVariable?.id;
@@ -40,7 +42,12 @@ export class ProtocolBundle {
 
     /** Returns a defensive copy of the bundled protocol. */
     get protocol() {
-        return structuredClone(this.#protocol);
+        return structuredClone(this.#data.protocol);
+    }
+
+    /** Returns a defensive copy of the complete self-contained protocol bundle. */
+    getSnapshot() {
+        return structuredClone(this.#data);
     }
 
     /** Returns the validated bundled ActivityType. */

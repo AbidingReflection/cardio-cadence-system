@@ -8,7 +8,12 @@
  */
 
 /** Wires Cadence Controller controls to application interactions. */
-export function wireInteractions(elements, playbackEvents, workoutNavigationController) {
+export function wireInteractions(
+    elements,
+    playbackEvents,
+    workoutNavigationController,
+    executionExporter = undefined,
+) {
     const closeChangeWorkoutPanel = () => {
         elements.changeWorkoutPanel.hidden = true;
     };
@@ -35,6 +40,12 @@ export function wireInteractions(elements, playbackEvents, workoutNavigationCont
     };
 
     const onChangeWorkout = () => {
+        if (executionExporter?.isAvailable() === true) {
+            executionExporter.download();
+            closeChangeWorkoutPanel();
+            return;
+        }
+
         elements.changeWorkoutPanel.hidden = false;
     };
 

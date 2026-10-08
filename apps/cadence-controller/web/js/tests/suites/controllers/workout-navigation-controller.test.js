@@ -1,9 +1,32 @@
-import { assertEqual, test } from "/packages/js-testing/framework/test-framework.js";
+import {
+    assertDeepEqual,
+    assertEqual,
+    test,
+} from "/packages/js-testing/framework/test-framework.js";
 
 import { WorkoutNavigationController } from "../../../controllers/workout-navigation-controller.js";
 
-/** Creates a navigation controller with controllable playback dependencies. */
-function createController({
+/** Records execution-recorder calls for navigation controller tests. */
+class ExecutionRecorderFake {
+    navigateCalls = [];
+    endEarlyCalls = [];
+
+    /** Records one navigation call. */
+    navigate(options) {
+        this.navigateCalls.push(options);
+    }
+
+    /** Records one early execution termination. */
+    endEarly(protocolTimeMs, reason) {
+        this.endEarlyCalls.push({
+            protocolTimeMs,
+            reason,
+        });
+    }
+}
+
+/** Creates a fake navigation controller with controllable playback dependencies. */
+function createFakeController({
     protocolElapsedMs = 10_000,
     currentBlock = {
         id: "block-1",
@@ -18,30 +41,42 @@ function createController({
         id: "phase-2",
         startTimeMs: 40_000,
     },
+    destinationSnapshots = new Map(),
+    executionRecorder = undefined,
 } = {}) {
     const seekCalls = [];
     const workoutContextCalls = [];
     let endCalls = 0;
 
     const cadenceSession = {
+        /** Returns the current controllable protocol position. */
         getSnapshot() {
             return {
                 protocolElapsedMs,
             };
         },
 
+        /** Records one cadence seek operation. */
         seek(timeMs) {
             seekCalls.push(timeMs);
         },
 
+        /** Records one cadence-session end operation. */
         end() {
             endCalls += 1;
         },
     };
 
     const workoutContext = {
+        /** Returns workout context for the requested protocol position. */
         getSnapshot(timeMs) {
             workoutContextCalls.push(timeMs);
+
+            const destinationSnapshot = destinationSnapshots.get(timeMs);
+
+            if (destinationSnapshot !== undefined) {
+                return destinationSnapshot;
+            }
 
             return {
                 currentBlock,
@@ -54,12 +89,15 @@ function createController({
     const controller = new WorkoutNavigationController({
         cadenceSession,
         workoutContext,
+        executionRecorder,
     });
 
     return {
         controller,
         seekCalls,
         workoutContextCalls,
+
+        /** Returns the number of cadence-session end operations. */
         getEndCalls() {
             return endCalls;
         },
@@ -67,7 +105,7 @@ function createController({
 }
 
 test("workout-navigation-controller", "skips to the next block start", () => {
-    const { controller, seekCalls, workoutContextCalls } = createController();
+    const { controller, seekCalls, workoutContextCalls } = createFakeController();
 
     const navigated = controller.skipBlock();
 
@@ -79,7 +117,7 @@ test("workout-navigation-controller", "skips to the next block start", () => {
 });
 
 test("workout-navigation-controller", "does not skip when there is no next block", () => {
-    const { controller, seekCalls } = createController({
+    const { controller, seekCalls } = createFakeController({
         nextBlock: null,
     });
 
@@ -90,7 +128,7 @@ test("workout-navigation-controller", "does not skip when there is no next block
 });
 
 test("workout-navigation-controller", "skips to the next phase start", () => {
-    const { controller, seekCalls, workoutContextCalls } = createController();
+    const { controller, seekCalls, workoutContextCalls } = createFakeController();
 
     const navigated = controller.skipPhase();
 
@@ -102,7 +140,7 @@ test("workout-navigation-controller", "skips to the next phase start", () => {
 });
 
 test("workout-navigation-controller", "does not skip when there is no next phase", () => {
-    const { controller, seekCalls } = createController({
+    const { controller, seekCalls } = createFakeController({
         nextPhase: null,
     });
 
@@ -116,7 +154,7 @@ test(
     "workout-navigation-controller",
     "schedules phase skip for the end of the current block",
     () => {
-        const { controller } = createController();
+        const { controller } = createFakeController();
 
         const scheduled = controller.scheduleSkipPhaseAfterBlock();
 
@@ -130,7 +168,7 @@ test(
 );
 
 test("workout-navigation-controller", "does not schedule phase skip without a next phase", () => {
-    const { controller } = createController({
+    const { controller } = createFakeController({
         nextPhase: null,
     });
 
@@ -144,7 +182,7 @@ test(
     "workout-navigation-controller",
     "schedules workout end for the end of the current block",
     () => {
-        const { controller } = createController();
+        const { controller } = createFakeController();
 
         const scheduled = controller.scheduleEndWorkoutAfterBlock();
 
@@ -160,7 +198,7 @@ test(
     "workout-navigation-controller",
     "does not schedule a deferred action without a current block",
     () => {
-        const { controller } = createController({
+        const { controller } = createFakeController({
             currentBlock: null,
         });
 
@@ -171,7 +209,7 @@ test(
 );
 
 test("workout-navigation-controller", "replaces an existing pending action", () => {
-    const { controller } = createController();
+    const { controller } = createFakeController();
 
     controller.scheduleSkipPhaseAfterBlock();
     controller.scheduleEndWorkoutAfterBlock();
@@ -184,7 +222,7 @@ test("workout-navigation-controller", "replaces an existing pending action", () 
 });
 
 test("workout-navigation-controller", "cancels the pending action", () => {
-    const { controller } = createController();
+    const { controller } = createFakeController();
 
     controller.scheduleSkipPhaseAfterBlock();
 
@@ -197,7 +235,7 @@ test(
     "workout-navigation-controller",
     "does not execute a pending action before its trigger",
     () => {
-        const { controller, seekCalls, getEndCalls } = createController();
+        const { controller, seekCalls, getEndCalls } = createFakeController();
 
         controller.scheduleSkipPhaseAfterBlock();
 
@@ -210,7 +248,7 @@ test(
 );
 
 test("workout-navigation-controller", "executes pending phase skip at the block boundary", () => {
-    const { controller, seekCalls } = createController();
+    const { controller, seekCalls } = createFakeController();
 
     controller.scheduleSkipPhaseAfterBlock();
 
@@ -225,7 +263,7 @@ test(
     "workout-navigation-controller",
     "executes pending phase skip after crossing the block boundary",
     () => {
-        const { controller, seekCalls } = createController();
+        const { controller, seekCalls } = createFakeController();
 
         controller.scheduleSkipPhaseAfterBlock();
 
@@ -238,7 +276,7 @@ test(
 );
 
 test("workout-navigation-controller", "ends workout at the exact block boundary", () => {
-    const { controller, seekCalls, getEndCalls } = createController();
+    const { controller, seekCalls, getEndCalls } = createFakeController();
 
     controller.scheduleEndWorkoutAfterBlock();
 
@@ -251,7 +289,7 @@ test("workout-navigation-controller", "ends workout at the exact block boundary"
 });
 
 test("workout-navigation-controller", "does not execute a cancelled pending action", () => {
-    const { controller, seekCalls, getEndCalls } = createController();
+    const { controller, seekCalls, getEndCalls } = createFakeController();
 
     controller.scheduleEndWorkoutAfterBlock();
     controller.cancelPendingAction();
@@ -263,7 +301,7 @@ test("workout-navigation-controller", "does not execute a cancelled pending acti
 });
 
 test("workout-navigation-controller", "records omitted range for immediate block skip", () => {
-    const { controller } = createController({
+    const { controller } = createFakeController({
         protocolElapsedMs: 10_000,
         nextBlock: {
             id: "block-2",
@@ -282,7 +320,7 @@ test("workout-navigation-controller", "records omitted range for immediate block
 });
 
 test("workout-navigation-controller", "records omitted range for immediate phase skip", () => {
-    const { controller } = createController({
+    const { controller } = createFakeController({
         protocolElapsedMs: 10_000,
         nextPhase: {
             id: "phase-2",
@@ -304,7 +342,7 @@ test(
     "workout-navigation-controller",
     "records omitted range when deferred phase skip executes",
     () => {
-        const { controller } = createController();
+        const { controller } = createFakeController();
 
         controller.scheduleSkipPhaseAfterBlock();
         controller.update(20_000);
@@ -319,7 +357,7 @@ test(
 );
 
 test("workout-navigation-controller", "returns confirmed omissions as copies", () => {
-    const { controller } = createController();
+    const { controller } = createFakeController();
 
     controller.skipBlock();
 
@@ -337,4 +375,114 @@ test("workout-navigation-controller", "returns confirmed omissions as copies", (
     assertEqual(freshOmissions.length, 1);
     assertEqual(freshOmissions[0].startTimeMs, 10_000);
     assertEqual(freshOmissions[0].endTimeMs, 20_000);
+});
+
+test("workout-navigation-controller", "records immediate block skip execution", () => {
+    const executionRecorder = new ExecutionRecorderFake();
+
+    const destinationSnapshots = new Map([
+        [
+            20_000,
+            {
+                currentPhase: {
+                    id: "phase-1",
+                },
+                currentBlock: {
+                    id: "block-2",
+                },
+            },
+        ],
+    ]);
+
+    const { controller } = createFakeController({
+        executionRecorder,
+        destinationSnapshots,
+    });
+
+    controller.skipBlock();
+
+    assertDeepEqual(executionRecorder.navigateCalls, [
+        {
+            protocolTimeMs: 10_000,
+            destinationProtocolTimeMs: 20_000,
+            target: {
+                phaseId: "phase-1",
+                blockId: "block-2",
+            },
+            action: "skip-block",
+        },
+    ]);
+});
+
+test("workout-navigation-controller", "records immediate phase skip execution", () => {
+    const executionRecorder = new ExecutionRecorderFake();
+
+    const { controller } = createFakeController({
+        executionRecorder,
+    });
+
+    controller.skipPhase();
+
+    assertDeepEqual(executionRecorder.navigateCalls, [
+        {
+            protocolTimeMs: 10_000,
+            destinationProtocolTimeMs: 40_000,
+            target: {
+                phaseId: "phase-2",
+            },
+            action: "skip-phase",
+        },
+    ]);
+});
+
+test("workout-navigation-controller", "does not record deferred phase skip when scheduled", () => {
+    const executionRecorder = new ExecutionRecorderFake();
+
+    const { controller } = createFakeController({
+        executionRecorder,
+    });
+
+    controller.scheduleSkipPhaseAfterBlock();
+
+    assertEqual(executionRecorder.navigateCalls.length, 0);
+});
+
+test("workout-navigation-controller", "records deferred phase skip when executed", () => {
+    const executionRecorder = new ExecutionRecorderFake();
+
+    const { controller } = createFakeController({
+        executionRecorder,
+    });
+
+    controller.scheduleSkipPhaseAfterBlock();
+    controller.update(20_016);
+
+    assertDeepEqual(executionRecorder.navigateCalls, [
+        {
+            protocolTimeMs: 20_000,
+            destinationProtocolTimeMs: 40_000,
+            target: {
+                phaseId: "phase-2",
+            },
+            action: "skip-phase",
+        },
+    ]);
+});
+
+test("workout-navigation-controller", "records deferred workout end when executed", () => {
+    const executionRecorder = new ExecutionRecorderFake();
+
+    const { controller } = createFakeController({
+        executionRecorder,
+    });
+
+    controller.scheduleEndWorkoutAfterBlock();
+    controller.update(20_016);
+
+    assertDeepEqual(executionRecorder.endEarlyCalls, [
+        {
+            protocolTimeMs: 20_000,
+            reason: "end-after-block",
+        },
+    ]);
 });

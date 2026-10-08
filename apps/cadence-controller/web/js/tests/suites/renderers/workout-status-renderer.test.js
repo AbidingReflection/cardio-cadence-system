@@ -362,3 +362,45 @@ test(
         assertEqual(elements.cancelPendingActionButton.hidden, false);
     },
 );
+
+test("workout-status-renderer", "renders download action for finalized execution", () => {
+    const elements = createElements();
+
+    renderWorkoutStatus(
+        elements,
+        createSessionSnapshot({
+            state: "completed",
+            protocolRemainingMs: 0,
+        }),
+        createWorkoutSnapshot({
+            currentPhase: null,
+            currentBlock: null,
+            nextPhase: null,
+            nextBlock: null,
+        }),
+        null,
+        "completed",
+    );
+
+    assertEqual(elements.changeWorkoutButton.textContent, "Download");
+    assertEqual(elements.changeWorkoutButton.disabled, false);
+    assertEqual(
+        elements.changeWorkoutButton.classList.contains("playback-control--pending"),
+        false,
+    );
+});
+
+test("workout-status-renderer", "renders ended playback state", () => {
+    const elements = createElements();
+
+    renderWorkoutStatus(
+        elements,
+        createSessionSnapshot({
+            state: "ended",
+        }),
+        createWorkoutSnapshot(),
+    );
+
+    assertEqual(elements.playbackState.textContent, "Ended");
+    assertEqual(elements.stopButton.disabled, false);
+});

@@ -30,6 +30,7 @@ export function wireRendering(
         requestFrame = globalThis.requestAnimationFrame.bind(globalThis),
         cancelFrame = globalThis.cancelAnimationFrame.bind(globalThis),
         workoutNavigationController = undefined,
+        executionRecorder = undefined,
     } = {},
 ) {
     const cadenceVariable = playback.protocolBundle.cadenceVariable;
@@ -72,7 +73,9 @@ export function wireRendering(
         workoutNavigationController?.update(sessionSnapshot.protocolElapsedMs);
 
         sessionSnapshot = playback.cadenceSession.getSnapshot();
+        updateExecutionRecording(executionRecorder, sessionSnapshot);
 
+        const executionStatus = executionRecorder?.status ?? null;
         const protocolElapsedMs = sessionSnapshot.protocolElapsedMs;
 
         const workoutSnapshot = playback.workoutContext.getSnapshot(protocolElapsedMs);
@@ -128,7 +131,13 @@ export function wireRendering(
 
         workoutProgressVisualizer.progressTrack.setRanges(workoutOmissionRanges);
 
-        renderWorkoutStatus(elements, sessionSnapshot, workoutSnapshot, pendingAction);
+        renderWorkoutStatus(
+            elements,
+            sessionSnapshot,
+            workoutSnapshot,
+            pendingAction,
+            executionStatus,
+        );
 
         renderCadenceVisualizer(cadenceVisualizer, {
             phase: cadencePhase,
@@ -267,4 +276,30 @@ export function wireRendering(
         cancelFrame(frameId);
         frameId = null;
     };
+}
+
+/** Synchronizes execution recording with the current playback lifecycle state. */
+function updateExecutionRecording(executionRecorder, sessionSnapshot) {
+    if (executionRecorder === undefined) {
+        return;
+    }
+
+    const executionStatus = executionRecorder.status;
+
+    if (sessionSnapshot.state === "running") {
+        if (executionStatus === null) {
+            executionRecorder.start(sessionSnapshot.protocolElapsedMs);
+            return;
+        }
+
+        if (executionStatus === "in-progress") {
+            executionRecorder.update(sessionSnapshot.protocolElapsedMs);
+        }
+
+        return;
+    }
+
+    if (sessionSnapshot.state === "completed" && executionStatus === "in-progress") {
+        executionRecorder.complete(sessionSnapshot.protocolElapsedMs);
+    }
 }
