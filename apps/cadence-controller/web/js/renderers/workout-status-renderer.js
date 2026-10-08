@@ -14,25 +14,29 @@ export function renderWorkoutStatus(
     workoutSnapshot,
     pendingAction = null,
 ) {
-    elements.playbackState.textContent = formatPlaybackState(sessionSnapshot.state);
+    setTextContent(elements.playbackState, formatPlaybackState(sessionSnapshot.state));
 
-    elements.countdown.textContent = formatCountdown(sessionSnapshot.countdownRemainingMs);
+    setTextContent(elements.countdown, formatCountdown(sessionSnapshot.countdownRemainingMs));
 
-    elements.elapsedTime.textContent = formatDurationCompactMs(sessionSnapshot.protocolElapsedMs);
-
-    elements.remainingTime.textContent = formatDurationCompactMs(
-        sessionSnapshot.protocolRemainingMs,
+    setTextContent(
+        elements.elapsedTime,
+        formatDurationCompactMs(sessionSnapshot.protocolElapsedMs),
     );
 
-    elements.currentPhase.textContent = formatStructure(workoutSnapshot.currentPhase);
+    setTextContent(
+        elements.remainingTime,
+        formatDurationCompactMs(sessionSnapshot.protocolRemainingMs),
+    );
 
-    elements.phaseRemainingTime.textContent = formatPhaseRemaining(workoutSnapshot.currentPhase);
+    setTextContent(elements.currentPhase, formatStructure(workoutSnapshot.currentPhase));
 
-    elements.currentBlock.textContent = formatStructure(workoutSnapshot.currentBlock);
+    setTextContent(elements.phaseRemainingTime, formatPhaseRemaining(workoutSnapshot.currentPhase));
 
-    elements.nextPhase.textContent = formatStructure(workoutSnapshot.nextPhase);
+    setTextContent(elements.currentBlock, formatStructure(workoutSnapshot.currentBlock));
 
-    elements.nextBlock.textContent = formatStructure(workoutSnapshot.nextBlock);
+    setTextContent(elements.nextPhase, formatStructure(workoutSnapshot.nextPhase));
+
+    setTextContent(elements.nextBlock, formatStructure(workoutSnapshot.nextBlock));
 
     renderControls(elements, sessionSnapshot.state, workoutSnapshot, pendingAction);
 }
@@ -87,22 +91,54 @@ function formatStructure(structure) {
 function renderControls(elements, state, workoutSnapshot, pendingAction) {
     const controls = getControlState(state);
 
-    elements.startButton.disabled = !controls.start;
-    elements.pauseButton.disabled = !controls.pause;
-    elements.resumeButton.disabled = !controls.resume;
-    elements.stopButton.disabled = !controls.stop;
+    setDisabled(elements.startButton, !controls.start);
+    setDisabled(elements.pauseButton, !controls.pause);
+    setDisabled(elements.resumeButton, !controls.resume);
+    setDisabled(elements.stopButton, !controls.stop);
 
     const navigationAvailable =
         (state === "running" || state === "paused") &&
         (workoutSnapshot.nextBlock !== null || workoutSnapshot.nextPhase !== null);
 
-    elements.changeWorkoutButton.disabled = !navigationAvailable;
+    setDisabled(elements.changeWorkoutButton, !navigationAvailable);
 
     const pending = pendingAction !== null;
 
-    elements.changeWorkoutButton.textContent = pending ? "After Block" : "Change";
-    elements.changeWorkoutButton.classList.toggle("playback-control--pending", pending);
-    elements.cancelPendingActionButton.hidden = pendingAction === null;
+    setTextContent(elements.changeWorkoutButton, pending ? "After Block" : "Change");
+
+    setClassEnabled(elements.changeWorkoutButton, "playback-control--pending", pending);
+
+    setHidden(elements.cancelPendingActionButton, !pending);
+}
+
+/** Updates text content only when its rendered value has changed. */
+function setTextContent(element, value) {
+    const text = String(value);
+
+    if (element.textContent !== text) {
+        element.textContent = text;
+    }
+}
+
+/** Updates a disabled state only when its value has changed. */
+function setDisabled(element, disabled) {
+    if (element.disabled !== disabled) {
+        element.disabled = disabled;
+    }
+}
+
+/** Updates element visibility only when its value has changed. */
+function setHidden(element, hidden) {
+    if (element.hidden !== hidden) {
+        element.hidden = hidden;
+    }
+}
+
+/** Updates one class state only when its value has changed. */
+function setClassEnabled(element, className, enabled) {
+    if (element.classList.contains(className) !== enabled) {
+        element.classList.toggle(className, enabled);
+    }
 }
 
 /** Returns available playback actions for one lifecycle state. */

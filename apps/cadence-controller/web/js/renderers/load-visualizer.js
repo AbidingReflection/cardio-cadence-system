@@ -73,12 +73,29 @@ export function renderLoadVisualizer(
     });
 
     if (nextValue === null) {
-        visualizer.remainingValueElement.textContent = "—";
-        visualizer.nextValueElement.textContent = "N/A";
+        setTextContent(visualizer.remainingValueElement, "—");
+        setTextContent(visualizer.nextValueElement, "N/A");
     } else {
-        visualizer.remainingValueElement.textContent = formatDurationCompactMs(remainingTimeMs);
-        visualizer.nextValueElement.textContent = String(nextValue);
+        setTextContent(visualizer.remainingValueElement, formatDurationCompactMs(remainingTimeMs));
+
+        setTextContent(visualizer.nextValueElement, String(nextValue));
     }
 
-    visualizer.container.dataset.adjustmentPending = String(adjustmentPending);
+    setDataValue(visualizer.container, "adjustmentPending", String(adjustmentPending));
+}
+
+/** Updates text content only when its rendered value has changed. */
+function setTextContent(element, value) {
+    const text = String(value);
+
+    if (element.textContent !== text) {
+        element.textContent = text;
+    }
+}
+
+/** Updates one dataset value only when its rendered value has changed. */
+function setDataValue(element, key, value) {
+    if (element.dataset[key] !== value) {
+        element.dataset[key] = value;
+    }
 }

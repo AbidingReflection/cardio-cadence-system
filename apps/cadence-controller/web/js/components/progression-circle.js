@@ -9,7 +9,7 @@ const TRACK_RADIUS = 43;
 const TRACK_STROKE_WIDTH = 5;
 const BACKGROUND_RADIUS = TRACK_RADIUS - TRACK_STROKE_WIDTH / 2;
 
-const MARKER_RADIUS = 3;
+const MARKER_RADIUS = TRACK_STROKE_WIDTH / 2;
 
 const NOTCH_INNER_RADIUS = 39;
 const NOTCH_OUTER_RADIUS = 47;
@@ -24,6 +24,12 @@ export class ProgressionCircle {
     #marker;
     #valueText;
     #labelText;
+
+    #markerPosition;
+    #progressValue;
+    #valueTextValue;
+    #labelTextValue;
+    #stateValue;
 
     /** Creates a persistent SVG progression circle inside the supplied container. */
     constructor(container) {
@@ -115,12 +121,24 @@ export class ProgressionCircle {
     setMarkerPosition(position) {
         validateCircularPosition(position, "ProgressionCircle marker position");
 
+        if (position === this.#markerPosition) {
+            return;
+        }
+
+        this.#markerPosition = position;
+
         this.#marker.setAttribute("transform", `rotate(${position * 360} ${CENTER} ${CENTER})`);
     }
 
     /** Sets normalized completion progress from zero through one. */
     setProgress(progress) {
         validateProgress(progress);
+
+        if (progress === this.#progressValue) {
+            return;
+        }
+
+        this.#progressValue = progress;
 
         this.#progress.setAttribute("stroke-dashoffset", String(1 - progress));
 
@@ -184,17 +202,38 @@ export class ProgressionCircle {
 
     /** Updates the primary interior value text. */
     setValueText(text) {
-        this.#valueText.textContent = String(text);
+        const value = String(text);
+
+        if (value === this.#valueTextValue) {
+            return;
+        }
+
+        this.#valueTextValue = value;
+        this.#valueText.textContent = value;
     }
 
     /** Updates the secondary interior label text. */
     setLabelText(text) {
-        this.#labelText.textContent = String(text);
+        const value = String(text);
+
+        if (value === this.#labelTextValue) {
+            return;
+        }
+
+        this.#labelTextValue = value;
+        this.#labelText.textContent = value;
     }
 
     /** Updates the visual state exposed to component CSS. */
     setState(state) {
-        this.#svg.dataset.state = String(state);
+        const value = String(state);
+
+        if (value === this.#stateValue) {
+            return;
+        }
+
+        this.#stateValue = value;
+        this.#svg.dataset.state = value;
     }
 
     /** Removes this component's SVG from its container. */

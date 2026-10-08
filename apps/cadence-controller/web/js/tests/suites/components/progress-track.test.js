@@ -419,3 +419,47 @@ test("progress-track", "rejects invalid ranges", () => {
         ]),
     );
 });
+
+test("progress-track", "reuses ranges when definitions are unchanged", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    progressTrack.setRanges([
+        {
+            id: "pending-omission",
+            start: 0.25,
+            end: 0.75,
+            state: "pending-omission",
+        },
+    ]);
+
+    const rangeBefore = container.querySelector(".progress-track__range");
+
+    progressTrack.setRanges([
+        {
+            id: "pending-omission",
+            start: 0.25,
+            end: 0.75,
+            state: "pending-omission",
+        },
+    ]);
+
+    const rangeAfter = container.querySelector(".progress-track__range");
+
+    assertEqual(rangeAfter, rangeBefore);
+});
+
+test("progress-track", "does not rewrite unchanged marker text", () => {
+    const container = createContainer();
+    const progressTrack = new ProgressTrack(container);
+
+    progressTrack.setMarkerText("1:00");
+
+    const markerText = container.querySelector(".progress-track__marker-text");
+
+    markerText.textContent = "sentinel";
+
+    progressTrack.setMarkerText("1:00");
+
+    assertEqual(markerText.textContent, "sentinel");
+});

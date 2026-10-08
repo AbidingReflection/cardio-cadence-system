@@ -168,3 +168,24 @@ test("timed-progress-renderer", "reuses rendered progress track nodes across upd
 
     assertDeepEqual(visualizer.percentLabel.textContent, "90.0%");
 });
+
+test("timed-progress-renderer", "does not rewrite unchanged formatted labels", () => {
+    const container = createContainer();
+    const visualizer = initializeTimedProgressRenderer(container);
+
+    renderTimedProgress(visualizer, {
+        elapsedTimeMs: 16_400,
+        durationMs: 100_000,
+        markerText: "0:16",
+    });
+
+    visualizer.percentLabel.textContent = "sentinel";
+
+    renderTimedProgress(visualizer, {
+        elapsedTimeMs: 16_449,
+        durationMs: 100_000,
+        markerText: "0:16",
+    });
+
+    assertDeepEqual(visualizer.percentLabel.textContent, "sentinel");
+});

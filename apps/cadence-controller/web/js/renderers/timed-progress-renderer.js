@@ -31,6 +31,12 @@ export function initializeTimedProgressRenderer(container) {
     const progressTrack = new ProgressTrack(trackContainer);
     const controller = new TimedProgressController(progressTrack);
 
+    const renderState = {
+        remainingTimeText: undefined,
+        durationText: undefined,
+        percentText: undefined,
+    };
+
     return {
         controller,
         progressTrack,
@@ -38,6 +44,7 @@ export function initializeTimedProgressRenderer(container) {
         remainingTimeLabel,
         durationLabel,
         percentLabel,
+        renderState,
     };
 }
 
@@ -51,9 +58,22 @@ export function renderTimedProgress(visualizer, { elapsedTimeMs, durationMs, mar
 
     const remainingTimeMs = durationMs - elapsedTimeMs;
 
-    visualizer.remainingTimeLabel.textContent = `-${formatDurationFixedMs(remainingTimeMs)}`;
+    const remainingTimeText = `-${formatDurationFixedMs(remainingTimeMs)}`;
+    const durationText = formatDurationFixedMs(durationMs);
+    const percentText = `${((elapsedTimeMs / durationMs) * 100).toFixed(1)}%`;
 
-    visualizer.durationLabel.textContent = formatDurationFixedMs(durationMs);
+    if (remainingTimeText !== visualizer.renderState.remainingTimeText) {
+        visualizer.renderState.remainingTimeText = remainingTimeText;
+        visualizer.remainingTimeLabel.textContent = remainingTimeText;
+    }
 
-    visualizer.percentLabel.textContent = `${((elapsedTimeMs / durationMs) * 100).toFixed(1)}%`;
+    if (durationText !== visualizer.renderState.durationText) {
+        visualizer.renderState.durationText = durationText;
+        visualizer.durationLabel.textContent = durationText;
+    }
+
+    if (percentText !== visualizer.renderState.percentText) {
+        visualizer.renderState.percentText = percentText;
+        visualizer.percentLabel.textContent = percentText;
+    }
 }

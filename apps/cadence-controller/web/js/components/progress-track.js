@@ -25,6 +25,12 @@ export class ProgressTrack {
     #markerText;
     #ranges;
 
+    #markerPosition;
+    #progressValue;
+    #markerTextValue;
+    #rangeDefinitions = [];
+    #stateValue;
+
     /** Creates a persistent progress track inside the supplied container. */
     constructor(container) {
         this.#root = document.createElement("div");
@@ -81,12 +87,7 @@ export class ProgressTrack {
         this.#tickLabels = document.createElement("div");
         this.#tickLabels.className = "progress-track__tick-labels";
 
-        this.#svg.append(
-            track,
-            this.#progress,
-            this.#ranges,
-            this.#marker,
-        );
+        this.#svg.append(track, this.#progress, this.#ranges, this.#marker);
 
         this.#root.append(this.#svg, this.#ticks, this.#markerText, this.#tickLabels);
 
@@ -97,16 +98,27 @@ export class ProgressTrack {
     setMarkerPosition(position) {
         validateNormalizedPosition(position, "ProgressTrack marker position");
 
+        if (position === this.#markerPosition) {
+            return;
+        }
+
+        this.#markerPosition = position;
+
         const x = positionToX(position);
 
         this.#marker.setAttribute("transform", `translate(${x} 0)`);
-
         this.#markerText.style.left = `${x}%`;
     }
 
     /** Sets normalized completion progress from zero through one. */
     setProgress(progress) {
         validateNormalizedPosition(progress, "ProgressTrack progress");
+
+        if (progress === this.#progressValue) {
+            return;
+        }
+
+        this.#progressValue = progress;
 
         this.#progress.setAttribute("x2", String(positionToX(progress)));
     }
@@ -117,11 +129,19 @@ export class ProgressTrack {
             throw new TypeError("ProgressTrack ranges must be an array.");
         }
 
+        for (const range of ranges) {
+            validateRange(range);
+        }
+
+        if (rangesEqual(ranges, this.#rangeDefinitions)) {
+            return;
+        }
+
+        this.#rangeDefinitions = ranges.map((range) => ({ ...range }));
+
         const fragment = document.createDocumentFragment();
 
         for (const range of ranges) {
-            validateRange(range);
-
             const rangeElement = createSvgElement("line", {
                 class: "progress-track__range",
                 x1: positionToX(range.start),
@@ -140,7 +160,14 @@ export class ProgressTrack {
 
     /** Updates the text displayed with the current marker. */
     setMarkerText(text) {
-        this.#markerText.textContent = String(text);
+        const value = String(text);
+
+        if (value === this.#markerTextValue) {
+            return;
+        }
+
+        this.#markerTextValue = value;
+        this.#markerText.textContent = value;
     }
 
     /** Replaces the track's structural tick definitions. */
@@ -186,7 +213,14 @@ export class ProgressTrack {
 
     /** Updates the visual state exposed to component CSS. */
     setState(state) {
-        this.#root.dataset.state = String(state);
+        const value = String(state);
+
+        if (value === this.#stateValue) {
+            return;
+        }
+
+        this.#stateValue = value;
+        this.#root.dataset.state = value;
     }
 
     /** Removes this component's rendered content from its container. */
@@ -257,4 +291,22 @@ function validateRange(range) {
     if (range.end < range.start) {
         throw new RangeError(`ProgressTrack range "${range.id}" end must not precede its start.`);
     }
+}
+
+/** Returns whether two range lists describe identical rendered ranges. */
+function rangesEqual(left, right) {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    return left.every((range, index) => {
+        const other = right[index];
+
+        return (
+            range.id === other.id &&
+            range.start === other.start &&
+            range.end === other.end &&
+            range.state === other.state
+        );
+    });
 }
