@@ -2,9 +2,12 @@
 
 import { requireNonEmptyString, requireObject, requireUnixTimestamp } from "./record-validation.js";
 
+import {
+    validateExecutionEvents,
+    validateExecutionEventSequence,
+} from "/packages/protocol-execution/execution-events.js";
 const EXECUTION_STATUSES = new Set(["in-progress", "completed", "ended-early", "interrupted"]);
 
-const NAVIGATION_ACTIONS = new Set(["skip-block", "skip-phase", "early-cooldown", "jump"]);
 
 /** Creates a validated executed-protocol record. */
 export function createExecutedProtocol({
@@ -70,7 +73,7 @@ export function validateExecutedProtocol(executedProtocol) {
 
     validateCompletionReason(executedProtocol.status, executedProtocol.completionReason);
 
-    validateEvents(executedProtocol.events);
+    validateExecutionEvents(executedProtocol.events);
 }
 
 /** Validates execution-history semantics. */
@@ -78,7 +81,7 @@ export function validateExecutionHistory(executedProtocol) {
     validateExecutedProtocol(executedProtocol);
 
     validateEventTimeRanges(executedProtocol);
-    validatePauseResumeSequence(executedProtocol.events);
+    validateExecutionEventSequence(executedProtocol.events);
 }
 
 /** Validates execution events against the execution time range. */
@@ -97,34 +100,6 @@ function validateEventTimeRanges(executedProtocol) {
             throw new TypeError(
                 "ExecutedProtocol event occurredAtUnixMs must not follow endedAtUnixMs.",
             );
-        }
-    }
-}
-
-/** Validates pause and resume sequencing in array order. */
-function validatePauseResumeSequence(events) {
-    let paused = false;
-
-    for (const event of events) {
-        if (event.type === "pause") {
-            if (paused) {
-                throw new TypeError(
-                    "ExecutedProtocol history cannot contain consecutive pause events.",
-                );
-            }
-
-            paused = true;
-            continue;
-        }
-
-        if (event.type === "resume") {
-            if (!paused) {
-                throw new TypeError(
-                    "ExecutedProtocol history cannot contain a resume event while running.",
-                );
-            }
-
-            paused = false;
         }
     }
 }
@@ -189,82 +164,6 @@ function validateTimestampOrder({ startedAtUnixMs, lastKnownActiveAtUnixMs, ende
             "ExecutedProtocol endedAtUnixMs must not precede lastKnownActiveAtUnixMs.",
         );
     }
-}
-
-/** Validates all execution events. */
-function validateEvents(events) {
-    if (!Array.isArray(events)) {
-        throw new TypeError("ExecutedProtocol events must be an array.");
-    }
-
-    for (const event of events) {
-        validateEvent(event);
-    }
-}
-
-/** Validates one execution event. */
-function validateEvent(event) {
-    requireObject(event, "ExecutedProtocol event");
-
-    requireNonEmptyString(event.type, "ExecutedProtocol event type");
-
-    requireUnixTimestamp(event.occurredAtUnixMs, "ExecutedProtocol event occurredAtUnixMs");
-
-    switch (event.type) {
-        case "pause":
-        case "resume":
-            return;
-
-        case "navigate":
-            validateNavigationEvent(event);
-            return;
-
-        case "recovery":
-            validateRecoveryEvent(event);
-            return;
-
-        default:
-            throw new TypeError(`ExecutedProtocol event type "${event.type}" is not supported.`);
-    }
-}
-
-/** Validates a navigation event. */
-function validateNavigationEvent(event) {
-    requireProtocolTime(event.protocolTimeMs, "ExecutedProtocol navigation event protocolTimeMs");
-
-    requireObject(event.target, "ExecutedProtocol navigation event target");
-
-    requireNonEmptyString(event.target.phaseId, "ExecutedProtocol navigation event target phaseId");
-
-    if (event.target.blockId !== undefined) {
-        requireNonEmptyString(
-            event.target.blockId,
-            "ExecutedProtocol navigation event target blockId",
-        );
-    }
-
-    requireNonEmptyString(event.action, "ExecutedProtocol navigation event action");
-
-    if (!NAVIGATION_ACTIONS.has(event.action)) {
-        throw new TypeError(
-            `ExecutedProtocol navigation event action must be one of: ${[
-                ...NAVIGATION_ACTIONS,
-            ].join(", ")}.`,
-        );
-    }
-}
-
-/** Validates a recovery event. */
-function validateRecoveryEvent(event) {
-    requireUnixTimestamp(
-        event.lastKnownActiveAtUnixMs,
-        "ExecutedProtocol recovery event lastKnownActiveAtUnixMs",
-    );
-
-    requireProtocolTime(
-        event.lastKnownProtocolTimeMs,
-        "ExecutedProtocol recovery event lastKnownProtocolTimeMs",
-    );
 }
 
 /** Validates an absolute position on the planned protocol timeline. */
