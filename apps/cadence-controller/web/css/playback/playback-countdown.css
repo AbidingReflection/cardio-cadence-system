@@ -1,0 +1,22 @@
+.playback-countdown {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: grid;
+    place-items: center;
+
+    background: rgba(16, 19, 24, 0.72);
+
+    font-size: clamp(6rem, 30vw, 18rem);
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+
+    pointer-events: none;
+}
+
+.playback-countdown:empty {
+    display: none;
+}

@@ -1,22 +1,28 @@
 .progress-track {
+    --progress-track-height: 18px;
+
     --progress-track-track-color: currentColor;
     --progress-track-track-opacity: 0.18;
 
     --progress-track-progress-color: currentColor;
 
     --progress-track-tick-color: currentColor;
+    --progress-track-tick-border-color: #000;
     --progress-track-tick-opacity: 0.55;
 
     --progress-track-marker-color: currentColor;
-
     --progress-track-marker-text-color: currentColor;
+
     --progress-track-tick-label-color: currentColor;
     --progress-track-tick-label-opacity: 0.7;
+
+    --progress-track-pending-omission-color: rgba(176, 78, 52, 0.9);
+    --progress-track-confirmed-omission-color: rgba(120, 120, 120, 0.9);
 
     position: relative;
 
     width: 100%;
-    height: 18px;
+    height: var(--progress-track-height);
     min-width: 0;
     min-height: 0;
 
@@ -24,8 +30,8 @@
     font-family: inherit;
     font-variant-numeric: tabular-nums;
 
-    user-select: none;
     pointer-events: none;
+    user-select: none;
 }
 
 .progress-track__svg {
@@ -35,7 +41,7 @@
     display: block;
 
     width: 100%;
-    height: 18px;
+    height: var(--progress-track-height);
 
     overflow: visible;
 }
@@ -44,16 +50,16 @@
     stroke: var(--progress-track-track-color);
     stroke-width: 4px;
     stroke-opacity: var(--progress-track-track-opacity);
-
     stroke-linecap: round;
+
     vector-effect: non-scaling-stroke;
 }
 
 .progress-track__progress {
     stroke: var(--progress-track-progress-color);
     stroke-width: 4px;
-
     stroke-linecap: round;
+
     vector-effect: non-scaling-stroke;
 }
 
@@ -70,23 +76,24 @@
 }
 
 .progress-track__tick-marker {
+    box-sizing: border-box;
+
     width: 5px;
     height: 5px;
 
-    border: 1px solid #000;
+    border: 1px solid var(--progress-track-tick-border-color);
     border-radius: 50%;
 
     background: var(--progress-track-tick-color);
-    opacity: var(--progress-track-tick-opacity);
 
-    box-sizing: border-box;
+    opacity: var(--progress-track-tick-opacity);
 }
 
 .progress-track__marker-line {
     stroke: var(--progress-track-marker-color);
     stroke-width: 3px;
-
     stroke-linecap: round;
+
     vector-effect: non-scaling-stroke;
 }
 
@@ -94,15 +101,14 @@
     position: absolute;
     top: 50%;
 
-    transform: translate(-50%, -50%) translateY(-9px);
-
     color: var(--progress-track-marker-text-color);
 
     font-size: 0.65rem;
     font-weight: 700;
     line-height: 1;
-
     white-space: nowrap;
+
+    transform: translate(-50%, -50%) translateY(-9px);
 }
 
 .progress-track__tick-labels {
@@ -113,16 +119,15 @@
     position: absolute;
     bottom: 0;
 
-    transform: translateX(-50%);
-
     color: var(--progress-track-tick-label-color);
-    opacity: var(--progress-track-tick-label-opacity);
 
     font-size: 0.65rem;
     font-weight: 600;
     line-height: 1;
-
     white-space: nowrap;
+
+    opacity: var(--progress-track-tick-label-opacity);
+    transform: translateX(-50%);
 }
 
 .progress-track__range {
@@ -131,9 +136,9 @@
 }
 
 .progress-track__range[data-state="pending-omission"] {
-    stroke: rgba(176, 78, 52, 0.9);
+    stroke: var(--progress-track-pending-omission-color);
 }
 
 .progress-track__range[data-state="confirmed-omission"] {
-    stroke: rgba(120, 120, 120, 0.9);
+    stroke: var(--progress-track-confirmed-omission-color);
 }

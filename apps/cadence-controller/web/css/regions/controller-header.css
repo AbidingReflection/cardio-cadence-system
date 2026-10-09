@@ -1,5 +1,4 @@
 .controller-header {
-    /* display: flex; */
     display: none;
     align-items: center;
     justify-content: space-between;
@@ -33,12 +32,11 @@
     margin: 0;
 
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     font-size: clamp(1rem, 2.2vw, 1.5rem);
     line-height: 1.15;
-
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .playback-state {

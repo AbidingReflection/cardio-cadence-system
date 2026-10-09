@@ -1,8 +1,8 @@
 .progress-pane {
-    flex: 0 0 auto;
-
     display: grid;
     gap: 1px;
+
+    flex: 0 0 auto;
 
     min-width: 0;
 
@@ -34,9 +34,9 @@
 .workout-progress {
     display: grid;
     grid-template-columns:
-        minmax(0, 1fr)
-        auto
-        auto;
+    minmax(0, 1fr)
+    auto
+    auto;
     align-items: center;
 
     min-width: 0;
@@ -55,16 +55,16 @@
 }
 
 .timed-progress__time {
-    gap: 4px;
     display: grid;
     grid-template-columns:
-        8ch
-        1ch
-        7ch;
+    8ch
+    1ch
+    7ch;
     align-items: center;
+    gap: 4px;
 
     font-family:
-        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 .timed-progress__remaining,
@@ -84,5 +84,4 @@
 
 .workout-progress {
     width: 100%;
-    min-width: 0;
 }

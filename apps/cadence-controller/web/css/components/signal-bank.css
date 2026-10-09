@@ -2,7 +2,6 @@
     --signal-bank-gap: 0.5rem;
 
     --signal-bank-background: transparent;
-
     --signal-bank-border-color: rgba(255, 255, 255, 0.3);
 
     --signal-bank-inactive-text-color: #fff;
@@ -10,13 +9,12 @@
     --signal-bank-active-text-color: #000;
 
     --signal-bank-label-outline-color: #000;
-    --signal-bank-label-outline-width: 1px;
+    --signal-bank-label-outline-width: 0.75px;
 
     --signal-bank-active-duration: 500ms;
 
     display: grid;
     grid-template-columns: repeat(var(--signal-count), minmax(0, 1fr));
-
     gap: var(--signal-bank-gap);
 
     width: 100%;
@@ -25,8 +23,8 @@
     color: inherit;
     font-family: inherit;
 
-    user-select: none;
     pointer-events: none;
+    user-select: none;
 }
 
 .signal-bank__signal {
@@ -43,7 +41,6 @@
     border-radius: 0.5rem;
 
     background: var(--signal-bank-background);
-
     color: var(--signal-bank-inactive-text-color);
 
     text-align: center;
@@ -59,14 +56,25 @@
     font-size: 1.5em;
     font-weight: 700;
     line-height: 1.15;
-
     text-wrap: balance;
 
     text-shadow:
-        -0.75px -0.75px 0 var(--signal-bank-label-outline-color),
-        0.75px -0.75px 0 var(--signal-bank-label-outline-color),
-        -0.75px 0.75px 0 var(--signal-bank-label-outline-color),
-        0.75px 0.75px 0 var(--signal-bank-label-outline-color);
+    calc(-1 * var(--signal-bank-label-outline-width))
+    calc(-1 * var(--signal-bank-label-outline-width))
+    0
+    var(--signal-bank-label-outline-color),
+    var(--signal-bank-label-outline-width)
+    calc(-1 * var(--signal-bank-label-outline-width))
+    0
+    var(--signal-bank-label-outline-color),
+    calc(-1 * var(--signal-bank-label-outline-width))
+    var(--signal-bank-label-outline-width)
+    0
+    var(--signal-bank-label-outline-color),
+    var(--signal-bank-label-outline-width)
+    var(--signal-bank-label-outline-width)
+    0
+    var(--signal-bank-label-outline-color);
 }
 
 .signal-bank__signal[data-active="true"] .signal-bank__label {

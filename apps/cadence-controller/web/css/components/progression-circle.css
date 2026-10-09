@@ -1,6 +1,6 @@
 .progression-circle {
     --progression-circle-track-color: currentColor;
-    --progression-circle-track-opacity: 18%;
+    --progression-circle-track-opacity: 0.18;
 
     --progression-circle-progress-color: currentColor;
 
@@ -11,7 +11,11 @@
 
     --progression-circle-fill-color: transparent;
 
+    --progression-circle-target-mix-color: #101318;
+    --progression-circle-target-stroke-color: #000;
+
     --progression-circle-value-color: currentColor;
+
     --progression-circle-label-color: currentColor;
     --progression-circle-label-opacity: 0.7;
 
@@ -19,7 +23,6 @@
 
     width: 100%;
     height: 100%;
-
     max-width: 100%;
     max-height: 100%;
 
@@ -28,8 +31,8 @@
     color: inherit;
     font-family: inherit;
 
-    user-select: none;
     pointer-events: none;
+    user-select: none;
 }
 
 .progression-circle__background {
@@ -43,7 +46,6 @@
     stroke: var(--progression-circle-track-color);
     stroke-width: 5;
     stroke-opacity: var(--progression-circle-track-opacity);
-
     stroke-linecap: round;
 }
 
@@ -52,7 +54,6 @@
 
     stroke: var(--progression-circle-progress-color);
     stroke-width: 5;
-
     stroke-linecap: round;
 }
 
@@ -60,7 +61,6 @@
     stroke: var(--progression-circle-notch-color);
     stroke-width: 2;
     stroke-opacity: var(--progression-circle-notch-opacity);
-
     stroke-linecap: round;
 }
 
@@ -68,10 +68,10 @@
     fill: color-mix(
         in srgb,
         var(--progression-circle-track-color) var(--progression-circle-track-opacity),
-        #101318
+                    var(--progression-circle-target-mix-color)
     );
 
-    stroke: #000;
+    stroke: var(--progression-circle-target-stroke-color);
     stroke-width: 1.5px;
 
     vector-effect: non-scaling-stroke;
@@ -80,8 +80,6 @@
 .progression-circle__marker-dot {
     fill: var(--progression-circle-marker-color);
 
-    /*    stroke: #000;
-    stroke-width: 1.5px;*/
     vector-effect: non-scaling-stroke;
 }
 

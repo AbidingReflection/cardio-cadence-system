@@ -1,36 +1,12 @@
-.playback-countdown {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-
-    display: grid;
-    place-items: center;
-
-    pointer-events: none;
-
-    background: rgba(16, 19, 24, 0.72);
-
-    font-size: clamp(6rem, 30vw, 18rem);
-    font-weight: 800;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-
-    text-align: center;
-}
-
-.playback-countdown:empty {
-    display: none;
-}
-
 .guidance-pane {
     --guidance-header-height: 40px;
 
-    flex: 1 1 0;
-
     display: grid;
     grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr);
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+    flex: 1 1 0;
 
     min-width: 0;
     min-height: 0;
@@ -44,13 +20,12 @@
 .load-visualizer {
     display: grid;
     grid-template-rows:
-        var(--guidance-header-height)
-        minmax(0, 1fr);
+    var(--guidance-header-height)
+    minmax(0, 1fr);
     gap: 8px;
 
     width: 100%;
     height: 100%;
-
     min-width: 0;
     min-height: 0;
 
@@ -61,7 +36,6 @@
 .load-visualizer__status {
     width: 100%;
     height: var(--guidance-header-height);
-
     min-width: 0;
     min-height: 0;
 
@@ -81,7 +55,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-
     gap: 2px;
 }
 
@@ -95,11 +68,12 @@
 
 .load-visualizer__remaining-label,
 .load-visualizer__next-label {
-    white-space: nowrap;
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.08em;
+    white-space: nowrap;
+
     opacity: 0.6;
 }
 
@@ -127,7 +101,7 @@
 }
 
 .cadence-visualizer__circle {
-    --progression-circle-track-opacity: 65%;
+    --progression-circle-track-opacity: 0.65;
 }
 
 .cadence-visualizer__circle .progression-circle,
@@ -137,12 +111,14 @@
 }
 
 .load-visualizer[data-adjustment-pending="true"] {
-    --progression-circle-track-color: #ff5a5a;
-    --progression-circle-progress-color: #ff5a5a;
-    --progression-circle-notch-color: #ff5a5a;
-    --progression-circle-marker-color: #ff5a5a;
-    --progression-circle-value-color: #ff5a5a;
-    --progression-circle-label-color: #ff5a5a;
+    --load-adjustment-color: #ff5a5a;
+
+    --progression-circle-track-color: var(--load-adjustment-color);
+    --progression-circle-progress-color: var(--load-adjustment-color);
+    --progression-circle-notch-color: var(--load-adjustment-color);
+    --progression-circle-marker-color: var(--load-adjustment-color);
+    --progression-circle-value-color: var(--load-adjustment-color);
+    --progression-circle-label-color: var(--load-adjustment-color);
 }
 
 .load-visualizer[data-adjustment-pending="true"] .progression-circle__background {
