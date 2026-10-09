@@ -2,15 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from pathlib import Path
-
-
-APP_ROUTES = {
-    "/protocol-designer": "protocol-designer",
-    "/cadence-controller": "cadence-controller",
-    "/workout-analyzer": "workout-analyzer",
-}
 
 APP_ALIASES = {
     "/designer": "/protocol-designer",
@@ -69,6 +62,7 @@ def select_root(
 def get_redirect_target(
     url_path: str,
     query: str,
+    app_routes: Collection[str],
 ) -> str | None:
     """Return the canonical redirect target for a browser URL."""
     if url_path == "/":
@@ -77,7 +71,7 @@ def get_redirect_target(
             query,
         )
 
-    for route in APP_ROUTES:
+    for route in app_routes:
         if url_path == route:
             return with_query(
                 f"{route}/",
@@ -92,14 +86,8 @@ def get_redirect_target(
 
         test_prefix = f"{route}/tests/"
 
-        if (
-            url_path.startswith(test_prefix)
-            and url_path.endswith("/")
-        ):
-            target = url_path[
-                len(test_prefix):
-                -1
-            ]
+        if url_path.startswith(test_prefix) and url_path.endswith("/"):
+            target = url_path[len(test_prefix) : -1]
 
             if target and "/" not in target:
                 return with_query(
@@ -142,10 +130,7 @@ def is_test_page_route(
 
     target = url_path.removeprefix(prefix)
 
-    if not target or "/" in target:
-        return False
-
-    return True
+    return bool(target) and "/" not in target
 
 
 def with_query(
