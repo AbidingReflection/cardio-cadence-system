@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from pathlib import Path
 import re
-
+from dataclasses import dataclass, field
 
 CONTAINER_AT_RULES = {
     "@container",
@@ -25,7 +23,8 @@ class CssItem:
     text: str
     start_line: int
     end_line: int
-    children: list["CssItem"] = field(default_factory=list)
+    children: list[CssItem] = field(default_factory=list)
+    context_declarations: list[tuple[int, int, str]] = field(default_factory=list)
 
 
 @dataclass
@@ -84,11 +83,9 @@ def section_comment_text(comment: str) -> str | None:
     for line in lines:
         line = line.strip()
 
-        if line.startswith("/*"):
-            line = line[2:]
+        line = line.removeprefix("/*")
 
-        if line.endswith("*/"):
-            line = line[:-2]
+        line = line.removesuffix("*/")
 
         line = line.strip()
 
@@ -216,16 +213,10 @@ def scan_structure(source: str) -> list[CssItem]:
                     statement_start,
                     index,
                 )
-                prelude = normalize_prelude(
-                    source[prelude_start:index]
-                )
+                prelude = normalize_prelude(source[prelude_start:index])
 
                 if prelude:
-                    kind = (
-                        "at_rule"
-                        if prelude.startswith("@")
-                        else "ruleset"
-                    )
+                    kind = "at_rule" if prelude.startswith("@") else "ruleset"
 
                     item = CssItem(
                         kind=kind,
@@ -240,10 +231,7 @@ def scan_structure(source: str) -> list[CssItem]:
                     append_item(items, stack, item)
 
                     if kind == "at_rule":
-                        parse_children = (
-                            at_rule_name(prelude)
-                            in CONTAINER_AT_RULES
-                        )
+                        parse_children = at_rule_name(prelude) in CONTAINER_AT_RULES
 
             stack.append(
                 BlockContext(
@@ -275,72 +263,21 @@ def scan_structure(source: str) -> list[CssItem]:
     return items
 
 
-def format_item(
-    item: CssItem,
-    depth: int = 0,
-) -> list[str]:
-    """Format one CSS structural item and its nested children."""
-    indent = "    " * depth
-    line_range = f"[L{item.start_line}-L{item.end_line}]"
-
-    lines = [
-        f"{indent}{line_range} {item.text}"
-    ]
-
-    for child in item.children:
-        lines.extend(
-            format_item(
-                child,
-                depth=depth + 1,
-            )
-        )
-
-    return lines
+# def is_variable_context_line(line: str) -> bool:
 
 
-def export_source(
-    path: Path,
-    display_path: Path,
-) -> str:
-    """Return structural context text for one CSS file."""
-    source = path.read_text(encoding="utf-8")
-    items = scan_structure(source)
-
-    lines = [
-        f"FILE: {display_path.as_posix()}",
-        "",
-        "STRUCTURE",
-        "---------",
-        "",
-    ]
-
-    for index, item in enumerate(items):
-        lines.extend(format_item(item))
-
-        if (
-            item.kind == "section"
-            or (
-                index + 1 < len(items)
-                and items[index + 1].kind == "section"
-            )
-        ):
-            lines.append("")
-
-    return "\n".join(lines).rstrip()
-
-
-def inspect_source(
-    path: Path,
-    display_path: Path,
-) -> None:
-    """Print the structural CSS items recognized by the scanner."""
-    source = path.read_text(encoding="utf-8")
-    items = scan_structure(source)
-
-    print(f"FILE: {display_path.as_posix()}")
-    print(f"CHARACTERS: {len(source)}")
-    print()
-
+def find_deepest_item_at_line(
+    items: list[CssItem],
+    line_number: int,
+) -> CssItem | None:
+    """Return the deepest structural item containing a source line."""
     for item in items:
-        for line in format_item(item):
-            print(line)
+        if item.start_line <= line_number <= item.end_line:
+            child = find_deepest_item_at_line(
+                item.children,
+                line_number,
+            )
+
+            return child if child is not None else item
+
+    return None
