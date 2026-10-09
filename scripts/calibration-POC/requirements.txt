@@ -2,3 +2,4 @@ pandas
 odfpy
 numpy
 matplotlib
+pytest

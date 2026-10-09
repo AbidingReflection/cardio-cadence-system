@@ -6,12 +6,11 @@ import json
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
-from js_testing.test_discovery import (
+from .test_discovery import (
     discover_test_module_records,
     discover_test_modules,
 )
-from js_testing.test_metadata_store import TestMetadataStore
-
+from .test_metadata_store import TestMetadataStore
 
 DEFAULT_TEST_TARGET = "all"
 TEST_MANIFEST_FILENAME = "manifest.json"
@@ -23,9 +22,7 @@ def get_test_manifest_request(
 ) -> tuple[str, str] | None:
     """Return the application route and target for a manifest request."""
     for route in app_routes:
-        default_manifest_path = (
-            f"{route}/tests/{TEST_MANIFEST_FILENAME}"
-        )
+        default_manifest_path = f"{route}/tests/{TEST_MANIFEST_FILENAME}"
 
         if url_path == default_manifest_path:
             return route, DEFAULT_TEST_TARGET
@@ -33,16 +30,10 @@ def get_test_manifest_request(
         prefix = f"{route}/tests/"
         suffix = f"/{TEST_MANIFEST_FILENAME}"
 
-        if not (
-            url_path.startswith(prefix)
-            and url_path.endswith(suffix)
-        ):
+        if not (url_path.startswith(prefix) and url_path.endswith(suffix)):
             continue
 
-        target = url_path[
-            len(prefix):
-            -len(suffix)
-        ]
+        target = url_path[len(prefix) : -len(suffix)]
 
         if not target or "/" in target:
             continue
@@ -86,30 +77,22 @@ def load_test_roots(
         manifest = json.load(manifest_file)
 
     if not isinstance(manifest, dict):
-        raise TypeError(
-            f"Test manifest must contain a JSON object: "
-            f"{manifest_path}"
-        )
+        raise TypeError(f"Test manifest must contain a JSON object: {manifest_path}")
 
     test_roots = manifest.get("roots")
 
     if not isinstance(test_roots, list):
-        raise TypeError(
-            f'Test manifest "roots" must be an array: '
-            f"{manifest_path}"
-        )
+        raise TypeError(f'Test manifest "roots" must be an array: {manifest_path}')
 
     if not test_roots:
         raise ValueError(
-            f"Test manifest must contain at least one test root: "
-            f"{manifest_path}"
+            f"Test manifest must contain at least one test root: {manifest_path}"
         )
 
     for test_root in test_roots:
         if not isinstance(test_root, str) or not test_root:
             raise TypeError(
-                f"Every test manifest root must be a non-empty string: "
-                f"{manifest_path}"
+                f"Every test manifest root must be a non-empty string: {manifest_path}"
             )
 
     return test_roots

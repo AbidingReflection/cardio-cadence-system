@@ -7,8 +7,8 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scripts.js_testing import test_metadata_store
 from scripts.js_testing.test_manifest import build_test_manifest
-from scripts.js_testing.test_metadata_store import TestMetadataStore
 
 
 class BuildTestManifestTests(unittest.TestCase):
@@ -66,7 +66,7 @@ class BuildTestManifestTests(unittest.TestCase):
                 tzinfo=timezone.utc,
             )
 
-            metadata_store = TestMetadataStore(
+            metadata_store = test_metadata_store.TestMetadataStore(
                 root / "test-metadata.sqlite3",
                 now=lambda: changed_at,
             )
