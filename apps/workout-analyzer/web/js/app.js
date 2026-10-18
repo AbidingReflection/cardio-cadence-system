@@ -13,30 +13,30 @@ const PROTOCOL_URL = "/data/true-elliptical-108-minute-session.json";
 
 const WORKOUT_DATA = [
     {
-        id: "2026-09-09",
-        label: "Sep 9",
-        url: "/data/hr_samples/2026-09-09-workout-hr.json",
+        id: "2026-10-07",
+        label: "Oct 7",
+        url: "/data/hr_samples/2026-10-07-workout-hr.json",
     },
-    {
-        id: "2026-09-10",
-        label: "Sep 10",
-        url: "/data/hr_samples/2026-09-10-workout-hr.json",
-    },
-    {
-        id: "2026-09-11",
-        label: "Sep 11",
-        url: "/data/hr_samples/2026-09-11-workout-hr.json",
-    },
-    {
-        id: "2026-09-14",
-        label: "Sep 14",
-        url: "/data/hr_samples/2026-09-14-workout-hr.json",
-    },
-    {
-        id: "2026-09-15",
-        label: "Sep 15",
-        url: "/data/hr_samples/2026-09-15-workout-hr.json",
-    },
+    // {
+    //     id: "2026-09-10",
+    //     label: "Sep 10",
+    //     url: "/data/hr_samples/2026-09-10-workout-hr.json",
+    // },
+    // {
+    //     id: "2026-09-11",
+    //     label: "Sep 11",
+    //     url: "/data/hr_samples/2026-09-11-workout-hr.json",
+    // },
+    // {
+    //     id: "2026-09-14",
+    //     label: "Sep 14",
+    //     url: "/data/hr_samples/2026-09-14-workout-hr.json",
+    // },
+    // {
+    //     id: "2026-09-15",
+    //     label: "Sep 15",
+    //     url: "/data/hr_samples/2026-09-15-workout-hr.json",
+    // },
 ];
 
 const SAMPLE_INTERVAL_MS = 5000;

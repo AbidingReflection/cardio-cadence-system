@@ -28,8 +28,8 @@ export function renderWorkoutAnalysisGraph(container, { calorieRateSamples, hear
     const calorieRateMin = 0;
     const calorieRateMax = 30;
 
-    const heartRateMin = 60;
-    const heartRateMax = 180;
+    const heartRateMin = 80;
+    const heartRateMax = 200;
 
     const padding = {
         top: 24,

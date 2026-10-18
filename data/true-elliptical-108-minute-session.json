@@ -13,16 +13,16 @@
           {
             "id": "6fb87851-0735-4831-9070-efe898d2c9d5",
             "name": "Warm-up",
-            "durationSeconds": 120,
+            "durationSeconds": 900,
             "variables": {
               "cadence": {
                 "type": "linear",
                 "start": 40,
-                "end": 80
+                "end": 59
               },
               "resistance": {
                 "type": "stepped",
-                "start": 2,
+                "start": 1,
                 "end": 8,
                 "step": 1
               }
@@ -35,27 +35,105 @@
         "name": "Primary",
         "blocks": [
           {
+            "id": "800e2ed9-d586-44ae-af25-5bd725d7857a",
+            "name": "Main",
+            "durationSeconds": 720,
+            "variables": {
+              "cadence": {
+                "type": "linear",
+                "start": 59,
+                "end": 60
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 8
+              }
+            }
+          },
+          {
             "id": "1ed119dc-c5ea-45dc-9e59-a7add91a09b5",
             "name": "Main",
-            "durationSeconds": 3600,
+            "durationSeconds": 660,
             "variables": {
               "cadence": {
                 "type": "linear",
                 "start": 60,
+                "end": 61
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 9
+              }
+            }
+          },
+          {
+            "id": "5ff67293-d8ea-42fb-9af4-fc4feda76863",
+            "name": "Main",
+            "durationSeconds": 600,
+            "variables": {
+              "cadence": {
+                "type": "linear",
+                "start": 61,
+                "end": 62
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 10
+              }
+            }
+          },
+          {
+            "id": "943e50af-2f4f-4d8d-8ad1-eb7575c1f224",
+            "name": "Main",
+            "durationSeconds": 540,
+            "variables": {
+              "cadence": {
+                "type": "linear",
+                "start": 62,
+                "end": 63
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 11
+              }
+            }
+          },
+          {
+            "id": "7e00914d-1a9c-4c60-a9c4-495ccfcce2ea",
+            "name": "Main",
+            "durationSeconds": 480,
+            "variables": {
+              "cadence": {
+                "type": "linear",
+                "start": 63,
+                "end": 64
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 12
+              }
+            }
+          },
+          {
+            "id": "00c02b62-5345-4454-8298-a3718fc28c15",
+            "name": "Main",
+            "durationSeconds": 420,
+            "variables": {
+              "cadence": {
+                "type": "linear",
+                "start": 64,
                 "end": 65
               },
               "resistance": {
-                "type": "stepped",
-                "start": 9,
-                "end": 14,
-                "step": 1
+                "type": "steady",
+                "start": 13
               }
             }
           },
           {
             "id": "13447edd-0c0d-4254-8005-d3cf0fb565af",
             "name": "Taper 1",
-            "durationSeconds": 300,
+            "durationSeconds": 360,
             "variables": {
               "cadence": {
                 "type": "linear",
@@ -64,14 +142,14 @@
               },
               "resistance": {
                 "type": "steady",
-                "start": 15
+                "start": 14
               }
             }
           },
           {
             "id": "d40b2cab-be25-4225-b062-3a66d3a2f4c2",
             "name": "Taper 2",
-            "durationSeconds": 240,
+            "durationSeconds": 300,
             "variables": {
               "cadence": {
                 "type": "linear",
@@ -80,14 +158,14 @@
               },
               "resistance": {
                 "type": "steady",
-                "start": 16
+                "start": 15
               }
             }
           },
           {
             "id": "3d7dc897-1c5b-493f-861f-bda809086dd1",
             "name": "Taper 3",
-            "durationSeconds": 180,
+            "durationSeconds": 240,
             "variables": {
               "cadence": {
                 "type": "linear",
@@ -96,14 +174,14 @@
               },
               "resistance": {
                 "type": "steady",
-                "start": 17
+                "start": 16
               }
             }
           },
           {
             "id": "b84fc368-6f59-4f9c-ba03-486559d687ae",
             "name": "Taper 4",
-            "durationSeconds": 120,
+            "durationSeconds": 180,
             "variables": {
               "cadence": {
                 "type": "linear",
@@ -112,19 +190,34 @@
               },
               "resistance": {
                 "type": "steady",
-                "start": 18
+                "start": 17
               }
             }
           },
           {
             "id": "625817d1-5f30-42cf-a181-58c8eb1405ab",
             "name": "Taper 5",
-            "durationSeconds": 60,
+            "durationSeconds": 120,
             "variables": {
               "cadence": {
                 "type": "linear",
                 "start": 69,
                 "end": 70
+              },
+              "resistance": {
+                "type": "steady",
+                "start": 18
+              }
+            }
+          },
+          {
+            "id": "9f864549-c4b2-44c2-a602-6897000edf5f",
+            "name": "Taper 5",
+            "durationSeconds": 60,
+            "variables": {
+              "cadence": {
+                "type": "steady",
+                "start": 70
               },
               "resistance": {
                 "type": "steady",
@@ -145,13 +238,13 @@
             "variables": {
               "cadence": {
                 "type": "linear",
-                "start": 70,
+                "start": 60,
                 "end": 40
               },
               "resistance": {
                 "type": "stepped",
-                "start": 18,
-                "end": 4,
+                "start": 15,
+                "end": 1,
                 "step": 1
               }
             }
