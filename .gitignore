@@ -24,8 +24,8 @@ scripts/context_export/output/
 # Runtime data
 scripts/js_testing/data/test_metadata.sqlite3
 
-# Project documentation
-docs/
+# Prev Project documentation
+docs_prev/
 
 # Project data
 data/*
