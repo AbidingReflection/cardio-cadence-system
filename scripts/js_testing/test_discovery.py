@@ -6,7 +6,6 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-
 TEST_FILE_SUFFIX = ".test.js"
 
 

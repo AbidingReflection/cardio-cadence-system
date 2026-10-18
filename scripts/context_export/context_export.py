@@ -5,14 +5,11 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import os
+from datetime import datetime
 from pathlib import Path
 
-from exporters import css
-from exporters import javascript
-from exporters import python
-
+from exporters import css, javascript, python
 
 TOOL_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = TOOL_DIR / "output"

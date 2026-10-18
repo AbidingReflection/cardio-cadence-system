@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tree_sitter import Language, Node, Parser
 import tree_sitter_javascript
+from tree_sitter import Language, Node, Parser
 
 _parser: Parser | None = None
 
@@ -161,11 +161,9 @@ def normalize_jsdoc(comment: str) -> str:
     for line in lines:
         line = line.strip()
 
-        if line.startswith("/**"):
-            line = line[3:]
+        line = line.removeprefix("/**")
 
-        if line.endswith("*/"):
-            line = line[:-2]
+        line = line.removesuffix("*/")
 
         line = line.strip()
 
