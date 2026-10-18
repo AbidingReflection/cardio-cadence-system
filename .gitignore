@@ -31,3 +31,6 @@ docs/
 data/*
 !data/samples/
 !data/samples/**
+
+# Generated outputs
+publish/
