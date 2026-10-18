@@ -5,10 +5,19 @@ set -euo pipefail
 echo "=== PRODUCTION CODE ==="
 
 echo
-echo "--- APP ---"
+echo "--- APP: Designer ---"
 
 cloc \
     apps/protocol-designer \
+    --exclude-dir=tests,test,__pycache__,output,venv,.venv \
+    --by-file \
+    --include-lang=JavaScript,CSS,Python
+
+echo
+echo "--- APP: Controller ---"
+
+cloc \
+    apps/cadence-controller \
     --exclude-dir=tests,test,__pycache__,output,venv,.venv \
     --by-file \
     --include-lang=JavaScript,CSS,Python
@@ -26,10 +35,20 @@ echo
 echo "=== TEST CODE ==="
 
 echo
-echo "--- APP ---"
+echo "--- APP: Designer ---"
 
 cloc \
     apps/protocol-designer \
+    --match-d='(^|/)(tests|test)(/|$)' \
+    --exclude-dir=venv,.venv,__pycache__,output \
+    --by-file \
+    --include-lang=JavaScript,CSS,HTML,Python
+
+echo
+echo "--- APP: Controller ---"
+
+cloc \
+    apps/cadence-controller \
     --match-d='(^|/)(tests|test)(/|$)' \
     --exclude-dir=venv,.venv,__pycache__,output \
     --by-file \

@@ -1,28 +1,33 @@
-# Python environments and caches
+# Python
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
 
-# Generated script output
-scripts/calibration-POC/output/
-scripts/context_export/output/
-
-# Editor / temporary files
-*.kate-swp
-.~lock.*#
-
-jsconfig.json
-
-# Local Node tooling for editor/LSP support
+# Node.js
 node_modules/
 package.json
 package-lock.json
 
-data/hr_samples/
-docs/
-data/
-
+# Editor and local configuration
+*.kate-swp
+.~lock.*#
+jsconfig.json
 .prettierrc.json
 .local/
 
+# Generated outputs
+scripts/calibration-POC/output/
+scripts/context_export/output/
+
+# Runtime data
 scripts/js_testing/data/test_metadata.sqlite3
+
+# Project documentation
+docs/
+
+# Project data
+data/*
+!data/samples/
+!data/samples/**
