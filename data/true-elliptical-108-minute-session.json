@@ -177,53 +177,6 @@
                 "start": 16
               }
             }
-          },
-          {
-            "id": "b84fc368-6f59-4f9c-ba03-486559d687ae",
-            "name": "Taper 4",
-            "durationSeconds": 180,
-            "variables": {
-              "cadence": {
-                "type": "linear",
-                "start": 68,
-                "end": 69
-              },
-              "resistance": {
-                "type": "steady",
-                "start": 17
-              }
-            }
-          },
-          {
-            "id": "625817d1-5f30-42cf-a181-58c8eb1405ab",
-            "name": "Taper 5",
-            "durationSeconds": 120,
-            "variables": {
-              "cadence": {
-                "type": "linear",
-                "start": 69,
-                "end": 70
-              },
-              "resistance": {
-                "type": "steady",
-                "start": 18
-              }
-            }
-          },
-          {
-            "id": "9f864549-c4b2-44c2-a602-6897000edf5f",
-            "name": "Taper 5",
-            "durationSeconds": 60,
-            "variables": {
-              "cadence": {
-                "type": "steady",
-                "start": 70
-              },
-              "resistance": {
-                "type": "steady",
-                "start": 19
-              }
-            }
           }
         ]
       },
