@@ -1,5 +1,8 @@
+
 .guidance-pane {
     --guidance-header-height: 40px;
+
+    container: guidance / inline-size;
 
     display: grid;
     grid-template-columns:
@@ -100,10 +103,6 @@
     overflow: hidden;
 }
 
-.cadence-visualizer__circle {
-    --progression-circle-track-opacity: 0.65;
-}
-
 .cadence-visualizer__circle .progression-circle,
 .load-visualizer__circle .progression-circle {
     width: 100%;
@@ -141,3 +140,25 @@
         fill: rgba(255, 0, 0, 0.18);
     }
 }
+
+@container guidance (max-width: 600px) {
+    .cadence-visualizer,
+    .load-visualizer {
+        grid-column: 1 / -1;
+    }
+
+    .load-visualizer {
+        grid-template-rows:
+        minmax(0, 1fr)
+        var(--guidance-header-height);
+    }
+
+    .load-visualizer__circle {
+        grid-row: 1;
+    }
+
+    .load-visualizer__status {
+        grid-row: 2;
+    }
+}
+
